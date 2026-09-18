@@ -95,7 +95,7 @@ export default function Teams() {
     if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setDailyRows(rows); }
   };
 
-  const loadActuals = async (teamId: string, month: string) => {
+  const loadActuals = async (teamId: string, month: string, memberList?: any[]) => {
     try {
       const saved = await api('/actuals/' + teamId + '?month=' + month);
       if (saved && saved.length > 0) {
@@ -103,9 +103,10 @@ export default function Teams() {
         return true;
       }
     } catch {}
-    // Init with member list (from members state)
-    if (members.length > 0) {
-      setActualRows([...members.map((m: any) => ({name: m.name, userId: m.id, product: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0})), {type: 'total'}]);
+    // Init with member list
+    const list = memberList || members;
+    if (list && list.length > 0) {
+      setActualRows([...list.map((m: any) => ({name: m.name, userId: m.id, product: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0})), {type: 'total'}]);
       return true;
     }
     setActualRows([]);
@@ -160,7 +161,7 @@ export default function Teams() {
     // Initialize KPI rows with one row per member + total row
     // Load saved KPI data or initialize
     const saved = await loadKpi(t.id, kpiMonth);
-    loadActuals(t.id, actualMonth);
+    loadActuals(t.id, actualMonth, m);
     if (!saved || saved.length === 0) {
       const initial = [];
       m.forEach((u: any) => initial.push({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0}));
