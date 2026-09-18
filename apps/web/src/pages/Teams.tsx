@@ -437,7 +437,7 @@ export default function Teams() {
                   const totalCost = (r.fixedCost || 0);
                   return (
                     <tr key={i} className={'border-b border-border hover:bg-gray-50 transition-all ' + (isTotal ? 'bg-gray-50/80 font-semibold' : '')}>
-                      <td className="p-3 text-xs">
+                      <td className="p-3 text-xs w-36">
                         {!isTotal ? (
                           <span className="inline-flex items-center gap-1.5">
                             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[7px] font-bold shrink-0">{r.name?.charAt(0) || '?'}</div>
@@ -445,7 +445,7 @@ export default function Teams() {
                           </span>
                         ) : <span className="text-[#4f46e5]">Tổng</span>}
                       </td>
-                      <td className="p-3 text-xs">
+                      <td className="p-3 text-xs w-40">
                         {!isTotal ? (
                           <div className="flex items-center gap-1">
                             {r.product || <span className="italic">—</span>}
@@ -467,9 +467,9 @@ export default function Teams() {
                           <span className="text-xs font-medium">{(r.actualOrders || 0) > 0 ? Math.round((r.fixedCost || 0) / (r.actualOrders || 0)).toLocaleString('vi-VN') + 'đ' : ''}</span>
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + ((r2.costPerOrder || 0) * (r2.actualOrders || 0)), 0) / Math.max(1, actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0))}</span>}
                       </td>
-                      <td className="p-3 text-xs text-right font-medium">{totalCost.toLocaleString('vi-VN')}đ</td>
-                      <td className="p-3 text-xs text-right font-bold">{kpiPct.toFixed(1)}%</td>
-                      <td className="p-3 text-xs text-right font-bold text-[#4f46e5]">{totalKpiPct.toFixed(1)}%</td>
+                      <td className="p-3 text-xs text-right font-medium w-28">{totalCost.toLocaleString('vi-VN')}đ</td>
+                      <td className="p-3 text-xs text-right font-bold w-20">{kpiPct.toFixed(1)}%</td>
+                      <td className="p-3 text-xs text-right font-bold text-[#4f46e5] w-24">{totalKpiPct.toFixed(1)}%</td>
                     </tr>
                   );
                 })}
