@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { v4 as uuid } from 'uuid';
 import { pool } from '../db/index';
+import { io } from '../index';
 
 export default async function (app: FastifyInstance) {
   app.get('/channels', async (req, reply) => {
@@ -17,6 +18,7 @@ export default async function (app: FastifyInstance) {
       "INSERT INTO media_channels (id, name, platform, url, team_id, assigned_to, notes) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [id, name, platform, url, teamId || null, assignedTo || null, notes || '']
     );
+    io.emit('channel:update', { action: 'create', id });
     reply.send({ id, success: true });
   });
 
@@ -27,12 +29,14 @@ export default async function (app: FastifyInstance) {
       "UPDATE media_channels SET name=?, platform=?, url=?, team_id=?, assigned_to=?, notes=? WHERE id=?",
       [name, platform, url, teamId || null, assignedTo || null, notes || '', id]
     );
+    io.emit('channel:update', { action: 'update', id });
     reply.send({ success: true });
   });
 
   app.delete('/channels/:id', async (req, reply) => {
     const { id } = req.params as any;
     await pool.execute("DELETE FROM media_channels WHERE id = ?", [id]);
+    io.emit('channel:update', { action: 'delete', id });
     reply.send({ success: true });
   });
 }

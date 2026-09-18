@@ -7,7 +7,7 @@ const NAV = [
   { label: 'Tài khoản', icon: UserCog, path: '/users' },
   { label: 'Team', icon: Users, path: '/teams' },
   { label: 'Kho dữ liệu', icon: HardDrive, path: '/drive' },
-  { label: 'Kênh TT', icon: Globe, path: '/channels' },
+  { label: 'Kênh Marketing', icon: Globe, path: '/channels' },
   { label: 'Báo cáo', icon: ClipboardList, path: '/reports' },
   { label: 'Kanban', icon: KanbanSquare, path: '/kanban' },
   { label: 'Khách hàng', icon: PhoneCall, path: '/customers' },
