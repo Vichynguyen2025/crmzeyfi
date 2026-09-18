@@ -234,12 +234,15 @@ export default function Teams() {
               </thead>
               <tbody>
                 {kpiRows.map((r, i) => {
-                  const pricePerMsg = r.budget && r.messages ? r.budget / r.messages : 0;
-                  const totalMsgs = r.messages * 30;
-                  const totalOrders = r.orders || 0;
+                  const isTotal = r.type === 'total';
+                  const totalBudget = isTotal ? kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.budget || 0), 0) : (r.budget || 0);
+                  const totalMessages = isTotal ? kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.messages || 0), 0) : (r.messages || 0);
+                  const totalOrders = isTotal ? kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.orders || 0), 0) : (r.orders || 0);
+                  const pricePerMsg = totalBudget && totalMessages ? totalBudget / totalMessages : 0;
+                  const totalMsgs = totalMessages * 30;
                   const closeRate = totalMsgs > 0 ? (totalOrders / totalMsgs * 100) : 0;
-                  const costPerOrder = totalOrders > 0 ? (r.budget * 30 / totalOrders) : 0;
-                  const proposedBudget = r.budget * 30;
+                  const costPerOrder = totalOrders > 0 ? (totalBudget * 30 / totalOrders) : 0;
+                  const proposedBudget = totalBudget * 30;
                   return (
                     <tr key={i} className={'border-b border-border hover:bg-gray-50 transition-all ' + (r.type === 'total' ? 'bg-gray-50/80 font-semibold' : '')}>
                       <td className="p-3 text-xs">
@@ -270,13 +273,13 @@ export default function Teams() {
                         {r.type !== 'total' ? (
                           <input type="number" value={r.budget || ''} onChange={e => updateKpi(i, 'budget', Number(e.target.value))}
                             className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
-                        ) : <span className="block text-right">{kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r: any) => s + (r.budget || 0), 0).toLocaleString('vi-VN')}</span>}
+                        ) : <span className="block text-right">{totalBudget.toLocaleString('vi-VN')}</span>}
                       </td>
                       <td className="p-3">
                         {r.type !== 'total' ? (
                           <input type="number" value={r.messages || ''} onChange={e => updateKpi(i, 'messages', Number(e.target.value))}
                             className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
-                        ) : <span className="block text-right">{kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r: any) => s + (r.messages || 0), 0)}</span>}
+                        ) : <span className="block text-right">{totalMessages}</span>}
                       </td>
                       <td className="p-3 text-xs text-right">{pricePerMsg > 0 ? pricePerMsg.toLocaleString('vi-VN', {maximumFractionDigits:0}) : ''}</td>
                       <td className="p-3 text-xs text-right">{totalMsgs > 0 ? totalMsgs.toLocaleString('vi-VN') : ''}</td>
@@ -284,7 +287,7 @@ export default function Teams() {
                         {r.type !== 'total' ? (
                           <input type="number" value={r.orders || ''} onChange={e => updateKpi(i, 'orders', Number(e.target.value))}
                             className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
-                        ) : <span className="block text-right">{kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r: any) => s + (r.orders || 0), 0)}</span>}
+                        ) : <span className="block text-right">{totalOrders}</span>}
                       </td>
                       <td className="p-3 text-xs text-right">{closeRate > 0 ? closeRate.toFixed(1) + '%' : ''}</td>
                       <td className="p-3 text-xs text-right">{costPerOrder > 0 ? costPerOrder.toLocaleString('vi-VN', {maximumFractionDigits:0}) + 'đ' : ''}</td>
