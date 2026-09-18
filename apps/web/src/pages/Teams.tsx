@@ -70,6 +70,21 @@ export default function Teams() {
     setKpiRows(rows);
   };
 
+  const loadDailyWithProduct = async (userId: string, product: string) => {
+    if (!selectedTeam) return;
+    try {
+      const url = '/daily-perf/' + selectedTeam.id + '/' + userId + '?month=' + actualMonth + (product ? '&product=' + product : '');
+      const saved = await api(url);
+      if (saved && saved.length > 0) {
+        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date, product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
+      } else {
+        setDailyRows([{date: dailyDate, product: product || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
+      }
+    } catch {
+      setDailyRows([{date: dailyDate, product: product || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
+    }
+  };
+
   const loadDaily = async (userId: string) => {
     if (!selectedTeam) return;
     try {
@@ -388,7 +403,7 @@ export default function Teams() {
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-[#171717]">Tình hình Thực tế ({actualMonth})</h2>
               <div className="flex items-center gap-2">
-                <input type="month" value={actualMonth} onChange={e => { setActualMonth(e.target.value); setSelectedTeam && selectedTeam && loadActuals(selectedTeam.id, e.target.value); }}
+                <input type="month" value={actualMonth} onChange={e => { const v = e.target.value; setActualMonth(v); if (selectedTeam) loadActuals(selectedTeam.id, v, members); }}
                   className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
               </div>
             </div>
@@ -478,14 +493,14 @@ export default function Teams() {
         {/* Daily Performance Modal */}
       {dailyUser && selectedTeam && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDailyUser(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[92vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="px-6 py-5 border-b border-border bg-gray-50/50 flex items-center justify-between sticky top-0 z-10">
               <div>
                 <h2 className="text-lg font-bold text-[#171717]">Chi tiết hiệu suất — {dailyUser.name}</h2>
                 <p className="text-xs text-muted mt-0.5">Tháng {actualMonth}</p>
               </div>
               <div className="flex items-center gap-3">
-                <select value={dailyProduct} onChange={e => { setDailyProduct(e.target.value); setTimeout(() => loadDaily(dailyUser.userId), 100); }}
+                <select value={dailyProduct} onChange={e => { const v = e.target.value; setDailyProduct(v); setTimeout(() => loadDailyWithProduct(dailyUser.userId, v), 50); }}
                   className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer">
                   <option value="">Tất cả sản phẩm</option>
                   {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
