@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import jwt from 'jsonwebtoken';
-import { db } from '../db/index';
+import { db, pool } from '../db/index';
 import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -34,8 +34,19 @@ export default async function (app: FastifyInstance) {
 
   app.get('/auth/me', async (req, reply) => {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
-    const [u] = await db.select({ id: users.id, name: users.name, email: users.email, role: users.role, avatar: users.avatar })
-      .from(users).where(eq(users.id, req.user.id));
-    reply.send(u);
+    const [u] = await pool.execute(
+      "SELECT id, name, email, role, avatar, phone, position, bio, created_at as createdAt FROM users WHERE id = ?",
+      [req.user.id]
+    );
+    reply.send(u[0]);
+    app.put('/auth/me', async (req, reply) => {
+    if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
+    const { name, phone, position, bio, avatar } = req.body as any;
+    await pool.execute(
+      "UPDATE users SET name=COALESCE(?,name), phone=COALESCE(?,phone), position=COALESCE(?,position), bio=COALESCE(?,bio), avatar=COALESCE(?,avatar) WHERE id=?",
+      [name, phone, position, bio, avatar, req.user.id]
+    );
+    reply.send({ success: true });
   });
+});
 }

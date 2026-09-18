@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { v4 as uuid } from 'uuid';
-import { db } from '../db/index';
+import { db, pool } from '../db/index';
 import { customers, users } from '../db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { io } from '../index';
@@ -21,9 +21,9 @@ export default async function (app: FastifyInstance) {
 
   app.post('/customers', async (req, reply) => {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
-    const { name, phone, teamId } = req.body as any;
+    const { name, phone, email, address, source, social, notes, teamId } = req.body as any;
     const id = uuid();
-    await db.insert(customers).values({ id, name, phone, teamId, assigneeId: req.user.id });
+    await db.insert(customers).values({ id, name, phone: phone || '', email, address, source, social, notes, teamId, assigneeId: req.user.id });
     io.emit('customer:new', { id, name });
     reply.send({ id, success: true });
   });
