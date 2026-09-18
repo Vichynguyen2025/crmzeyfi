@@ -17,6 +17,13 @@ export default function Teams() {
   const [channels, setChannels] = useState<any[]>([]);
   const [editTeam, setEditTeam] = useState<any>(null);
   const [toast, setToast] = useState<{type:'success'|'error',message:string}|null>(null);
+  const [kpiRows, setKpiRows] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+
+  const updateKpi = (idx: number, field: string, val: any) => {
+    const rows = [...kpiRows];
+    if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setKpiRows(rows); }
+  };
 
   const showToast = (t: 'success'|'error', msg: string) => {
     setToast({type:t, message:msg});
@@ -38,12 +45,16 @@ export default function Teams() {
   const openTeam = async (t: any) => {
     setSelectedTeam(t);
     setMembers([]); setChannels([]);
-    const [m, c] = await Promise.all([
+    const [m, c, p] = await Promise.all([
       api('/teams/' + t.id + '/members'),
       api('/teams/' + t.id + '/channels').catch(() => []),
+      api('/products').catch(() => []),
     ]);
     setMembers(m);
     setChannels(c);
+    setProducts(p || []);
+    // Initialize KPI rows with one row per member + total row
+    setKpiRows([...m.map((u: any) => ({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0})), {name: 'Tổng'}]);
   };
 
   const addMember = async (userId: string) => {
@@ -165,14 +176,83 @@ export default function Teams() {
           </div>
         </div>
 
-        {/* KPI - same format as personnel results */}
+        {/* KPI Planning Table */}
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
-            <h2 className="text-sm font-bold text-[#171717]">KPI Team — {selectedTeam.name}</h2>
+            <h2 className="text-sm font-bold text-[#171717]">Đề xuất mục tiêu & Ngân sách quảng cáo</h2>
           </div>
-          <div className="px-5 py-4">
-            <p className="text-sm text-muted">Tổng số thành viên: <strong>{members.length}</strong></p>
-            <p className="text-sm text-muted">Kênh Marketing: <strong>{channels.length}</strong></p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-gray-50">
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Nhân sự</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-40">Sản phẩm</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">Ngân sách ngày</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">Số mess/ngày</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Giá mess</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">Tổng mess/th</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">Tổng đơn/th</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-20">Tỷ lệ chốt</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">CP/đơn</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">NS đề xuất</th>
+                </tr>
+              </thead>
+              <tbody>
+                {kpiRows.map((r, i) => {
+                  const pricePerMsg = r.budget && r.messages ? r.budget / r.messages : 0;
+                  const totalMsgs = r.messages * 30;
+                  const totalOrders = r.orders || 0;
+                  const closeRate = totalMsgs > 0 ? (totalOrders / totalMsgs * 100) : 0;
+                  const costPerOrder = totalOrders > 0 ? (r.budget * 30 / totalOrders) : 0;
+                  const proposedBudget = r.budget * 30;
+                  return (
+                    <tr key={i} className={'border-b border-border hover:bg-gray-50 transition-all ' + (i === kpiRows.length - 1 ? 'bg-gray-50/80 font-semibold' : '')}>
+                      <td className="p-3 text-xs">
+                        {i < kpiRows.length - 1 ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[7px] font-bold shrink-0">
+                              {r.name?.charAt(0) || '?'}
+                            </div>
+                            <span>{r.name}</span>
+                          </span>
+                        ) : <span className="text-[#4f46e5]">Tổng</span>}
+                      </td>
+                      <td className="p-3 text-xs">{i < kpiRows.length - 1 ? (
+                        <select value={r.product} onChange={e => updateKpi(i, 'product', e.target.value)}
+                          className="w-full px-1.5 py-1.5 bg-white border-border rounded-lg text-xs outline-none cursor-pointer focus:ring-2 focus:ring-[#4f46e5]/25">
+                          <option value="">—</option>
+                          {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
+                          <option value="other">Khác</option>
+                        </select>
+                      ) : ''}</td>
+                      <td className="p-3">
+                        {i < kpiRows.length - 1 ? (
+                          <input type="number" value={r.budget || ''} onChange={e => updateKpi(i, 'budget', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
+                        ) : <span className="block text-right">{kpiRows.slice(0,-1).reduce((s: number, r: any) => s + (r.budget || 0), 0).toLocaleString('vi-VN')}</span>}
+                      </td>
+                      <td className="p-3">
+                        {i < kpiRows.length - 1 ? (
+                          <input type="number" value={r.messages || ''} onChange={e => updateKpi(i, 'messages', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
+                        ) : <span className="block text-right">{kpiRows.slice(0,-1).reduce((s: number, r: any) => s + (r.messages || 0), 0)}</span>}
+                      </td>
+                      <td className="p-3 text-xs text-right">{pricePerMsg > 0 ? pricePerMsg.toLocaleString('vi-VN', {maximumFractionDigits:0}) : ''}</td>
+                      <td className="p-3 text-xs text-right">{totalMsgs > 0 ? totalMsgs.toLocaleString('vi-VN') : ''}</td>
+                      <td className="p-3">
+                        {i < kpiRows.length - 1 ? (
+                          <input type="number" value={r.orders || ''} onChange={e => updateKpi(i, 'orders', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
+                        ) : <span className="block text-right">{kpiRows.slice(0,-1).reduce((s: number, r: any) => s + (r.orders || 0), 0)}</span>}
+                      </td>
+                      <td className="p-3 text-xs text-right">{closeRate > 0 ? closeRate.toFixed(1) + '%' : ''}</td>
+                      <td className="p-3 text-xs text-right">{costPerOrder > 0 ? costPerOrder.toLocaleString('vi-VN', {maximumFractionDigits:0}) + 'đ' : ''}</td>
+                      <td className="p-3 text-xs text-right font-bold text-[#4f46e5]">{proposedBudget > 0 ? proposedBudget.toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
 
