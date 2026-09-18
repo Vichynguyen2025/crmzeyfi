@@ -25,9 +25,10 @@ export default async function (app: FastifyInstance) {
     for (const r of (rows || [])) {
       if (!r.date) continue;
       const id = uuid();
+      const fmtDate = r.date ? new Date(r.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
       await pool.execute(
         "INSERT INTO team_daily_perf (id, team_id, user_id, product, date, total_cost, reach, clicks, messages, orders, cancelled_orders, month) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        [id, teamId, userId, r.product || '', r.date, r.totalCost || 0, r.reach || 0, r.clicks || 0, r.messages || 0, r.orders || 0, r.cancelledOrders || 0, m]
+        [id, teamId, userId, r.product || '', fmtDate, r.totalCost || 0, r.reach || 0, r.clicks || 0, r.messages || 0, r.orders || 0, r.cancelledOrders || 0, m]
       );
     }
     // Recalculate actuals for this team+month
