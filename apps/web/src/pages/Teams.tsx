@@ -101,8 +101,21 @@ export default function Teams() {
     }
   };
 
+  // Auto-save daily data with debounce
+  useEffect(() => {
+    if (!selectedTeam || !dailyUser || dailyRows.length === 0) return;
+    const timer = setTimeout(async () => {
+      try {
+        await api('/daily-perf/' + selectedTeam.id + '/' + dailyUser.userId, { method:'POST', body:JSON.stringify({rows: dailyRows, month: actualMonth}) });
+        // Also refresh actuals
+        if (selectedTeam) loadActuals(selectedTeam.id, actualMonth, members);
+      } catch {}
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [dailyRows, dailyUser?.userId, actualMonth]);
+
   const addDailyRow = () => {
-    setDailyRows([...dailyRows, {date: dailyDate, product: dailyProduct, totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
+    setDailyRows([...dailyRows, {date: new Date().toISOString().slice(0, 10), product: dailyProduct, totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
   };
 
   const updateDaily = (idx: number, field: string, val: any) => {
@@ -496,8 +509,7 @@ export default function Teams() {
                   <option value="">Tất cả sản phẩm</option>
                   {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
                 </select>
-                <input type="date" value={dailyDate} onChange={e => setDailyDate(e.target.value)}
-                  className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none" />
+                
                 <button onClick={addDailyRow} className="px-4 py-1.5 bg-[#4f46e5] text-white rounded-xl text-xs font-medium hover:shadow-md transition-all">+ Thêm</button>
                 <button onClick={() => setDailyUser(null)} className="p-2 rounded-lg hover:bg-gray-100"><X size={18} /></button>
               </div>
@@ -556,7 +568,8 @@ export default function Teams() {
               <div className="flex justify-end gap-3 mt-4">
                 <button onClick={async () => {
                   await api('/daily-perf/' + selectedTeam.id + '/' + dailyUser.userId, { method:'POST', body:JSON.stringify({rows: dailyRows, month: actualMonth}) });
-                  loadActuals(selectedTeam.id, actualMonth);
+                  loadActuals(selectedTeam.id, actualMonth, members);
+                  showToast('success', 'Đã lưu dữ liệu chi tiết hiệu suất');
                   setDailyUser(null);
                 }} className="px-5 py-2.5 bg-primary text-white font-semibold rounded-xl text-sm hover:shadow-md transition-all">Lưu & Đóng</button>
                 <button onClick={() => setDailyUser(null)} className="px-5 py-2.5 bg-gray-100 text-muted rounded-xl text-sm font-medium">Huỷ</button>
