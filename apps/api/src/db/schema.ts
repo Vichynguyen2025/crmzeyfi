@@ -133,3 +133,17 @@ export const teamKpis = mysqlTable('team_kpis', {
   month: varchar('month', { length: 7 }).default(''),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
 });
+
+export const teamActuals = mysqlTable('team_actuals', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  teamId: varchar('team_id', { length: 36 }).notNull().references(() => teams.id, { onDelete: 'cascade' }),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => users.id),
+  product: varchar('product', { length: 255 }).default(''),
+  actualOrders: int('actual_orders').default(0),
+  fixedCost: int('fixed_cost').default(0),
+  costPerOrder: int('cost_per_order').default(0),
+  date: date('date'),
+  weekStart: date('week_start'),
+  month: varchar('month', { length: 7 }).default(''),
+  createdAt: timestamp('created_at').defaultNow(),
+});

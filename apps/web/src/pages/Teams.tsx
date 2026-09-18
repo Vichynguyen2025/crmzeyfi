@@ -18,8 +18,21 @@ export default function Teams() {
   const [editTeam, setEditTeam] = useState<any>(null);
   const [toast, setToast] = useState<{type:'success'|'error',message:string}|null>(null);
   const [kpiRows, setKpiRows] = useState<any[]>([]);
+  const [actualRows, setActualRows] = useState<any[]>([]);
   const [kpiMonth, setKpiMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [actualMonth, setActualMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [actualView, setActualView] = useState<'week'|'month'>('month');
   const [products, setProducts] = useState<any[]>([]);
+
+  // Auto-save Actuals data with debounce
+  useEffect(() => {
+    if (!selectedTeam || actualRows.length === 0) return;
+    const timer = setTimeout(async () => {
+      try { await api('/actuals/' + selectedTeam.id, { method:'POST', body:JSON.stringify({rows: actualRows, month: actualMonth}) }); }
+      catch {}
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [actualRows, actualMonth, selectedTeam?.id]);
 
   // Auto-save KPI data with debounce
   useEffect(() => {
@@ -31,6 +44,19 @@ export default function Teams() {
     return () => clearTimeout(timer);
   }, [kpiRows, kpiMonth, selectedTeam?.id]);
 
+  const updateActual = (idx: number, field: string, val: any) => {
+    const rows = [...actualRows];
+    if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setActualRows(rows); }
+  };
+
+  const addActualRow = (afterIdx: number) => {
+    const rows = [...actualRows];
+    const ref = rows[afterIdx];
+    const newRow = {name: ref.name, userId: ref.userId, product: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0};
+    rows.splice(afterIdx + 1, 0, newRow);
+    setActualRows(rows);
+  };
+
   const addKpiRow = (afterIdx: number) => {
     const rows = [...kpiRows];
     const ref = rows[afterIdx];
@@ -38,6 +64,18 @@ export default function Teams() {
     const newRow = {name: ref.name, userId: ref.userId, product: '', budget: 0, messages: 0, orders: 0};
     rows.splice(afterIdx + 1, 0, newRow);
     setKpiRows(rows);
+  };
+
+  const loadActuals = async (teamId: string, month: string) => {
+    try {
+      const saved = await api('/actuals/' + teamId + '?month=' + month);
+      if (saved && saved.length > 0) {
+        setActualRows([...saved.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', actualOrders: s.actual_orders || 0, fixedCost: s.fixed_cost || 0, costPerOrder: s.cost_per_order || 0})), {type: 'total'}]);
+        return true;
+      }
+    } catch {}
+    setActualRows([]);
+    return false;
   };
 
   const loadKpi = async (teamId: string, month: string) => {
@@ -88,6 +126,7 @@ export default function Teams() {
     // Initialize KPI rows with one row per member + total row
     // Load saved KPI data or initialize
     const saved = await loadKpi(t.id, kpiMonth);
+    loadActuals(t.id, actualMonth);
     if (!saved || saved.length === 0) {
       const initial = [];
       m.forEach((u: any) => initial.push({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0}));
@@ -303,6 +342,99 @@ export default function Teams() {
                     </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Actual Performance table */}
+        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-border bg-gray-50/50">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-[#171717]">Tình hình Thực tế ({actualMonth})</h2>
+              <div className="flex items-center gap-2">
+                <input type="month" value={actualMonth} onChange={e => { setActualMonth(e.target.value); setSelectedTeam && selectedTeam && loadActuals(selectedTeam.id, e.target.value); }}
+                  className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
+              </div>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-gray-50">
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Nhân sự</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-40">Sản phẩm</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Tổng đơn</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Chi phí QC</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">CP/đơn</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">Tổng chi phí</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-20">%KPI SP</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">%KPI Tổng</th>
+                </tr>
+              </thead>
+              <tbody>
+                {actualRows.map((r: any, i: number) => {
+                  const isTotal = r.type === 'total';
+                  const totalActualOrders = actualRows.filter((r2: any) => r2.type !== 'total' && r2.userId === r.userId || false).reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0);
+                  // Find KPI target for this product from kpiRows
+                  const kpiTarget = kpiRows.find((k: any) => k.userId === r.userId && k.product === r.product);
+                  const kpiMonthly = kpiTarget?.orders || 0;
+                  const kpiPct = kpiMonthly > 0 ? (r.actualOrders / kpiMonthly * 100) : 0;
+                  // Total KPI for this user
+                  const userKpiTotal = kpiRows.filter((k: any) => k.userId === r.userId && k.type !== 'total').reduce((s: number, k: any) => s + (k.orders || 0), 0);
+                  const userActualTotal = actualRows.filter((r2: any) => r2.type !== 'total' && r2.userId === r.userId).reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0);
+                  const totalKpiPct = userKpiTotal > 0 ? (userActualTotal / userKpiTotal * 100) : 0;
+                  const totalCost = (r.fixedCost || 0) + ((r.costPerOrder || 0) * (r.actualOrders || 0));
+                  return (
+                    <tr key={i} className={'border-b border-border hover:bg-gray-50 transition-all ' + (isTotal ? 'bg-gray-50/80 font-semibold' : '')}>
+                      <td className="p-3 text-xs">
+                        {!isTotal ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[7px] font-bold shrink-0">{r.name?.charAt(0) || '?'}</div>
+                            <span>{r.name}</span>
+                          </span>
+                        ) : <span className="text-[#4f46e5]">Tổng</span>}
+                      </td>
+                      <td className="p-3 text-xs">
+                        {!isTotal ? (
+                          <div className="flex items-center gap-1">
+                            <select value={r.product} onChange={e => updateActual(i, 'product', e.target.value)}
+                              className="flex-1 min-w-[80px] px-1.5 py-1.5 bg-white border border-border rounded-lg text-xs outline-none cursor-pointer focus:ring-2 focus:ring-[#4f46e5]/25">
+                              <option value="">—</option>
+                              {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
+                              <option value="other">Khác</option>
+                            </select>
+                            <button onClick={() => addActualRow(i)} className="p-1 rounded hover:bg-green-50 text-green-500" title="Thêm sản phẩm"><Plus size={12} /></button>
+                          </div>
+                        ) : ''}
+                      </td>
+                      <td className="p-3">
+                        {!isTotal ? (
+                          <input type="number" value={r.actualOrders || ''} onChange={e => updateActual(i, 'actualOrders', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
+                        ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0)}</span>}
+                      </td>
+                      <td className="p-3">
+                        {!isTotal ? (
+                          <input type="number" value={r.fixedCost || ''} onChange={e => updateActual(i, 'fixedCost', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
+                        ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0).toLocaleString('vi-VN')}</span>}
+                      </td>
+                      <td className="p-3">
+                        {!isTotal ? (
+                          <input type="number" value={r.costPerOrder || ''} onChange={e => updateActual(i, 'costPerOrder', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
+                        ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + ((r2.costPerOrder || 0) * (r2.actualOrders || 0)), 0) / Math.max(1, actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0))}</span>}
+                      </td>
+                      <td className="p-3 text-xs text-right font-medium">{totalCost.toLocaleString('vi-VN')}đ</td>
+                      <td className="p-3 text-xs text-right font-bold">{kpiPct.toFixed(1)}%</td>
+                      <td className="p-3 text-xs text-right font-bold text-[#4f46e5]">{totalKpiPct.toFixed(1)}%</td>
+                    </tr>
+                  );
+                })}
+                {actualRows.length === 0 && (
+                  <tr><td colSpan={8} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu thực tế. Chọn tháng và nhập số liệu.</td></tr>
+                )}
               </tbody>
             </table>
           </div>

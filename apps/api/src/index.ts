@@ -13,6 +13,7 @@ import driveRoutes from './routes/drive';
 import channelsRoutes from './routes/channels';
 import productsRoutes from './routes/products';
 import kpiRoutes from './routes/kpis';
+import actualRoutes from './routes/actuals';
 import mysql from 'mysql2/promise';
 
 const pool = mysql.createPool({ socketPath: '/tmp/mysql.sock', user: 'root', password: '8ffcb61af33a11f0', database: 'crmzeyfi', waitForConnections: true, connectionLimit: 5 });
@@ -50,6 +51,7 @@ async function start() {
   await app.register(channelsRoutes, { prefix: '/api' });
   await app.register(productsRoutes, { prefix: '/api' });
   await app.register(kpiRoutes, { prefix: '/api' });
+  await app.register(actualRoutes, { prefix: '/api' });
   await app.listen({ port: PORT, host: '0.0.0.0' });
   console.log('[CRM Zeyfi] API running on port ' + PORT);
 }
