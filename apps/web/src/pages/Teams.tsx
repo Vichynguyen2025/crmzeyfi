@@ -78,9 +78,12 @@ export default function Teams() {
       if (saved && saved.length > 0) {
         setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date, product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
       } else {
-        setDailyRows([]);
+        // Init with one empty row for today
+        setDailyRows([{date: dailyDate, product: dailyProduct || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
       }
-    } catch { setDailyRows([]); }
+    } catch {
+      setDailyRows([{date: dailyDate, product: dailyProduct || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
+    }
   };
 
   const addDailyRow = () => {
@@ -100,6 +103,11 @@ export default function Teams() {
         return true;
       }
     } catch {}
+    // Init with member list (from members state)
+    if (members.length > 0) {
+      setActualRows([...members.map((m: any) => ({name: m.name, userId: m.id, product: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0})), {type: 'total'}]);
+      return true;
+    }
     setActualRows([]);
     return false;
   };
