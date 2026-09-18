@@ -17,7 +17,8 @@ function fmtDate(d: Date): string {
 
 function fmtVi(d: string): string {
   if (!d) return '';
-  const date = new Date(d + 'T00:00:00');
+  const dateStr = d.split('T')[0];
+  const date = new Date(dateStr + 'T00:00:00');
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = (today.getTime() - date.getTime()) / 86400000;
@@ -29,7 +30,7 @@ function fmtVi(d: string): string {
 
 function fmtWeek(d: string): string {
   if (!d) return '';
-  const date = new Date(d + 'T00:00:00');
+  const date = new Date(d.split('T')[0] + 'T00:00:00');
   const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   return days[date.getDay()];
 }
@@ -115,10 +116,14 @@ export default function Reports() {
   const deleteReport = async (id: string) => {
     if (!confirm('Xoá báo cáo này?')) return;
     try {
-      await api('/reports/' + id, { method: 'DELETE' });
+      const res = await fetch('/api/reports/' + id, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('zeyfi_token') || '') },
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       showToast('success', 'Đã xoá báo cáo');
       load();
-    } catch { showToast('error', 'Lỗi xoá'); }
+    } catch (e: any) { showToast('error', 'Lỗi xoá: ' + (e.message || '')); }
   };
 
   const filteredReports = reports.filter(r => {
