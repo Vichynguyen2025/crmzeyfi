@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, KanbanSquare, PhoneCall, DollarSign, Calendar, LogOut, ChevronLeft, ChevronRight, UserCog } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, KanbanSquare, PhoneCall, DollarSign, Calendar, UserCog, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const NAV = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { label: 'Tài khoản', icon: UserCog, path: '/users' },
   { label: 'Team', icon: Users, path: '/teams' },
+  { label: 'Kho dữ liệu', icon: HardDrive, path: '/drive' },
+  { label: 'Kênh TT', icon: Globe, path: '/channels' },
   { label: 'Báo cáo', icon: ClipboardList, path: '/reports' },
   { label: 'Kanban', icon: KanbanSquare, path: '/kanban' },
   { label: 'Khách hàng', icon: PhoneCall, path: '/customers' },

@@ -86,3 +86,25 @@ export const adCosts = mysqlTable('ad_costs', {
   description: text('description'),
   createdAt: timestamp('created_at').defaultNow(),
 });
+export const driveFiles = mysqlTable('drive_files', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  type: mysqlEnum('type', ['file', 'folder']).default('file'),
+  mimeType: varchar('mime_type', { length: 100 }),
+  size: int('size').default(0),
+  url: varchar('url', { length: 500 }),
+  parentId: varchar('parent_id', { length: 36 }),
+  uploadedBy: varchar('uploaded_by', { length: 36 }).references(() => users.id),
+  teamId: varchar('team_id', { length: 36 }),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+export const mediaChannels = mysqlTable('media_channels', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  name: varchar('name', { length: 100 }).notNull(),
+  platform: varchar('platform', { length: 50 }).notNull(),
+  url: varchar('url', { length: 500 }),
+  teamId: varchar('team_id', { length: 36 }).references(() => teams.id, { onDelete: 'set null' }),
+  assignedTo: varchar('assigned_to', { length: 36 }).references(() => users.id, { onDelete: 'set null' }),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
