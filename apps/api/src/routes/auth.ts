@@ -8,15 +8,15 @@ import { eq } from 'drizzle-orm';
 
 const SECRET = process.env.JWT_SECRET || 'zeyfi-secret';
 
-export default async function (app: FastifyInstance) {
+export default async function(app: FastifyInstance) {
+
   app.post('/auth/register', async (req, reply) => {
-    // Require admin token for registration (closed registration)
     const header = req.headers.authorization;
-    if (!header) return reply.status(403).send({ error: 'Đăng ký đã đóng. Liên hệ admin để tạo tài khoản.' });
+    if (!header) return reply.status(403).send({ error: 'Dang ky da dong. Lien he admin.' });
     try {
       const adminUser = jwt.verify(header.replace('Bearer ', ''), SECRET) as any;
-      if (adminUser.role !== 'admin') return reply.status(403).send({ error: 'Chỉ admin mới tạo được tài khoản' });
-    } catch { return reply.status(403).send({ error: 'Token không hợp lệ' }); }
+      if (adminUser.role !== 'admin') return reply.status(403).send({ error: 'Chi admin moi tao duoc tai khoan' });
+    } catch { return reply.status(403).send({ error: 'Token khong hop le' }); }
 
     try {
       const { name, email, phone, password, role } = req.body as any;
@@ -28,30 +28,36 @@ export default async function (app: FastifyInstance) {
         "INSERT INTO users (id, name, email, phone, password, role, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())",
         [id, name, email, phoneVal, hash, userRole]
       );
-      reply.send({ success: true, user: { id, name, email, role: userRole } });
+      reply.send({ success: true, user: { id, name, email, phone: phoneVal, role: userRole } });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
   });
 
   app.post('/auth/login', async (req, reply) => {
     try {
-      const { email, password } = req.body as any;
-      const [u] = await pool.execute("SELECT * FROM users WHERE email = ? OR phone = ?", [email, email]);
-      if (!u) return reply.status(400).send({ error: 'Sai email hoặc mật khẩu' });
-      const ok = await bcrypt.compare(password, u.password);
-      if (!ok) return reply.status(400).send({ error: 'Sai email hoặc mật khẩu' });
-      const token = jwt.sign({ id: u.id, email: u.email, role: u.role }, SECRET, { expiresIn: '7d' });
-      reply.send({ accessToken: token, user: { id: u.id, name: u.name, email: u.email, role: u.role } });
+      const { email, phone, password } = req.body as any;
+      const identifier = email || phone;
+      if (!identifier) return reply.status(400).send({ error: 'Vui long nhap email hoac so dien thoai' });
+      const [rows] = await pool.execute("SELECT * FROM users WHERE email = ? OR phone = ?", [identifier, identifier]);
+      const u = rows as any[];
+      if (!u.length) return reply.status(400).send({ error: 'Sai thong tin dang nhap' });
+      const user = u[0];
+      const ok = await bcrypt.compare(password, user.password);
+      if (!ok) return reply.status(400).send({ error: 'Sai thong tin dang nhap' });
+      if (user.is_blocked) return reply.status(403).send({ error: 'Tai khoan da bi khoan. Lien he admin.' });
+      const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, SECRET, { expiresIn: '7d' });
+      reply.send({ accessToken: token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role } });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
   });
 
   app.get('/auth/me', async (req, reply) => {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
-    const [u] = await pool.execute(
-      "SELECT id, name, email, role, avatar, phone, position, bio, created_at as createdAt FROM users WHERE id = ?",
-      [req.user.id]
+    const [rows] = await pool.execute(
+      "SELECT id, name, email, role, avatar, phone, position, bio, created_at as createdAt FROM users WHERE id = ?", [req.user.id]
     );
-    reply.send(u[0]);
-    app.put('/auth/me', async (req, reply) => {
+    reply.send((rows as any[])[0]);
+  });
+
+  app.put('/auth/me', async (req, reply) => {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
     const { name, phone, position, bio, avatar } = req.body as any;
     await pool.execute(
@@ -61,7 +67,6 @@ export default async function (app: FastifyInstance) {
     reply.send({ success: true });
   });
 
-// ─── User Management (admin only) ─────
   app.get('/users', async (req, reply) => {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const [rows] = await pool.execute(
@@ -78,12 +83,6 @@ export default async function (app: FastifyInstance) {
     await pool.execute("UPDATE users SET role = ? WHERE id = ?", [role, id]);
     reply.send({ success: true });
   });
-
-  app.delete('/users/:id', async (req, reply) => {
-    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
-    const { id } = req.params as any;
-    await pool.execute("DELETE FROM users WHERE id = ?", [id]);
-    reply.send({ success: true });
 
   app.put('/users/:id/block', async (req, reply) => {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
@@ -103,5 +102,12 @@ export default async function (app: FastifyInstance) {
     );
     reply.send({ success: true });
   });
-});
+
+  app.delete('/users/:id', async (req, reply) => {
+    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    const { id } = req.params as any;
+    await pool.execute("DELETE FROM users WHERE id = ?", [id]);
+    reply.send({ success: true });
+  });
+
 }
