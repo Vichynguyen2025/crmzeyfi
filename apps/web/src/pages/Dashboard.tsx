@@ -22,19 +22,31 @@ export default function Dashboard() {
         <option value="week">7 ngày qua</option><option value="month">30 ngày qua</option><option value="year">Năm nay</option>
       </select>
     </div>
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {[{icon:ClipboardList,bg:'bg-indigo-50',col:'#4f46e5',label:'Báo cáo',val:o.reportCount},{icon:PhoneCall,bg:'bg-green-50',col:'#22c55e',label:'Khách hàng',val:o.customerCount},{icon:DollarSign,bg:'bg-amber-50',col:'#f59e0b',label:'Chi phí QC',val:Number(o.adCostTotal||0).toLocaleString('vi-VN')+'đ'},{icon:Users,bg:'bg-purple-50',col:'#7c3aed',label:'Team',val:data.teams?.length||0}].map(s => {
-        const Icon = s.icon;
-        return <div key={s.label} className="bg-white rounded-2xl border border-border p-5"><div className="flex items-center gap-3 mb-3"><div className={"w-10 h-10 rounded-xl "+s.bg+" grid place-items-center"}><Icon className="w-5 h-5" style={{color:s.col}} /></div><span className="text-sm text-muted">{s.label}</span></div><p className="text-3xl font-bold">{s.val}</p></div>;
-      })}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
+        <div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center"><ClipboardList className="w-5 h-5 text-[#4f46e5]" /></div><span className="text-sm font-medium text-muted">Báo cáo</span></div>
+        <p className="text-3xl font-bold text-[#171717]">{o.reportCount || 0}</p>
+      </div>
+      <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
+        <div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-xl bg-green-50 grid place-items-center"><PhoneCall className="w-5 h-5 text-[#22c55e]" /></div><span className="text-sm font-medium text-muted">Khách hàng</span></div>
+        <p className="text-3xl font-bold text-[#171717]">{o.customerCount || 0}</p>
+      </div>
+      <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
+        <div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-xl bg-amber-50 grid place-items-center"><DollarSign className="w-5 h-5 text-[#f59e0b]" /></div><span className="text-sm font-medium text-muted">Chi phí QC</span></div>
+        <p className="text-3xl font-bold text-[#171717]">{Number(o.adCostTotal || 0).toLocaleString('vi-VN')}đ</p>
+      </div>
+      <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
+        <div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-xl bg-purple-50 grid place-items-center"><Users className="w-5 h-5 text-[#7c3aed]" /></div><span className="text-sm font-medium text-muted">Team</span></div>
+        <p className="text-3xl font-bold text-[#171717]">{data.teams?.length || 0}</p>
+      </div>
     </div>
     <div className="bg-white rounded-2xl border border-border p-6 mb-8"><h2 className="text-lg font-bold mb-4">Thống kê theo Team</h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data.teams}><CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" /><XAxis dataKey="name" tick={{fontSize:12}} /><YAxis /><Tooltip /><Bar dataKey="reportCount" name="Báo cáo" fill="#4f46e5" radius={[6,6,0,0]} /><Bar dataKey="customerCount" name="Khách hàng" fill="#22c55e" radius={[6,6,0,0]} /></BarChart>
       </ResponsiveContainer>
     </div>
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">{data.teams?.map((t:any) => (
-      <div key={t.id} className="bg-white rounded-2xl border border-border p-5">
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">{data.teams?.map((t:any) => (
+      <div key={t.id} className="bg-white rounded-2xl border border-border p-5 shadow-sm">
         <div className="flex items-center gap-3 mb-4"><div className="w-10 h-10 rounded-xl grid place-items-center text-white font-bold text-sm" style={{backgroundColor:t.color}}>{t.name.charAt(0)}</div><div><h3 className="font-bold">{t.name}</h3><p className="text-xs text-muted">{t.memberCount} thành viên</p></div></div>
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div><span className="text-muted">Báo cáo:</span> <span className="font-semibold">{t.reportCount}</span></div>
