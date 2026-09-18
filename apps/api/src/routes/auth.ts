@@ -44,6 +44,8 @@ export default async function(app: FastifyInstance) {
       const ok = await bcrypt.compare(password, user.password);
       if (!ok) return reply.status(400).send({ error: 'Sai thong tin dang nhap' });
       if (user.is_blocked) return reply.status(403).send({ error: 'Tai khoan da bi khoan. Lien he admin.' });
+      // Update last seen
+      await pool.execute("UPDATE users SET last_seen = NOW() WHERE id = ?", [user.id]);
       const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, SECRET, { expiresIn: '7d' });
       reply.send({ accessToken: token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role } });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
@@ -70,7 +72,9 @@ export default async function(app: FastifyInstance) {
   app.get('/users', async (req, reply) => {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const [rows] = await pool.execute(
-      "SELECT id, name, email, phone, role, position, avatar, is_blocked, created_at as createdAt FROM users ORDER BY created_at DESC"
+      "SELECT u.id, u.name, u.email, u.phone, u.role, u.position, u.hometown, u.join_date as joinDate, u.avatar, u.is_blocked, u.last_seen, u.created_at as createdAt, " +
+      "(SELECT GROUP_CONCAT(t.name SEPARATOR ', ') FROM team_members tm JOIN teams t ON t.id = tm.team_id WHERE tm.user_id = u.id) as team_names " +
+      "FROM users u ORDER BY u.created_at DESC"
     );
     reply.send(rows);
   });
@@ -95,10 +99,10 @@ export default async function(app: FastifyInstance) {
   app.put('/users/:id', async (req, reply) => {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const { id } = req.params as any;
-    const { name, email, phone, position } = req.body as any;
+    const { name, email, phone, position, hometown, joinDate } = req.body as any;
     await pool.execute(
-      "UPDATE users SET name=COALESCE(?,name), email=COALESCE(?,email), phone=COALESCE(?,phone), position=COALESCE(?,position) WHERE id=?",
-      [name, email, phone, position, id]
+      "UPDATE users SET name=COALESCE(?,name), email=COALESCE(?,email), phone=COALESCE(?,phone), position=COALESCE(?,position), hometown=COALESCE(?,hometown), join_date=COALESCE(?,join_date) WHERE id=?",
+      [name, email, phone, position, hometown, joinDate, id]
     );
     reply.send({ success: true });
   });

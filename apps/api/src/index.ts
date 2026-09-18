@@ -9,6 +9,9 @@ import taskRoutes from './routes/tasks';
 import customerRoutes from './routes/customers';
 import adCostRoutes from './routes/ad-costs';
 import dashboardRoutes from './routes/dashboard';
+import mysql from 'mysql2/promise';
+
+const pool = mysql.createPool({ socketPath: '/tmp/mysql.sock', user: 'root', password: '8ffcb61af33a11f0', database: 'crmzeyfi', waitForConnections: true, connectionLimit: 5 });
 
 const PORT = Number(process.env.PORT) || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || 'zeyfi-secret';
