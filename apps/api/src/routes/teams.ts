@@ -20,6 +20,15 @@ export default async function (app: FastifyInstance) {
     reply.send({ id, name, color: color || '#4f46e5' });
   });
 
+  app.put('/teams/:id', async (req, reply) => {
+    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    const { id } = req.params as any;
+    const { name, color } = req.body as any;
+    if (name) await db.update(teams).set({ name }).where(eq(teams.id, id));
+    if (color) await db.update(teams).set({ color }).where(eq(teams.id, id));
+    reply.send({ success: true });
+  });
+
   app.delete('/teams/:id', async (req, reply) => {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const { id } = req.params as any;
@@ -49,5 +58,14 @@ export default async function (app: FastifyInstance) {
     const { id, userId } = req.params as any;
     await db.execute("DELETE FROM team_members WHERE team_id = ? AND user_id = ?", [id, userId]);
     reply.send({ success: true });
+  });
+}
+  app.get('/teams/:id/channels', async (req, reply) => {
+    const { id } = req.params as any;
+    const [rows] = await pool.execute(
+      "SELECT mc.*, u.name as assignedToName FROM media_channels mc LEFT JOIN users u ON u.id = mc.assigned_to WHERE mc.team_id = ? ORDER BY mc.platform",
+      [id]
+    );
+    reply.send(rows);
   });
 }
