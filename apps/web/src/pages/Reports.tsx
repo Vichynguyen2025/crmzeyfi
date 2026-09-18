@@ -42,6 +42,7 @@ export default function Reports() {
   const [reports, setReports] = useState<any[]>([]);
   const [columns, setColumns] = useState<any[]>([]);
   const [editCol, setEditCol] = useState<{id:string,name:string}|null>(null);
+  const [teams, setTeams] = useState<any[]>([]);
   const [dateRange, setDateRange] = useState('month');
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [customDate, setCustomDate] = useState(fmtDate(new Date()));
@@ -75,6 +76,7 @@ export default function Reports() {
     const url = from ? `/reports?from=${from}&to=${to}` : '/reports';
     api(url).then(setReports);
     api('/reports/columns').then(setColumns);
+    api('/teams').then(setTeams).catch(() => {});
   };
 
   useEffect(load, [dateRange, customDate]);
@@ -267,34 +269,54 @@ export default function Reports() {
       </div>
 
       {/* Weekly summary table */}
-      {weekStats.some(w => w.users.length > 0) && (
+      {filteredReports.length > 0 && (
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
-            <h2 className="text-sm font-bold text-[#171717]">Bảng công việc tuần này</h2>
+            <h2 className="text-sm font-bold text-[#171717]">Danh sách kết quả công việc của nhân sự</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-gray-50">
-                  <th className="p-3 text-xs font-semibold text-muted uppercase text-center w-16">Thứ</th>
-                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left">Ngày</th>
-                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left">Nhân sự</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-40">Nhân sự</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-24">Ngày</th>
                   {columns.map(col => <th key={col.id} className="p-3 text-xs font-semibold text-muted uppercase text-left">{col.name}</th>)}
                 </tr>
               </thead>
               <tbody>
-                {weekStats.map(w => (
-                  <tr key={w.date} className={'border-b border-border hover:bg-gray-50 transition-all ' + (w.date === fmtDate(new Date()) ? 'bg-indigo-50/30' : '')}>
-                    <td className="p-3 text-center font-semibold text-xs">{fmtWeek(w.date)}</td>
-                    <td className="p-3 text-xs text-muted">{fmtVi(w.date)}</td>
-                    <td className="p-3">{w.users.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">{w.users.map((u: string,i:number) => (
-                        <span key={i} className="px-2 py-0.5 bg-indigo-50 text-[#4f46e5] rounded text-xs font-medium">{u}</span>
-                      ))}</div>
-                    ) : <span className="text-muted text-xs">—</span>}</td>
-                    {columns.map(col => <td key={col.id} className="p-3 text-xs">{w.data[col.id] || ''}</td>)}
-                  </tr>
-                ))}
+                {filteredReports.map(r => {
+                  const data = typeof r.data === 'string' ? JSON.parse(r.data) : (r.data || {});
+                  return (
+                    <tr key={r.id} className={'border-b border-border hover:bg-gray-50 transition-all ' + (r.user_id === user.id ? 'bg-indigo-50/20' : '')}>
+                      <td className="p-3">
+                        <span className="inline-flex items-center gap-1.5">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[9px] font-bold shrink-0">
+                            {r.user_name?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+                          <span className="text-xs font-medium">{r.user_name}</span>
+                        </span>
+                      </td>
+                      <td className="p-3 text-xs text-muted">{fmtVi(r.date)}</td>
+                      {columns.map(col => <td key={col.id} className="p-3 text-xs">{data[col.id] || ''}</td>)}
+                    </tr>
+                  );
+                })}
+                {/* Summary row */}
+                <tr className="bg-gray-50/80 border-t-2 border-border font-medium">
+                  <td className="p-3 text-xs font-bold text-[#4f46e5] uppercase">Tổng</td>
+                  <td className="p-3 text-xs">{filteredReports.length} bc</td>
+                  {columns.map(col => {
+                    const vals = filteredReports.map(r => {
+                      const d = typeof r.data === 'string' ? JSON.parse(r.data) : (r.data || {});
+                      return d[col.id] || '';
+                    });
+                    const numeric = vals.filter(v => v !== '' && !isNaN(Number(v.replace(/[,.]/g,''))));
+                    const isSum = numeric.length > 0 && numeric.length === vals.filter(v => v !== '').length;
+                    return <td key={col.id} className="p-3 text-xs font-bold text-[#4f46e5]">
+                      {isSum ? Number(numeric.reduce((a:number,b:string) => a + Number(b.replace(/[,.]/g,'')), 0)).toLocaleString('vi-VN') : '—'}
+                    </td>;
+                  })}
+                </tr>
               </tbody>
             </table>
           </div>
@@ -306,12 +328,14 @@ export default function Reports() {
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-gray-50/50 flex items-center justify-between">
             <h2 className="text-sm font-bold text-[#171717]">Lịch sử báo cáo ({filteredReports.length})</h2>
+            <span className="text-xs text-muted">Chi tiết ngày giờ gửi</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-gray-50">
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-left">Ngày</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left">Giờ</th>
                   {isAdmin && <th className="p-3 text-xs font-semibold text-muted uppercase text-left">Nhân sự</th>}
                   {columns.map(col => <th key={col.id} className="p-3 text-xs font-semibold text-muted uppercase text-left">{col.name}</th>)}
                   {isAdmin && <th className="p-3 text-center text-xs font-semibold text-muted uppercase w-12"></th>}
@@ -323,6 +347,7 @@ export default function Reports() {
                   return (
                     <tr key={r.id} className={'border-b border-border hover:bg-gray-50 transition-all ' + (r.user_id === user.id ? 'bg-indigo-50/20' : '')}>
                       <td className="p-3 text-xs font-medium">{fmtVi(r.date)}</td>
+                      <td className="p-3 text-xs text-muted">{new Date(r.created_at || r.date).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'})}</td>
                       {isAdmin && <td className="p-3">
                         <span className="inline-flex items-center gap-1.5">
                           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[9px] font-bold shrink-0">
