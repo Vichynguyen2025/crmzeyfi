@@ -78,7 +78,7 @@ export default function Drive() {
         <div className="bg-white rounded-2xl border border-border p-4 flex gap-3">
           <input value={folderName} onChange={e => setFolderName(e.target.value)} placeholder="Tên thư mục" autoFocus
             onKeyDown={e => e.key === 'Enter' && createFolder()}
-            className="flex-1 px-4 py-2.5 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+            className="flex-1 px-4 py-2.5 bg-white border border-border rounded-xl text-sm text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] focus:ring-2 focus:ring-[#4f46e5]/25" />
           <button onClick={createFolder} className="px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium">Tạo</button>
           <button onClick={() => setShowNewFolder(false)} className="p-2.5 rounded-xl hover:bg-gray-100"><X size={18} /></button>
         </div>

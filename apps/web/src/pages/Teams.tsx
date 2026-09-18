@@ -34,7 +34,7 @@ export default function Teams() {
         <div className="bg-white rounded-2xl border border-border p-6 space-y-4">
           <h3 className="font-semibold text-sm text-muted uppercase tracking-wider">Tạo team mới</h3>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Tên team (vd: Marketing Online)"
-            className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 transition-all" />
+            className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all" />
           <div className="flex gap-2">{COLORS.map(c => (
             <button key={c} onClick={() => setColor(c)}
               className={'w-8 h-8 rounded-full border-2 transition-all ' + (color===c ? 'border-primary scale-110 shadow-md' : 'border-transparent hover:scale-105')}
