@@ -19,11 +19,15 @@ export default async function (app: FastifyInstance) {
     } catch { return reply.status(403).send({ error: 'Token không hợp lệ' }); }
 
     try {
-      const { name, email, password, role } = req.body as any;
+      const { name, email, phone, password, role } = req.body as any;
       const hash = await bcrypt.hash(password, 10);
       const id = uuid();
       const userRole = role || 'member';
-      await db.insert(users).values({ id, name, email, password: hash, role: userRole });
+      const phoneVal = phone || null;
+      await pool.execute(
+        "INSERT INTO users (id, name, email, phone, password, role, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())",
+        [id, name, email, phoneVal, hash, userRole]
+      );
       reply.send({ success: true, user: { id, name, email, role: userRole } });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
   });
@@ -31,7 +35,7 @@ export default async function (app: FastifyInstance) {
   app.post('/auth/login', async (req, reply) => {
     try {
       const { email, password } = req.body as any;
-      const [u] = await db.select().from(users).where(eq(users.email, email));
+      const [u] = await pool.execute("SELECT * FROM users WHERE email = ? OR phone = ?", [email, email]);
       if (!u) return reply.status(400).send({ error: 'Sai email hoặc mật khẩu' });
       const ok = await bcrypt.compare(password, u.password);
       if (!ok) return reply.status(400).send({ error: 'Sai email hoặc mật khẩu' });
@@ -61,7 +65,7 @@ export default async function (app: FastifyInstance) {
   app.get('/users', async (req, reply) => {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const [rows] = await pool.execute(
-      "SELECT id, name, email, role, phone, position, avatar, created_at as createdAt FROM users ORDER BY created_at DESC"
+      "SELECT id, name, email, phone, role, position, avatar, is_blocked, created_at as createdAt FROM users ORDER BY created_at DESC"
     );
     reply.send(rows);
   });
@@ -79,6 +83,24 @@ export default async function (app: FastifyInstance) {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const { id } = req.params as any;
     await pool.execute("DELETE FROM users WHERE id = ?", [id]);
+    reply.send({ success: true });
+
+  app.put('/users/:id/block', async (req, reply) => {
+    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    const { id } = req.params as any;
+    const { blocked } = req.body as any;
+    await pool.execute("UPDATE users SET is_blocked = ? WHERE id = ?", [blocked ? 1 : 0, id]);
+    reply.send({ success: true, blocked });
+  });
+
+  app.put('/users/:id', async (req, reply) => {
+    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    const { id } = req.params as any;
+    const { name, email, phone, position } = req.body as any;
+    await pool.execute(
+      "UPDATE users SET name=COALESCE(?,name), email=COALESCE(?,email), phone=COALESCE(?,phone), position=COALESCE(?,position) WHERE id=?",
+      [name, email, phone, position, id]
+    );
     reply.send({ success: true });
   });
 });

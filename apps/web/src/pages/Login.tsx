@@ -3,16 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 
 export default function Login() {
-  const [email, setEmail] = useState(''); const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginMode, setLoginMode] = useState<'email' | 'phone'>('email');
   const [loading, setLoading] = useState(false); const [error, setError] = useState('');
   const nav = useNavigate();
 
   const handle = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) { setError('Vui lòng nhập đầy đủ'); return; }
+    const identifier = loginMode === 'email' ? email : phone;
+    if (!identifier || !password) { setError('Vui lòng nhập đầy đủ'); return; }
     setLoading(true); setError('');
     try {
-      const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+      const body = loginMode === 'email' ? { email: identifier, password } : { phone: identifier, password };
+      const data = await api('/auth/login', { method: 'POST', body: JSON.stringify(body) });
       localStorage.setItem('zeyfi_token', data.accessToken);
       localStorage.setItem('zeyfi_user', JSON.stringify(data.user));
       nav('/dashboard');
@@ -30,8 +35,23 @@ export default function Login() {
         </div>
         {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">{error}</div>}
         <form onSubmit={handle} className="space-y-4">
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
-            className="w-full px-4 py-3 bg-[#f8fafc] border border-[#e6e9f2] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5]" />
+          <div className="flex gap-2 mb-1">
+            <button type="button" onClick={() => setLoginMode('email')}
+              className={'flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ' + (loginMode === 'email' ? 'bg-[#4f46e5] text-white shadow-sm' : 'bg-gray-100 text-muted hover:bg-gray-200')}>
+              Email
+            </button>
+            <button type="button" onClick={() => setLoginMode('phone')}
+              className={'flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ' + (loginMode === 'phone' ? 'bg-[#4f46e5] text-white shadow-sm' : 'bg-gray-100 text-muted hover:bg-gray-200')}>
+              Số điện thoại
+            </button>
+          </div>
+          {loginMode === 'email' ? (
+            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
+              className="w-full px-4 py-3 bg-[#f8fafc] border border-[#e6e9f2] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5]" />
+          ) : (
+            <input type="tel" placeholder="Số điện thoại" value={phone} onChange={e => setPhone(e.target.value)}
+              className="w-full px-4 py-3 bg-[#f8fafc] border border-[#e6e9f2] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5]" />
+          )}
           <input type="password" placeholder="Mật khẩu" value={password} onChange={e => setPassword(e.target.value)}
             className="w-full px-4 py-3 bg-[#f8fafc] border border-[#e6e9f2] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5]" />
           <button type="submit" disabled={loading}
