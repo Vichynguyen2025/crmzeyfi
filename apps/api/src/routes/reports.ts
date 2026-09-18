@@ -70,4 +70,11 @@ export default async function (app: FastifyInstance) {
     io.emit('report:new', { id, userId: req.user.id, teamId, date, data, userName: user.name });
     reply.send({ id, success: true });
   });
+  app.delete('/reports/:id', async (req, reply) => {
+    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    const { id } = req.params as any;
+    await db.delete(dailyReports).where(eq(dailyReports.id, id));
+    io.emit('report:deleted', { id });
+    reply.send({ success: true });
+  });
 }
