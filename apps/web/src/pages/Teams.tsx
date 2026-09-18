@@ -18,17 +18,18 @@ export default function Teams() {
   const [editTeam, setEditTeam] = useState<any>(null);
   const [toast, setToast] = useState<{type:'success'|'error',message:string}|null>(null);
   const [kpiRows, setKpiRows] = useState<any[]>([]);
+  const [kpiMonth, setKpiMonth] = useState(new Date().toISOString().slice(0, 7));
   const [products, setProducts] = useState<any[]>([]);
 
   // Auto-save KPI data with debounce
   useEffect(() => {
     if (!selectedTeam || kpiRows.length === 0) return;
     const timer = setTimeout(async () => {
-      try { await api('/kpis/' + selectedTeam.id, { method:'POST', body:JSON.stringify(kpiRows) }); }
+      try { await api('/kpis/' + selectedTeam.id, { method:'POST', body:JSON.stringify({rows: kpiRows, month: kpiMonth}) }); }
       catch {}
     }, 1000);
     return () => clearTimeout(timer);
-  }, [kpiRows, selectedTeam?.id]);
+  }, [kpiRows, kpiMonth, selectedTeam?.id]);
 
   const addKpiRow = (afterIdx: number) => {
     const rows = [...kpiRows];
@@ -39,9 +40,15 @@ export default function Teams() {
     setKpiRows(rows);
   };
 
-  const updateKpi = (idx: number, field: string, val: any) => {
-    const rows = [...kpiRows];
-    if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setKpiRows(rows); }
+  const loadKpi = async (teamId: string, month: string) => {
+    try {
+      const saved = await api('/kpis/' + teamId + '?month=' + month);
+      if (saved && saved.length > 0) {
+        setKpiRows([...saved.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0})), {type: 'total'}]);
+        return true;
+      }
+    } catch {}
+    return false;
   };
 
   const showToast = (t: 'success'|'error', msg: string) => {
@@ -74,17 +81,8 @@ export default function Teams() {
     setProducts(p || []);
     // Initialize KPI rows with one row per member + total row
     // Load saved KPI data or initialize
-    try {
-      const saved = await api('/kpis/' + t.id);
-      if (saved && saved.length > 0) {
-        setKpiRows([...saved.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0})), {type: 'total'}]);
-      } else {
-        const initial = [];
-        m.forEach((u: any) => initial.push({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0}));
-        initial.push({type: 'total'});
-        setKpiRows(initial);
-      }
-    } catch {
+    const saved = await loadKpi(t.id, kpiMonth);
+    if (!saved || saved.length === 0) {
       const initial = [];
       m.forEach((u: any) => initial.push({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0}));
       initial.push({type: 'total'});
@@ -214,7 +212,11 @@ export default function Teams() {
         {/* KPI Planning Table */}
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
+            <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-[#171717]">Đề xuất mục tiêu & Ngân sách quảng cáo</h2>
+            <input type="month" value={kpiMonth} onChange={e => { setKpiMonth(e.target.value); loadKpi(selectedTeam?.id, e.target.value); }}
+              className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
+          </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

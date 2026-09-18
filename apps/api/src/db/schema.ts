@@ -130,5 +130,6 @@ export const teamKpis = mysqlTable('team_kpis', {
   dailyBudget: int('daily_budget').default(0),
   dailyMessages: int('daily_messages').default(0),
   monthlyOrders: int('monthly_orders').default(0),
+  month: varchar('month', { length: 7 }).default(''),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
 });
