@@ -5,7 +5,7 @@ import { LayoutDashboard, Users, ClipboardList, KanbanSquare, PhoneCall, DollarS
 const NAV = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { label: 'Tài khoản', icon: UserCog, path: '/users' },
-  { label: 'Team', icon: Users, path: '/teams' },
+  { label: 'Kinh doanh 3M', icon: Users, path: '/teams' },
   { label: 'Kho dữ liệu', icon: HardDrive, path: '/drive' },
   { label: 'Kênh Marketing', icon: Globe, path: '/channels' },
   { label: 'Sản phẩm', icon: Package, path: '/products' },

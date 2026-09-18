@@ -163,8 +163,12 @@ export default function Teams() {
     setTimeout(() => setToast(null), 3000);
   };
 
+  const loadPlan = async (month: string) => {
+    try { const d = await api('/kpis-summary/' + month); setPlanData(d || []); } catch { setPlanData([]); }
+  };
+
   const load = () => { api('/teams').then(setTeams); api('/users').then(setUsers).catch(() => {}); };
-  useEffect(load, []);
+  useEffect(() => { load(); loadPlan(planMonth); }, []);
 
   // Realtime
   useEffect(() => {
@@ -640,10 +644,9 @@ export default function Teams() {
       )}
 
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-[#171717]">Team</h1><p className="text-sm text-muted mt-1">Quản lý nhóm và thành viên</p></div>
+        <div><h1 className="text-2xl font-bold text-[#171717]">Kinh doanh 3M</h1><p className="text-sm text-muted mt-1">Quản lý kế hoạch kinh doanh 3 team</p></div>
         <button onClick={() => setAdd(true)} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all">
-          <Plus size={18} />Thêm team
-        </button>
+          <Plus size={18} />Thêm team</button>
       </div>
 
       {add && (
@@ -663,6 +666,66 @@ export default function Teams() {
           </div>
         </div>
       )}
+
+      
+      {/* Business Plan 3M */}
+      <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-border bg-gray-50/50 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-[#171717]">Kế hoạch Kinh doanh 3M — Tháng {planMonth}</h2>
+          <input type="month" value={planMonth} onChange={e => { setPlanMonth(e.target.value); loadPlan(e.target.value); }}
+            className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-gray-50">
+                <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Team</th>
+                <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Sản phẩm</th>
+                <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Mục tiêu</th>
+                <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">Ngân sách/th</th>
+                <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">CP/đơn</th>
+              </tr>
+            </thead>
+            <tbody>
+              {planData.map((team: any, ti: number) => (
+                team.products.map((p: any, pi: number) => {
+                  const costPerOrder = p.target > 0 ? Math.round((p.budget * 30) / p.target) : 0;
+                  return (
+                    <tr key={team.id + '-' + pi} className="border-b border-border hover:bg-gray-50 transition-all">
+                      {pi === 0 && (
+                        <td rowSpan={team.products.length || 1} className="p-3 text-xs font-medium align-top">
+                          <span className="inline-flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full grid place-items-center text-white text-[7px] font-bold" style={{backgroundColor: team.color || '#4f46e5'}}>
+                              {team.name?.charAt(0) || '?'}
+                            </div>
+                            <span>{team.name}</span>
+                          </span>
+                        </td>
+                      )}
+                      <td className="p-3 text-xs">{p.name || <span className="italic text-muted">—</span>}</td>
+                      <td className="p-3 text-xs text-right">{p.target > 0 ? p.target.toLocaleString('vi-VN') : ''}</td>
+                      <td className="p-3 text-xs text-right">{(p.budget * 30).toLocaleString('vi-VN') + 'đ'}</td>
+                      <td className="p-3 text-xs text-right">{costPerOrder > 0 ? costPerOrder.toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    </tr>
+                  );
+                })
+              ))}
+              {/* Total row */}
+              {planData.length > 0 && (
+                <tr className="bg-gray-50/80 font-semibold border-t-2 border-border">
+                  <td colSpan={2} className="p-3 text-xs font-bold text-[#4f46e5]">Tổng</td>
+                  <td className="p-3 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
+                  <td className="p-3 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
+                  <td className="p-3 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                </tr>
+              )}
+              {planData.length === 0 && (
+                <tr><td colSpan={5} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu kế hoạch. Chọn tháng và nhập KPI trong Team.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
         {teams.map(t => (

@@ -29,5 +29,24 @@ export default async function (app: FastifyInstance) {
       );
     }
     reply.send({ success: true });
+  
+  app.get('/kpis-summary/:month', async (req, reply) => {
+    const { month } = req.params as any;
+    const m = month || new Date().toISOString().slice(0, 7);
+    const [rows] = await pool.execute(
+      "SELECT tk.*, u.name as userName, t.name as teamName, t.color as teamColor FROM team_kpis tk JOIN users u ON u.id = tk.user_id JOIN teams t ON t.id = tk.team_id WHERE tk.month = ? ORDER BY t.name, u.name, tk.product",
+      [m]
+    );
+    // Group by team
+    const byTeam: Record<string, any> = {};
+    for (const r of rows as any[]) {
+      if (!byTeam[r.team_id]) byTeam[r.team_id] = { id: r.team_id, name: r.teamName, color: r.teamColor, products: [], totalTarget: 0, totalBudget: 0, totalOrders: 0 };
+      byTeam[r.team_id].products.push({ name: r.product, target: r.monthly_orders || 0, budget: r.daily_budget || 0, messages: r.daily_messages || 0 });
+      byTeam[r.team_id].totalTarget += r.monthly_orders || 0;
+      byTeam[r.team_id].totalBudget += r.daily_budget || 0;
+      byTeam[r.team_id].totalOrders += r.monthly_orders || 0;
+    }
+    reply.send(Object.values(byTeam));
   });
+});
 }
