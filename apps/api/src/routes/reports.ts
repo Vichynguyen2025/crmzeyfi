@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { v4 as uuid } from 'uuid';
-import { db } from '../db/index';
+import { db, pool } from '../db/index';
 import { reportColumns, dailyReports } from '../db/schema';
 import { eq, between, and, sql } from 'drizzle-orm';
 import { io } from '../index';
@@ -43,14 +43,18 @@ export default async function (app: FastifyInstance) {
 
   // Daily reports
   app.get('/reports', async (req, reply) => {
+    if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
     const query = req.query as any;
-    const conds = [];
-    if (query.teamId) conds.push(eq(dailyReports.teamId, query.teamId));
-    if (query.from && query.to) conds.push(between(dailyReports.date, query.from, query.to));
-    if (query.date) conds.push(eq(dailyReports.date, query.date));
-    const list = await db.select().from(dailyReports).where(conds.length ? and(...conds) : undefined)
-      .orderBy(sql`date DESC, created_at DESC`);
-    reply.send(list);
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'manager';
+    
+    // Admin sees all, member sees only own reports
+    const [rows] = await pool.execute(
+      "SELECT dr.*, u.name as user_name, u.avatar as user_avatar FROM daily_reports dr JOIN users u ON u.id = dr.user_id " +
+      (isAdmin ? "" : "WHERE dr.user_id = ? ") +
+      "ORDER BY dr.date DESC, dr.created_at DESC",
+      isAdmin ? [] : [req.user.id]
+    );
+    reply.send(rows);
   });
 
   app.post('/reports', async (req, reply) => {
@@ -59,7 +63,11 @@ export default async function (app: FastifyInstance) {
     const id = uuid();
     const tid = teamId || null;
     await db.insert(dailyReports).values({ id, userId: req.user.id, teamId: tid, date, data });
-    io.emit('report:new', { id, userId: req.user.id, teamId, date, data });
+    
+    // Get user info for realtime broadcast
+    const [u] = await pool.execute("SELECT name, avatar FROM users WHERE id = ?", [req.user.id]);
+    const user = (u as any[])[0] || { name: req.user.email };
+    io.emit('report:new', { id, userId: req.user.id, teamId, date, data, userName: user.name });
     reply.send({ id, success: true });
   });
 }
