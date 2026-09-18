@@ -30,6 +30,15 @@ export default function Teams() {
     return () => clearTimeout(timer);
   }, [kpiRows, selectedTeam?.id]);
 
+  const addKpiRow = (afterIdx: number) => {
+    const rows = [...kpiRows];
+    const ref = rows[afterIdx];
+    // Insert new row after the current one, with same user
+    const newRow = {name: ref.name, userId: ref.userId, product: '', budget: 0, messages: 0, orders: 0};
+    rows.splice(afterIdx + 1, 0, newRow);
+    setKpiRows(rows);
+  };
+
   const updateKpi = (idx: number, field: string, val: any) => {
     const rows = [...kpiRows];
     if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setKpiRows(rows); }
@@ -68,12 +77,18 @@ export default function Teams() {
     try {
       const saved = await api('/kpis/' + t.id);
       if (saved && saved.length > 0) {
-        setKpiRows([...saved.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0})), {name: 'Tổng'}]);
+        setKpiRows([...saved.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0})), {type: 'total'}]);
       } else {
-        setKpiRows([...m.map((u: any) => ({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0})), {name: 'Tổng'}]);
+        const initial = [];
+        m.forEach((u: any) => initial.push({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0}));
+        initial.push({type: 'total'});
+        setKpiRows(initial);
       }
     } catch {
-      setKpiRows([...m.map((u: any) => ({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0})), {name: 'Tổng'}]);
+      const initial = [];
+      m.forEach((u: any) => initial.push({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0}));
+      initial.push({type: 'total'});
+      setKpiRows(initial);
     }
   };
 
@@ -226,9 +241,9 @@ export default function Teams() {
                   const costPerOrder = totalOrders > 0 ? (r.budget * 30 / totalOrders) : 0;
                   const proposedBudget = r.budget * 30;
                   return (
-                    <tr key={i} className={'border-b border-border hover:bg-gray-50 transition-all ' + (i === kpiRows.length - 1 ? 'bg-gray-50/80 font-semibold' : '')}>
+                    <tr key={i} className={'border-b border-border hover:bg-gray-50 transition-all ' + (r.type === 'total' ? 'bg-gray-50/80 font-semibold' : '')}>
                       <td className="p-3 text-xs">
-                        {i < kpiRows.length - 1 ? (
+                        {r.type !== 'total' ? (
                           <span className="inline-flex items-center gap-1.5">
                             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[7px] font-bold shrink-0">
                               {r.name?.charAt(0) || '?'}
@@ -237,33 +252,39 @@ export default function Teams() {
                           </span>
                         ) : <span className="text-[#4f46e5]">Tổng</span>}
                       </td>
-                      <td className="p-3 text-xs">{i < kpiRows.length - 1 ? (
-                        <select value={r.product} onChange={e => updateKpi(i, 'product', e.target.value)}
-                          className="w-full px-1.5 py-1.5 bg-white border-border rounded-lg text-xs outline-none cursor-pointer focus:ring-2 focus:ring-[#4f46e5]/25">
-                          <option value="">—</option>
-                          {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
-                          <option value="other">Khác</option>
-                        </select>
-                      ) : ''}</td>
+                      <td className="p-3 text-xs">
+                        {r.type === 'total' ? '' : (
+                          <div className="flex items-center gap-1">
+                            <select value={r.product} onChange={e => updateKpi(i, 'product', e.target.value)}
+                              className="flex-1 min-w-[80px] px-1.5 py-1.5 bg-white border border-border rounded-lg text-xs outline-none cursor-pointer focus:ring-2 focus:ring-[#4f46e5]/25">
+                              <option value="">—</option>
+                              {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
+                              <option value="other">Khác</option>
+                            </select>
+                            <button onClick={e => { e.stopPropagation(); addKpiRow(i); }} className="p-1 rounded hover:bg-green-50 text-green-500 transition-all" title="Thêm sản phẩm cho nhân sự này">
+                              <Plus size={12} />
+                            </button>
+                          </div>
+                        )}</td>
                       <td className="p-3">
-                        {i < kpiRows.length - 1 ? (
+                        {r.type !== 'total' ? (
                           <input type="number" value={r.budget || ''} onChange={e => updateKpi(i, 'budget', Number(e.target.value))}
                             className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
-                        ) : <span className="block text-right">{kpiRows.slice(0,-1).reduce((s: number, r: any) => s + (r.budget || 0), 0).toLocaleString('vi-VN')}</span>}
+                        ) : <span className="block text-right">{kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r: any) => s + (r.budget || 0), 0).toLocaleString('vi-VN')}</span>}
                       </td>
                       <td className="p-3">
-                        {i < kpiRows.length - 1 ? (
+                        {r.type !== 'total' ? (
                           <input type="number" value={r.messages || ''} onChange={e => updateKpi(i, 'messages', Number(e.target.value))}
                             className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
-                        ) : <span className="block text-right">{kpiRows.slice(0,-1).reduce((s: number, r: any) => s + (r.messages || 0), 0)}</span>}
+                        ) : <span className="block text-right">{kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r: any) => s + (r.messages || 0), 0)}</span>}
                       </td>
                       <td className="p-3 text-xs text-right">{pricePerMsg > 0 ? pricePerMsg.toLocaleString('vi-VN', {maximumFractionDigits:0}) : ''}</td>
                       <td className="p-3 text-xs text-right">{totalMsgs > 0 ? totalMsgs.toLocaleString('vi-VN') : ''}</td>
                       <td className="p-3">
-                        {i < kpiRows.length - 1 ? (
+                        {r.type !== 'total' ? (
                           <input type="number" value={r.orders || ''} onChange={e => updateKpi(i, 'orders', Number(e.target.value))}
                             className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
-                        ) : <span className="block text-right">{kpiRows.slice(0,-1).reduce((s: number, r: any) => s + (r.orders || 0), 0)}</span>}
+                        ) : <span className="block text-right">{kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r: any) => s + (r.orders || 0), 0)}</span>}
                       </td>
                       <td className="p-3 text-xs text-right">{closeRate > 0 ? closeRate.toFixed(1) + '%' : ''}</td>
                       <td className="p-3 text-xs text-right">{costPerOrder > 0 ? costPerOrder.toLocaleString('vi-VN', {maximumFractionDigits:0}) + 'đ' : ''}</td>
