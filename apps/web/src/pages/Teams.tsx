@@ -520,9 +520,9 @@ export default function Teams() {
               </div>
             </div>
             <div className="p-6">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-[50vh] overflow-y-auto relative">
                 <table className="w-full text-sm">
-                  <thead>
+                  <thead className="sticky top-0 z-10 bg-white">
                     <tr className="border-b border-border bg-gray-50">
                       <th className="p-2.5 text-xs font-semibold text-muted uppercase text-left w-24">Ngày</th>
                       <th className="p-2.5 text-xs font-semibold text-muted uppercase text-left w-28">Sản phẩm</th>
@@ -567,7 +567,7 @@ export default function Teams() {
                       );
                     })}
                                            {dailyRows.length > 0 && (
-                                             <tr className="bg-gray-50/80 font-semibold border-t-2 border-border">
+                                             <tr className="bg-gray-50/80 font-semibold border-t-2 border-border sticky bottom-0 z-10">
                                                <td className="p-2.5 w-24 text-xs font-bold text-[#4f46e5]">Tổng</td>
                                                <td className="p-2.5 w-28"></td>
                                                <td className="p-2.5 w-24 text-xs text-right">{dailyRows.reduce((s, r) => s + (r.totalCost || 0), 0).toLocaleString('vi-VN')}</td>
