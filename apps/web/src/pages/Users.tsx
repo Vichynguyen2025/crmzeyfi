@@ -83,11 +83,11 @@ export default function UsersPage() {
         <div className="bg-white rounded-2xl border border-border p-6 space-y-4">
           <h3 className="font-semibold text-sm text-muted uppercase tracking-wider">Thêm nhân sự mới</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input value={form.name} onChange={e => setForm({...form,name:e.target.value})} placeholder="Họ tên *" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-            <input value={form.email} onChange={e => setForm({...form,email:e.target.value})} placeholder="Email" type="email" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-            <input value={form.phone} onChange={e => setForm({...form,phone:e.target.value})} placeholder="Số điện thoại" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-            <input value={form.password} onChange={e => setForm({...form,password:e.target.value})} placeholder="Mật khẩu *" type="password" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-            <select value={form.role} onChange={e => setForm({...form,role:e.target.value})} className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25">
+            <input value={form.name} onChange={e => setForm({...form,name:e.target.value})} placeholder="Họ tên *" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+            <input value={form.email} onChange={e => setForm({...form,email:e.target.value})} placeholder="Email" type="email" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+            <input value={form.phone} onChange={e => setForm({...form,phone:e.target.value})} placeholder="Số điện thoại" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+            <input value={form.password} onChange={e => setForm({...form,password:e.target.value})} placeholder="Mật khẩu *" type="password" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+            <select value={form.role} onChange={e => setForm({...form,role:e.target.value})} className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer">
               <option value="member">Nhân sự</option>
               <option value="manager">Quản lý</option>
               <option value="admin">Quản trị</option>
@@ -107,12 +107,12 @@ export default function UsersPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between"><h3 className="font-bold text-lg">Sửa thông tin</h3><button onClick={() => setEdit(null)} className="p-1 rounded-lg hover:bg-gray-100"><X size={18} /></button></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input value={edit.name} onChange={e => setEdit({...edit,name:e.target.value})} placeholder="Họ tên" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-              <input value={edit.email} onChange={e => setEdit({...edit,email:e.target.value})} placeholder="Email" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-              <input value={edit.phone || ''} onChange={e => setEdit({...edit,phone:e.target.value})} placeholder="Số điện thoại" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-              <input value={edit.position || ''} onChange={e => setEdit({...edit,position:e.target.value})} placeholder="Chức vụ" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-              <input value={edit.hometown || ''} onChange={e => setEdit({...edit,hometown:e.target.value})} placeholder="Quê quán" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-              <input value={edit.joinDate || ''} onChange={e => setEdit({...edit,joinDate:e.target.value})} placeholder="Ngày gia nhập" type="date" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+              <input value={edit.name} onChange={e => setEdit({...edit,name:e.target.value})} placeholder="Họ tên" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+              <input value={edit.email} onChange={e => setEdit({...edit,email:e.target.value})} placeholder="Email" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+              <input value={edit.phone || ''} onChange={e => setEdit({...edit,phone:e.target.value})} placeholder="Số điện thoại" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+              <input value={edit.position || ''} onChange={e => setEdit({...edit,position:e.target.value})} placeholder="Chức vụ" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+              <input value={edit.hometown || ''} onChange={e => setEdit({...edit,hometown:e.target.value})} placeholder="Quê quán" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+              <input value={edit.joinDate || ''} onChange={e => setEdit({...edit,joinDate:e.target.value})} placeholder="Ngày gia nhập" type="date" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={saveEdit} className="px-5 py-2.5 bg-primary text-white font-semibold rounded-xl text-sm hover:shadow-md">Lưu</button>
@@ -191,7 +191,7 @@ export default function UsersPage() {
                 </td>
                 <td className="p-4">
                   <select value={u.role} onChange={e => changeRole(u.id, e.target.value)}
-                    className={'px-3 py-1.5 rounded-xl text-xs font-medium border-0 outline-none cursor-pointer ' + (ROLE_COLORS[u.role] || 'bg-gray-100 text-muted')}>
+                    className={'px-3 py-1.5 rounded-xl text-xs font-medium border border-border outline-none cursor-pointer bg-white ' + (ROLE_COLORS[u.role] || 'bg-gray-100 text-muted')}>
                     <option value="admin">Quản trị</option>
                     <option value="manager">Quản lý</option>
                     <option value="member">Nhân sự</option>

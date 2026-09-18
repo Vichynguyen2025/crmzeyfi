@@ -58,20 +58,20 @@ export default function Channels() {
         <div className="bg-white rounded-2xl border border-border p-6 space-y-4">
           <h3 className="font-semibold text-sm text-muted uppercase tracking-wider">{edit ? 'Sửa kênh' : 'Thêm kênh mới'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input value={form.name} onChange={e => setForm({...form,name:e.target.value})} placeholder="Tên kênh *" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
-            <select value={form.platform} onChange={e => setForm({...form,platform:e.target.value})} className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25">
+            <input value={form.name} onChange={e => setForm({...form,name:e.target.value})} placeholder="Tên kênh *" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
+            <select value={form.platform} onChange={e => setForm({...form,platform:e.target.value})} className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer">
               {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
             <div className="md:col-span-2">
-              <input value={form.url} onChange={e => setForm({...form,url:e.target.value})} placeholder="Đường dẫn (URL)" className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+              <input value={form.url} onChange={e => setForm({...form,url:e.target.value})} placeholder="Đường dẫn (URL)" className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
             </div>
-            <select value={form.teamId} onChange={e => setForm({...form,teamId:e.target.value})} className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25">
+            <select value={form.teamId} onChange={e => setForm({...form,teamId:e.target.value})} className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer">
               <option value="">Chọn team phụ trách</option>
               {teams.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
-            <input value={form.assignedTo} onChange={e => setForm({...form,assignedTo:e.target.value})} placeholder="Người phụ trách (email)" className="px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+            <input value={form.assignedTo} onChange={e => setForm({...form,assignedTo:e.target.value})} placeholder="Người phụ trách (email)" className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
             <div className="md:col-span-2">
-              <input value={form.notes} onChange={e => setForm({...form,notes:e.target.value})} placeholder="Ghi chú" className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+              <input value={form.notes} onChange={e => setForm({...form,notes:e.target.value})} placeholder="Ghi chú" className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer" />
             </div>
           </div>
           <div className="flex gap-3 pt-2">

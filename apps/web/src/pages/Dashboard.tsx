@@ -29,7 +29,7 @@ export default function Dashboard() {
   return (<div>
     <div className="flex items-center justify-between mb-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
-      <select value={period} onChange={e => setPeriod(e.target.value)} className="px-4 py-2 bg-white border border-border rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-[#4f46e5]/25">
+      <select value={period} onChange={e => setPeriod(e.target.value)} className="px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5] transition-all cursor-pointer min-w-[160px]" style={backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%239ca3af%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27m6 9 6 6 6-6%27/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: '36px'}>
         <option value="week">7 ngày qua</option><option value="month">30 ngày qua</option><option value="year">Năm nay</option>
       </select>
     </div>
