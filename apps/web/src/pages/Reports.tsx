@@ -43,6 +43,7 @@ export default function Reports() {
   const [columns, setColumns] = useState<any[]>([]);
   const [editCol, setEditCol] = useState<{id:string,name:string}|null>(null);
   const [teams, setTeams] = useState<any[]>([]);
+  const [teamFilter, setTeamFilter] = useState('all');
   const [dateRange, setDateRange] = useState('month');
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [customDate, setCustomDate] = useState(fmtDate(new Date()));
@@ -131,7 +132,8 @@ export default function Reports() {
     } catch (e: any) { showToast('error', 'Lỗi xoá: ' + (e.message || '')); }
   };
 
-  const filteredReports = reports.filter(r => {
+  const filteredByTeam = teamFilter === 'all' ? reports : reports.filter(r => r.team_id === teamFilter);
+  const filteredReports = filteredByTeam.filter(r => {
     if (dateRange === 'today' || dateRange === 'yesterday') return r.date === calcFromDate();
     return true;
   });
@@ -272,7 +274,16 @@ export default function Reports() {
       {filteredReports.length > 0 && (
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
+            <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-[#171717]">Danh sách kết quả công việc của nhân sự</h2>
+            {isAdmin && teams.length > 0 && (
+              <select value={teamFilter} onChange={e => setTeamFilter(e.target.value)}
+                className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25">
+                <option value="all">Tất cả phòng ban</option>
+                {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            )}
+          </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -323,60 +334,6 @@ export default function Reports() {
         </div>
       )}
 
-      
-      {/* Team summary */}
-      {isAdmin && teams.length > 0 && (
-        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-border bg-gray-50/50">
-            <h2 className="text-sm font-bold text-[#171717]">Báo cáo theo phòng ban</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-gray-50">
-                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left">Phòng ban</th>
-                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left">Số BC</th>
-                  <th className="p-3 text-xs font-semibold text-muted uppercase text-left">Nhân sự</th>
-                  {columns.map(col => <th key={col.id} className="p-3 text-xs font-semibold text-muted uppercase text-left">{col.name}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {teams.map(t => {
-                  const teamReports = filteredReports.filter(r => r.team_id === t.id || !r.team_id);
-                  const teamUsers = [...new Set(teamReports.map(r => r.user_name))];
-                  const data: Record<string, any> = {};
-                  teamReports.forEach(r => {
-                    const d = typeof r.data === 'string' ? JSON.parse(r.data) : (r.data || {});
-                    Object.entries(d).forEach(([k, v]) => { if (!data[k]) data[k] = ''; data[k] += (data[k] ? ', ' : '') + v; });
-                  });
-                  return (
-                    <tr key={t.id} className="border-b border-border hover:bg-gray-50 transition-all">
-                      <td className="p-3">
-                        <span className="inline-flex items-center gap-1.5">
-                          <div className="w-6 h-6 rounded-full grid place-items-center text-white text-[9px] font-bold" style={{backgroundColor: t.color || '#4f46e5'}}>
-                            {t.name?.charAt(0) || '?'}
-                          </div>
-                          <span className="text-xs font-medium">{t.name}</span>
-                        </span>
-                      </td>
-                      <td className="p-3 text-xs font-semibold">{teamReports.length}</td>
-                      <td className="p-3">
-                        <div className="flex flex-wrap gap-1">
-                          {teamUsers.map((u: string, i: number) => (
-                            <span key={i} className="px-1.5 py-0.5 bg-indigo-50 text-[#4f46e5] rounded text-[10px] font-medium">{u}</span>
-                          ))}
-                          {teamUsers.length === 0 && <span className="text-xs text-muted">—</span>}
-                        </div>
-                      </td>
-                      {columns.map(col => <td key={col.id} className="p-3 text-xs">{data[col.id] || ''}</td>)}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
       
       {/* Reports list (bottom) */}
 
