@@ -467,17 +467,20 @@ export default function Teams() {
                       </td>
                       <td className="p-3 w-24">
                         {!isTotal ? (
-                          <span className="text-xs font-medium">{(r.actualOrders || 0) > 0 ? (r.actualOrders || 0).toLocaleString('vi-VN') : ''}</span>
+                          <input type="number" value={r.actualOrders || ''} onChange={e => updateActual(i, 'actualOrders', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0)}</span>}
                       </td>
                       <td className="p-3 w-24">
                         {!isTotal ? (
-                          <span className="text-xs">{(r.fixedCost || 0) > 0 ? (r.fixedCost || 0).toLocaleString('vi-VN') + 'đ' : ''}</span>
+                          <input type="number" value={r.fixedCost || ''} onChange={e => updateActual(i, 'fixedCost', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0).toLocaleString('vi-VN')}</span>}
                       </td>
                       <td className="p-3 w-24">
                         {!isTotal ? (
-                          <span className="text-xs font-medium">{(r.actualOrders || 0) > 0 ? Math.round((r.fixedCost || 0) / (r.actualOrders || 0)).toLocaleString('vi-VN') + 'đ' : ''}</span>
+                          <input type="number" value={r.costPerOrder || ''} onChange={e => updateActual(i, 'costPerOrder', Number(e.target.value))}
+                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + ((r2.costPerOrder || 0) * (r2.actualOrders || 0)), 0) / Math.max(1, actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0))}</span>}
                       </td>
                       <td className="p-3 text-xs text-right font-medium w-28">{totalCost.toLocaleString('vi-VN')}đ</td>
