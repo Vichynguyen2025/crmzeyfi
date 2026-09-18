@@ -59,7 +59,6 @@ export default async function (app: FastifyInstance) {
     await db.execute("DELETE FROM team_members WHERE team_id = ? AND user_id = ?", [id, userId]);
     reply.send({ success: true });
   });
-}
   app.get('/teams/:id/channels', async (req, reply) => {
     const { id } = req.params as any;
     const [rows] = await pool.execute(

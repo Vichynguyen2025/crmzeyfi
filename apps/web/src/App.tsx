@@ -11,6 +11,7 @@ import CalendarPage from './pages/Calendar';
 import UsersPage from './pages/Users';
 import DrivePage from './pages/Drive';
 import ChannelsPage from './pages/Channels';
+import ProductsPage from './pages/Products';
 import AppLayout from './components/layout/AppLayout';
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/users" element={<AppLayout><UsersPage /></AppLayout>} />
         <Route path="/drive" element={<AppLayout><DrivePage /></AppLayout>} />
         <Route path="/channels" element={<AppLayout><ChannelsPage /></AppLayout>} />
+        <Route path="/products" element={<AppLayout><ProductsPage /></AppLayout>} />
       </Routes>
     </BrowserRouter>
   );

@@ -108,3 +108,16 @@ export const mediaChannels = mysqlTable('media_channels', {
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const products = mysqlTable('products', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  price: decimal('price', { precision: 12, scale: 0 }).default('0'),
+  category: varchar('category', { length: 100 }),
+  imageUrl: varchar('image_url', { length: 500 }),
+  teamId: varchar('team_id', { length: 36 }).references(() => teams.id, { onDelete: 'set null' }),
+  status: mysqlEnum('status', ['active', 'inactive', 'draft']).default('active'),
+  createdBy: varchar('created_by', { length: 36 }).references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
+});
