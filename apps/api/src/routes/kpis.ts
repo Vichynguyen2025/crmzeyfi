@@ -49,5 +49,4 @@ export default async function (app: FastifyInstance) {
     }
     reply.send(Object.values(byTeam));
   });
-});
 }
