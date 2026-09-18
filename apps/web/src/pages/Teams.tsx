@@ -22,6 +22,10 @@ export default function Teams() {
   const [kpiMonth, setKpiMonth] = useState(new Date().toISOString().slice(0, 7));
   const [actualMonth, setActualMonth] = useState(new Date().toISOString().slice(0, 7));
   const [actualView, setActualView] = useState<'week'|'month'>('month');
+  const [dailyUser, setDailyUser] = useState<any>(null);
+  const [dailyRows, setDailyRows] = useState<any[]>([]);
+  const [dailyProduct, setDailyProduct] = useState('');
+  const [dailyDate, setDailyDate] = useState(new Date().toISOString().slice(0, 10));
   const [products, setProducts] = useState<any[]>([]);
 
   // Auto-save Actuals data with debounce
@@ -64,6 +68,28 @@ export default function Teams() {
     const newRow = {name: ref.name, userId: ref.userId, product: '', budget: 0, messages: 0, orders: 0};
     rows.splice(afterIdx + 1, 0, newRow);
     setKpiRows(rows);
+  };
+
+  const loadDaily = async (userId: string) => {
+    if (!selectedTeam) return;
+    try {
+      const url = '/daily-perf/' + selectedTeam.id + '/' + userId + '?month=' + actualMonth + (dailyProduct ? '&product=' + dailyProduct : '');
+      const saved = await api(url);
+      if (saved && saved.length > 0) {
+        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date, product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
+      } else {
+        setDailyRows([]);
+      }
+    } catch { setDailyRows([]); }
+  };
+
+  const addDailyRow = () => {
+    setDailyRows([...dailyRows, {date: dailyDate, product: dailyProduct, totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
+  };
+
+  const updateDaily = (idx: number, field: string, val: any) => {
+    const rows = [...dailyRows];
+    if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setDailyRows(rows); }
   };
 
   const loadActuals = async (teamId: string, month: string) => {
@@ -298,7 +324,7 @@ export default function Teams() {
                             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[7px] font-bold shrink-0">
                               {r.name?.charAt(0) || '?'}
                             </div>
-                            <span>{r.name}</span>
+                            <span className="cursor-pointer hover:text-[#4f46e5]" onClick={() => { setDailyUser(r); setDailyProduct(''); loadDaily(r.userId); }}>{r.name}</span>
                           </span>
                         ) : <span className="text-[#4f46e5]">Tổng</span>}
                       </td>
@@ -391,7 +417,7 @@ export default function Teams() {
                         {!isTotal ? (
                           <span className="inline-flex items-center gap-1.5">
                             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[7px] font-bold shrink-0">{r.name?.charAt(0) || '?'}</div>
-                            <span>{r.name}</span>
+                            <span className="cursor-pointer hover:text-[#4f46e5]" onClick={() => { setDailyUser(r); setDailyProduct(''); loadDaily(r.userId); }}>{r.name}</span>
                           </span>
                         ) : <span className="text-[#4f46e5]">Tổng</span>}
                       </td>
@@ -440,7 +466,92 @@ export default function Teams() {
           </div>
         </div>
 
-        {/* Marketing Channels */}
+        {/* Daily Performance Modal */}
+      {dailyUser && selectedTeam && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDailyUser(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-5 border-b border-border bg-gray-50/50 flex items-center justify-between sticky top-0 z-10">
+              <div>
+                <h2 className="text-lg font-bold text-[#171717]">Chi tiết hiệu suất — {dailyUser.name}</h2>
+                <p className="text-xs text-muted mt-0.5">Tháng {actualMonth}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <select value={dailyProduct} onChange={e => { setDailyProduct(e.target.value); setTimeout(() => loadDaily(dailyUser.userId), 100); }}
+                  className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer">
+                  <option value="">Tất cả sản phẩm</option>
+                  {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
+                </select>
+                <input type="date" value={dailyDate} onChange={e => setDailyDate(e.target.value)}
+                  className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none" />
+                <button onClick={addDailyRow} className="px-4 py-1.5 bg-[#4f46e5] text-white rounded-xl text-xs font-medium hover:shadow-md transition-all">+ Thêm</button>
+                <button onClick={() => setDailyUser(null)} className="p-2 rounded-lg hover:bg-gray-100"><X size={18} /></button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-gray-50">
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-left w-24">Ngày</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-left w-28">Sản phẩm</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-24">Tổng chi phí</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-20">Tiếp cận</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-16">Click</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-20">Giá Click</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-14">CTR</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-16">Mess</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-20">Giá Mess</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-20">Đơn hàng</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-20">Tỷ lệ chốt</th>
+                      <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-20">Đơn huỷ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailyRows.map((r: any, i: number) => {
+                      const clickPrice = r.clicks > 0 ? (r.totalCost || 0) / r.clicks : 0;
+                      const ctr = r.reach > 0 ? (r.clicks || 0) / r.reach * 100 : 0;
+                      const msgPrice = r.messages > 0 ? (r.totalCost || 0) / r.messages : 0;
+                      const closeRate = r.messages > 0 ? (r.orders || 0) / r.messages * 100 : 0;
+                      return (
+                        <tr key={i} className="border-b border-border hover:bg-gray-50 transition-all">
+                          <td className="p-2.5"><input type="date" value={r.date} onChange={e => updateDaily(i, 'date', e.target.value)} className="w-full px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" /></td>
+                          <td className="p-2.5">
+                            <select value={r.product} onChange={e => updateDaily(i, 'product', e.target.value)} className="w-full px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none cursor-pointer">
+                              <option value="">—</option>
+                              {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
+                            </select>
+                          </td>
+                          <td className="p-2.5"><input type="number" value={r.totalCost || ''} onChange={e => updateDaily(i, 'totalCost', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5"><input type="number" value={r.reach || ''} onChange={e => updateDaily(i, 'reach', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5"><input type="number" value={r.clicks || ''} onChange={e => updateDaily(i, 'clicks', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 text-xs text-right font-medium">{clickPrice > 0 ? clickPrice.toLocaleString('vi-VN', {maximumFractionDigits: 0}) + 'đ' : ''}</td>
+                          <td className="p-2.5 text-xs text-right">{ctr > 0 ? ctr.toFixed(2) + '%' : ''}</td>
+                          <td className="p-2.5"><input type="number" value={r.messages || ''} onChange={e => updateDaily(i, 'messages', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 text-xs text-right font-medium">{msgPrice > 0 ? msgPrice.toLocaleString('vi-VN', {maximumFractionDigits: 0}) + 'đ' : ''}</td>
+                          <td className="p-2.5"><input type="number" value={r.orders || ''} onChange={e => updateDaily(i, 'orders', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 text-xs text-right font-bold">{closeRate > 0 ? closeRate.toFixed(1) + '%' : ''}</td>
+                          <td className="p-2.5"><input type="number" value={r.cancelledOrders || ''} onChange={e => updateDaily(i, 'cancelledOrders', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                        </tr>
+                      );
+                    })}
+                    {dailyRows.length === 0 && <tr><td colSpan={12} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu. Chọn ngày và thêm dòng.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-end gap-3 mt-4">
+                <button onClick={async () => {
+                  await api('/daily-perf/' + selectedTeam.id + '/' + dailyUser.userId, { method:'POST', body:JSON.stringify({rows: dailyRows, month: actualMonth}) });
+                  loadActuals(selectedTeam.id, actualMonth);
+                  setDailyUser(null);
+                }} className="px-5 py-2.5 bg-primary text-white font-semibold rounded-xl text-sm hover:shadow-md transition-all">Lưu & Đóng</button>
+                <button onClick={() => setDailyUser(null)} className="px-5 py-2.5 bg-gray-100 text-muted rounded-xl text-sm font-medium">Huỷ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Marketing Channels */}
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
             <h2 className="text-sm font-bold text-[#171717]">Kênh Marketing phụ trách ({channels.length})</h2>

@@ -147,3 +147,19 @@ export const teamActuals = mysqlTable('team_actuals', {
   month: varchar('month', { length: 7 }).default(''),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const teamDailyPerf = mysqlTable('team_daily_perf', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  teamId: varchar('team_id', { length: 36 }).notNull(),
+  userId: varchar('user_id', { length: 36 }).notNull(),
+  product: varchar('product', { length: 255 }).default(''),
+  date: date('date'),
+  totalCost: int('total_cost').default(0),
+  reach: int('reach').default(0),
+  clicks: int('clicks').default(0),
+  messages: int('messages').default(0),
+  orders: int('orders').default(0),
+  cancelledOrders: int('cancelled_orders').default(0),
+  month: varchar('month', { length: 7 }).default(''),
+  createdAt: timestamp('created_at').defaultNow(),
+});
