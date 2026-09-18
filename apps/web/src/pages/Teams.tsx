@@ -434,7 +434,7 @@ export default function Teams() {
                   const userKpiTotal = kpiRows.filter((k: any) => k.userId === r.userId && k.type !== 'total').reduce((s: number, k: any) => s + (k.orders || 0), 0);
                   const userActualTotal = actualRows.filter((r2: any) => r2.type !== 'total' && r2.userId === r.userId).reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0);
                   const totalKpiPct = userKpiTotal > 0 ? (userActualTotal / userKpiTotal * 100) : 0;
-                  const totalCost = (r.fixedCost || 0) + ((r.costPerOrder || 0) * (r.actualOrders || 0));
+                  const totalCost = (r.fixedCost || 0);
                   return (
                     <tr key={i} className={'border-b border-border hover:bg-gray-50 transition-all ' + (isTotal ? 'bg-gray-50/80 font-semibold' : '')}>
                       <td className="p-3 text-xs">
@@ -448,32 +448,23 @@ export default function Teams() {
                       <td className="p-3 text-xs">
                         {!isTotal ? (
                           <div className="flex items-center gap-1">
-                            <select value={r.product} onChange={e => updateActual(i, 'product', e.target.value)}
-                              className="flex-1 min-w-[80px] px-1.5 py-1.5 bg-white border border-border rounded-lg text-xs outline-none cursor-pointer focus:ring-2 focus:ring-[#4f46e5]/25">
-                              <option value="">—</option>
-                              {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
-                              <option value="other">Khác</option>
-                            </select>
-                            <button onClick={() => addActualRow(i)} className="p-1 rounded hover:bg-green-50 text-green-500" title="Thêm sản phẩm"><Plus size={12} /></button>
+                            {r.product || <span className="italic">—</span>}
                           </div>
                         ) : ''}
                       </td>
                       <td className="p-3">
                         {!isTotal ? (
-                          <input type="number" value={r.actualOrders || ''} onChange={e => updateActual(i, 'actualOrders', Number(e.target.value))}
-                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
+                          <span className="text-xs font-medium">{(r.actualOrders || 0) > 0 ? (r.actualOrders || 0).toLocaleString('vi-VN') : ''}</span>
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0)}</span>}
                       </td>
                       <td className="p-3">
                         {!isTotal ? (
-                          <input type="number" value={r.fixedCost || ''} onChange={e => updateActual(i, 'fixedCost', Number(e.target.value))}
-                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
+                          <span className="text-xs">{(r.fixedCost || 0) > 0 ? (r.fixedCost || 0).toLocaleString('vi-VN') + 'đ' : ''}</span>
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0).toLocaleString('vi-VN')}</span>}
                       </td>
                       <td className="p-3">
                         {!isTotal ? (
-                          <input type="number" value={r.costPerOrder || ''} onChange={e => updateActual(i, 'costPerOrder', Number(e.target.value))}
-                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
+                          <span className="text-xs font-medium">{(r.actualOrders || 0) > 0 ? Math.round((r.fixedCost || 0) / (r.actualOrders || 0)).toLocaleString('vi-VN') + 'đ' : ''}</span>
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + ((r2.costPerOrder || 0) * (r2.actualOrders || 0)), 0) / Math.max(1, actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0))}</span>}
                       </td>
                       <td className="p-3 text-xs text-right font-medium">{totalCost.toLocaleString('vi-VN')}đ</td>
