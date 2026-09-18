@@ -566,7 +566,23 @@ export default function Teams() {
                         </tr>
                       );
                     })}
-                    {dailyRows.length === 0 && <tr><td colSpan={12} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu. Chọn ngày và thêm dòng.</td></tr>}
+                                           {dailyRows.length > 0 && (
+                                             <tr className="bg-gray-50/80 font-semibold border-t-2 border-border">
+                                               <td className="p-2.5 w-24 text-xs font-bold text-[#4f46e5]">Tổng</td>
+                                               <td className="p-2.5 w-28"></td>
+                                               <td className="p-2.5 w-24 text-xs text-right">{dailyRows.reduce((s, r) => s + (r.totalCost || 0), 0).toLocaleString('vi-VN')}</td>
+                                               <td className="p-2.5 w-20 text-xs text-right">{dailyRows.reduce((s, r) => s + (r.reach || 0), 0)}</td>
+                                               <td className="p-2.5 w-16 text-xs text-right">{dailyRows.reduce((s, r) => s + (r.clicks || 0), 0)}</td>
+                                               <td className="p-2.5 w-20 text-xs text-right font-medium">{(()=>{const tc=dailyRows.reduce((s,r)=>s+(r.totalCost||0),0);const cl=dailyRows.reduce((s,r)=>s+(r.clicks||0),0);return cl>0?Math.round(tc/cl).toLocaleString('vi-VN')+'đ':'';})()}</td>
+                                               <td className="p-2.5 w-14 text-xs text-right">{(()=>{const rch=dailyRows.reduce((s,r)=>s+(r.reach||0),0);const cl=dailyRows.reduce((s,r)=>s+(r.clicks||0),0);return rch>0?(cl/rch*100).toFixed(2)+'%':'';})()}</td>
+                                               <td className="p-2.5 w-16 text-xs text-right">{dailyRows.reduce((s, r) => s + (r.messages || 0), 0)}</td>
+                                               <td className="p-2.5 w-20 text-xs text-right font-medium">{(()=>{const tc=dailyRows.reduce((s,r)=>s+(r.totalCost||0),0);const ms=dailyRows.reduce((s,r)=>s+(r.messages||0),0);return ms>0?Math.round(tc/ms).toLocaleString('vi-VN')+'đ':'';})()}</td>
+                                               <td className="p-2.5 w-20 text-xs text-right">{dailyRows.reduce((s, r) => s + (r.orders || 0), 0)}</td>
+                                               <td className="p-2.5 w-20 text-xs text-right font-bold">{(()=>{const ms=dailyRows.reduce((s,r)=>s+(r.messages||0),0);const od=dailyRows.reduce((s,r)=>s+(r.orders||0),0);return ms>0?(od/ms*100).toFixed(1)+'%':'';})()}</td>
+                                               <td className="p-2.5 w-20 text-xs text-right">{dailyRows.reduce((s, r) => s + (r.cancelledOrders || 0), 0)}</td>
+                                             </tr>
+                                           )}
+                                         {dailyRows.length === 0 && <tr><td colSpan={12} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu. Chọn ngày và thêm dòng.</td></tr>}
                   </tbody>
                 </table>
               </div>
