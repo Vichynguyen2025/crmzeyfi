@@ -49,7 +49,7 @@ export default async function (app: FastifyInstance) {
     
     // Admin sees all, member sees only own reports
     const [rows] = await pool.execute(
-      "SELECT dr.*, u.name as user_name, u.avatar as user_avatar FROM daily_reports dr JOIN users u ON u.id = dr.user_id " +
+      "SELECT dr.id, dr.user_id, dr.team_id, DATE_FORMAT(dr.date, '%Y-%m-%d') as date, dr.data, dr.created_at, u.name as user_name, u.avatar as user_avatar FROM daily_reports dr JOIN users u ON u.id = dr.user_id " +
       (isAdmin ? "" : "WHERE dr.user_id = ? ") +
       "ORDER BY dr.date DESC, dr.created_at DESC",
       isAdmin ? [] : [req.user.id]

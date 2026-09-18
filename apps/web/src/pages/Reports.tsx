@@ -18,19 +18,22 @@ function fmtDate(d: Date): string {
 function fmtVi(d: string): string {
   if (!d) return '';
   const dateStr = d.split('T')[0];
-  const date = new Date(dateStr + 'T00:00:00');
+  if (!dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return d;
+  const parts = dateStr.split('-');
+  const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diff = (today.getTime() - date.getTime()) / 86400000;
-  if (diff === 0) return 'Hôm nay';
-  if (diff === 1) return 'Hôm qua';
-  if (diff === -1) return 'Ngày mai';
-  return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const y = today.getFullYear(), m = today.getMonth(), day = today.getDate();
+  const diffDays = Math.round((new Date(y, m, day).getTime() - date.getTime()) / 86400000);
+  if (diffDays === 0) return 'Hôm nay';
+  if (diffDays === 1) return 'Hôm qua';
+  if (diffDays === -1) return 'Ngày mai';
+  return dateStr.split('-').reverse().join('/');
 }
 
 function fmtWeek(d: string): string {
   if (!d) return '';
-  const date = new Date(d.split('T')[0] + 'T00:00:00');
+  const parts = d.split('T')[0].split('-');
+  const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
   const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   return days[date.getDay()];
 }
@@ -118,7 +121,7 @@ export default function Reports() {
     try {
       const res = await fetch('/api/reports/' + id, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('zeyfi_token') || '') },
+        headers: { Authorization: 'Bearer ' + (localStorage.getItem('zeyfi_token') || '') },
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       showToast('success', 'Đã xoá báo cáo');
