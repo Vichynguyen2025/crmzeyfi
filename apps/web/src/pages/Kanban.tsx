@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { getSocket } from '../lib/socket';
 
@@ -14,8 +14,18 @@ export default function Kanban() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [title, setTitle] = useState(''); const [show, setShow] = useState(false);
   const [drag, setDrag] = useState<any>(null);
+  const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('zeyfi_user') || '{}') : {};
+  const isAdmin = user.role === 'admin' || user.role === 'manager';
 
   useEffect(() => { api('/tasks').then(setTasks); const sock = getSocket(); sock.on('task:new', () => api('/tasks').then(setTasks)); sock.on('task:updated', () => api('/tasks').then(setTasks)); sock.on('task:deleted', () => api('/tasks').then(setTasks)); return () => { sock.off('task:new'); sock.off('task:updated'); sock.off('task:deleted'); }; }, []);
+
+  const deleteTask = async (id: string) => {
+    if (!confirm('Xoá task này?')) return;
+    try {
+      await api('/tasks/' + id, { method: 'DELETE' });
+      setTasks(tasks.filter(t => t.id !== id));
+    } catch {}
+  };
 
   const move = async (id: string, status: string) => {
     const idx = tasks.filter(t => t.status === status).length;
@@ -36,8 +46,15 @@ export default function Kanban() {
         className="bg-gray-50 rounded-2xl p-4 min-h-[200px] border border-border">
         <div className="flex items-center gap-2 mb-4"><div className="w-3 h-3 rounded-full" style={{backgroundColor:s.color}} /><h3 className="font-semibold text-sm">{s.label}</h3><span className="text-xs text-muted ml-auto">{tasks.filter(t => t.status === s.key).length}</span></div>
         <div className="space-y-3">{tasks.filter(t => t.status === s.key).map(task => (
-          <div key={task.id} draggable onDragStart={() => setDrag(task)} className="bg-white rounded-xl p-4 border border-border shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all">
-            <p className="font-medium text-sm">{task.title}</p>
+          <div key={task.id} draggable onDragStart={() => setDrag(task)} className="bg-white rounded-xl p-4 border border-border shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all group">
+            <div className="flex items-start justify-between">
+              <p className="font-medium text-sm flex-1">{task.title}</p>
+              {isAdmin && (
+                <button onClick={(e) => { e.stopPropagation(); deleteTask(task.id); }} className="p-1 rounded hover:bg-red-50 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all" title="Xoá">
+                  <Trash2 size={12} />
+                </button>
+              )}
+            </div>
             {task.assigneeName && <p className="text-xs text-muted mt-1">{task.assigneeName}</p>}
           </div>
         ))}</div>
