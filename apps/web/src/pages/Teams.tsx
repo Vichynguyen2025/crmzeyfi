@@ -47,6 +47,12 @@ export default function Teams() {
         setKpiRows([...saved.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0})), {type: 'total'}]);
         return true;
       }
+      // Fallback: try without month filter (old data)
+      const fallback = await api('/kpis/' + teamId);
+      if (fallback && fallback.length > 0) {
+        setKpiRows([...fallback.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0})), {type: 'total'}]);
+        return true;
+      }
     } catch {}
     return false;
   };
