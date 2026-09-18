@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Users, ClipboardList, DollarSign, PhoneCall } from 'lucide-react';
 import { api } from '../lib/api';
+import { getSocket } from '../lib/socket';
 
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
@@ -12,6 +13,16 @@ export default function Dashboard() {
     else if (period === 'month') { const m = new Date(d); m.setMonth(m.getMonth() - 1); from = m.toISOString().slice(0,10); to = d.toISOString().slice(0,10); }
     else { from = '2024-01-01'; to = d.toISOString().slice(0,10); }
     api('/dashboard?from=' + from + '&to=' + to).then(setData).catch(() => {});
+  }, [period]);
+
+  // Realtime updates
+  useEffect(() => {
+    const sock = getSocket();
+    const handler = () => { api('/dashboard?from=' + (() => { const d=new Date(); let f; if(period==='week'){const w=new Date(d);w.setDate(w.getDate()-7);f=w.toISOString().slice(0,10)}else if(period==='month'){const m=new Date(d);m.setMonth(m.getMonth()-1);f=m.toISOString().slice(0,10)}else{f='2024-01-01'} return f; })() + '&to=' + new Date().toISOString().slice(0,10)).then(setData); };
+    sock.on('report:new', handler);
+    sock.on('task:new', handler);
+    sock.on('customer:new', handler);
+    return () => { sock.off('report:new', handler); sock.off('task:new', handler); sock.off('customer:new', handler); };
   }, [period]);
   if (!data) return <div className="flex h-64 items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
   const o = data.overall || {};

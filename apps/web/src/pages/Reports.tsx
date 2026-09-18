@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Edit3 } from 'lucide-react';
 import { api } from '../lib/api';
+import { getSocket } from '../lib/socket';
 
 export default function Reports() {
   const [reports, setReports] = useState<any[]>([]);
@@ -9,7 +10,7 @@ export default function Reports() {
   const [editCol, setEditCol] = useState<{id:string,name:string}|null>(null);
   const today = new Date().toISOString().slice(0,10);
 
-  useEffect(() => { api('/reports').then(setReports); api('/reports/columns').then(setColumns); }, []);
+  useEffect(() => { api('/reports').then(setReports); api('/reports/columns').then(setColumns); const sock = getSocket(); sock.on('columns:updated', (cols: any) => setColumns(cols)); return () => sock.off('columns:updated'); }, []);
 
   return (<div>
     <div className="flex items-center justify-between mb-6">

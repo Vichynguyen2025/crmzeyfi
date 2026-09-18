@@ -57,7 +57,8 @@ export default async function (app: FastifyInstance) {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
     const { date, teamId, data } = req.body as any;
     const id = uuid();
-    await db.insert(dailyReports).values({ id, userId: req.user.id, teamId, date, data });
+    const tid = teamId || null;
+    await db.insert(dailyReports).values({ id, userId: req.user.id, teamId: tid, date, data });
     io.emit('report:new', { id, userId: req.user.id, teamId, date, data });
     reply.send({ id, success: true });
   });

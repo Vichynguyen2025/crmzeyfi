@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { api } from '../lib/api';
+import { getSocket } from '../lib/socket';
 
 const STATUSES = [
   { key: 'todo', label: 'Cần làm', color: '#6b7280' },
@@ -14,7 +15,7 @@ export default function Kanban() {
   const [title, setTitle] = useState(''); const [show, setShow] = useState(false);
   const [drag, setDrag] = useState<any>(null);
 
-  useEffect(() => { api('/tasks').then(setTasks); }, []);
+  useEffect(() => { api('/tasks').then(setTasks); const sock = getSocket(); sock.on('task:new', () => api('/tasks').then(setTasks)); sock.on('task:updated', () => api('/tasks').then(setTasks)); sock.on('task:deleted', () => api('/tasks').then(setTasks)); return () => { sock.off('task:new'); sock.off('task:updated'); sock.off('task:deleted'); }; }, []);
 
   const move = async (id: string, status: string) => {
     const idx = tasks.filter(t => t.status === status).length;

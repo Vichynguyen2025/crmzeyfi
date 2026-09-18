@@ -16,7 +16,8 @@ export default async function (app: FastifyInstance) {
   app.post('/ad-costs', async (req, reply) => {
     const { teamId, date, platform, amount, description } = req.body as any;
     const id = uuid();
-    await db.insert(adCosts).values({ id, teamId, date, platform, amount, description });
+    const tid = teamId || null;
+    await db.insert(adCosts).values({ id, teamId: tid, date, platform, amount, description });
     reply.send({ id, success: true });
   });
 }
