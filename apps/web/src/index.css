@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { --sidebar: #1e1b4b; }
+body { font-family: Inter, system-ui, sans-serif; background: #f8fafc; color: #171717; margin: 0; }
+* { box-sizing: border-box; }
