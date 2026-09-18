@@ -9,6 +9,7 @@ import taskRoutes from './routes/tasks';
 import customerRoutes from './routes/customers';
 import adCostRoutes from './routes/ad-costs';
 import dashboardRoutes from './routes/dashboard';
+import usersRoutes from './routes/users';
 
 const PORT = Number(process.env.PORT) || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || 'zeyfi-secret';
