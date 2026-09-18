@@ -18,6 +18,7 @@ export default function Teams() {
   const [editTeam, setEditTeam] = useState<any>(null);
   const [toast, setToast] = useState<{type:'success'|'error',message:string}|null>(null);
   const [kpiRows, setKpiRows] = useState<any[]>([]);
+  const [actualRows, setActualRows] = useState<any[]>([]);
   const [kpiMonth, setKpiMonth] = useState(new Date().toISOString().slice(0, 7));
   const [planData, setPlanData] = useState<any[]>([]);
   const [planMonth, setPlanMonth] = useState(new Date().toISOString().slice(0, 7));
