@@ -72,6 +72,19 @@ export default function Teams() {
     setKpiRows(rows);
   };
 
+  const deleteKpiRow = (idx: number) => {
+    const rows = [...kpiRows];
+    if (rows.length > 2 && idx < rows.length - 1) {
+      rows.splice(idx, 1);
+      setKpiRows(rows);
+    }
+  };
+
+  const updateKpi = (idx: number, field: string, val: any) => {
+    const rows = [...kpiRows];
+    if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setKpiRows(rows); }
+  };
+
   const loadDailyWithProduct = async (userId: string, product: string) => {
     if (!selectedTeam) return;
     try {
@@ -439,6 +452,7 @@ export default function Teams() {
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">Tổng chi phí</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-20">%KPI SP</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">%KPI Tổng</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-center w-12"></th>
                 </tr>
               </thead>
               <tbody>
@@ -492,11 +506,19 @@ export default function Teams() {
                       <td className="p-3 text-xs text-right font-medium w-28">{totalCost.toLocaleString('vi-VN')}đ</td>
                       <td className="p-3 text-xs text-right font-bold w-20">{kpiPct.toFixed(1)}%</td>
                       <td className="p-3 text-xs text-right font-bold text-[#4f46e5] w-24">{totalKpiPct.toFixed(1)}%</td>
+                      <td className="p-3 text-center">
+                        {!isTotal && (
+                          <button onClick={() => {
+                            const rows = [...actualRows]; rows.splice(i, 1); setActualRows(rows);
+                          }} className="p-1 rounded hover:bg-red-50 text-red-400 transition-all" title="Xoá">
+                            <X size={12} />
+                          </button>
+                        )}</td>
                     </tr>
                   );
                 })}
                 {actualRows.length === 0 && (
-                  <tr><td colSpan={8} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu thực tế. Chọn tháng và nhập số liệu.</td></tr>
+                  <tr><td colSpan={9} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu thực tế. Chọn tháng và nhập số liệu.</td></tr>
                 )}
               </tbody>
             </table>
@@ -542,6 +564,7 @@ export default function Teams() {
                       <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-20">Đơn hàng</th>
                       <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-20">Tỷ lệ chốt</th>
                       <th className="p-2.5 text-xs font-semibold text-muted uppercase text-right w-20">Đơn huỷ</th>
+                          <th className="p-2.5 text-xs font-semibold text-muted uppercase text-center w-10"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -569,6 +592,11 @@ export default function Teams() {
                           <td className="p-2.5 w-20"><input type="number" value={r.orders || ''} onChange={e => updateDaily(i, 'orders', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
                           <td className="p-2.5 text-xs text-right font-bold w-20">{closeRate > 0 ? closeRate.toFixed(1) + '%' : ''}</td>
                           <td className="p-2.5 w-20"><input type="number" value={r.cancelledOrders || ''} onChange={e => updateDaily(i, 'cancelledOrders', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 text-center">
+                            <button onClick={() => { const rows = [...dailyRows]; rows.splice(i, 1); setDailyRows(rows); }} className="p-1 rounded hover:bg-red-50 text-red-400 transition-all" title="Xoá">
+                              <X size={12} />
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
@@ -588,7 +616,7 @@ export default function Teams() {
                                                <td className="p-2.5 w-20 text-xs text-right">{dailyRows.reduce((s, r) => s + (r.cancelledOrders || 0), 0)}</td>
                                              </tr>
                                            )}
-                                         {dailyRows.length === 0 && <tr><td colSpan={12} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu. Chọn ngày và thêm dòng.</td></tr>}
+                                         {dailyRows.length === 0 && <tr><td colSpan={13} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu. Chọn ngày và thêm dòng.</td></tr>}
                   </tbody>
                 </table>
               </div>
