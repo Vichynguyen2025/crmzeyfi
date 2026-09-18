@@ -20,6 +20,16 @@ export default function Teams() {
   const [kpiRows, setKpiRows] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
 
+  // Auto-save KPI data with debounce
+  useEffect(() => {
+    if (!selectedTeam || kpiRows.length === 0) return;
+    const timer = setTimeout(async () => {
+      try { await api('/kpis/' + selectedTeam.id, { method:'POST', body:JSON.stringify(kpiRows) }); }
+      catch {}
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [kpiRows, selectedTeam?.id]);
+
   const updateKpi = (idx: number, field: string, val: any) => {
     const rows = [...kpiRows];
     if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setKpiRows(rows); }
@@ -54,7 +64,17 @@ export default function Teams() {
     setChannels(c);
     setProducts(p || []);
     // Initialize KPI rows with one row per member + total row
-    setKpiRows([...m.map((u: any) => ({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0})), {name: 'Tổng'}]);
+    // Load saved KPI data or initialize
+    try {
+      const saved = await api('/kpis/' + t.id);
+      if (saved && saved.length > 0) {
+        setKpiRows([...saved.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0})), {name: 'Tổng'}]);
+      } else {
+        setKpiRows([...m.map((u: any) => ({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0})), {name: 'Tổng'}]);
+      }
+    } catch {
+      setKpiRows([...m.map((u: any) => ({name: u.name, userId: u.id, product: '', budget: 0, messages: 0, orders: 0})), {name: 'Tổng'}]);
+    }
   };
 
   const addMember = async (userId: string) => {

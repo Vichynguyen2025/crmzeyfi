@@ -121,3 +121,14 @@ export const products = mysqlTable('products', {
   createdBy: varchar('created_by', { length: 36 }).references(() => users.id),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const teamKpis = mysqlTable('team_kpis', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  teamId: varchar('team_id', { length: 36 }).notNull().references(() => teams.id, { onDelete: 'cascade' }),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => users.id),
+  product: varchar('product', { length: 255 }),
+  dailyBudget: int('daily_budget').default(0),
+  dailyMessages: int('daily_messages').default(0),
+  monthlyOrders: int('monthly_orders').default(0),
+  updatedAt: timestamp('updated_at').defaultNow().onUpdateNow(),
+});
