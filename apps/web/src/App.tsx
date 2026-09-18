@@ -8,6 +8,7 @@ import Kanban from './pages/Kanban';
 import Customers from './pages/Customers';
 import AdCosts from './pages/AdCosts';
 import CalendarPage from './pages/Calendar';
+import UsersPage from './pages/Users';
 import AppLayout from './components/layout/AppLayout';
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
         <Route path="/ad-costs" element={<AppLayout><AdCosts /></AppLayout>} />
         <Route path="/calendar" element={<AppLayout><CalendarPage /></AppLayout>} />
+        <Route path="/users" element={<AppLayout><UsersPage /></AppLayout>} />
       </Routes>
     </BrowserRouter>
   );

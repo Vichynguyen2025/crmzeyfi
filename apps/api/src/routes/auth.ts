@@ -10,13 +10,21 @@ const SECRET = process.env.JWT_SECRET || 'zeyfi-secret';
 
 export default async function (app: FastifyInstance) {
   app.post('/auth/register', async (req, reply) => {
+    // Require admin token for registration (closed registration)
+    const header = req.headers.authorization;
+    if (!header) return reply.status(403).send({ error: 'Đăng ký đã đóng. Liên hệ admin để tạo tài khoản.' });
     try {
-      const { name, email, password } = req.body as any;
+      const adminUser = jwt.verify(header.replace('Bearer ', ''), SECRET) as any;
+      if (adminUser.role !== 'admin') return reply.status(403).send({ error: 'Chỉ admin mới tạo được tài khoản' });
+    } catch { return reply.status(403).send({ error: 'Token không hợp lệ' }); }
+
+    try {
+      const { name, email, password, role } = req.body as any;
       const hash = await bcrypt.hash(password, 10);
       const id = uuid();
-      await db.insert(users).values({ id, name, email, password: hash, role: 'member' });
-      const token = jwt.sign({ id, email, role: 'member' }, SECRET, { expiresIn: '7d' });
-      reply.send({ accessToken: token, user: { id, name, email, role: 'member' } });
+      const userRole = role || 'member';
+      await db.insert(users).values({ id, name, email, password: hash, role: userRole });
+      reply.send({ success: true, user: { id, name, email, role: userRole } });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
   });
 
@@ -46,6 +54,31 @@ export default async function (app: FastifyInstance) {
       "UPDATE users SET name=COALESCE(?,name), phone=COALESCE(?,phone), position=COALESCE(?,position), bio=COALESCE(?,bio), avatar=COALESCE(?,avatar) WHERE id=?",
       [name, phone, position, bio, avatar, req.user.id]
     );
+    reply.send({ success: true });
+  });
+
+// ─── User Management (admin only) ─────
+  app.get('/users', async (req, reply) => {
+    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    const [rows] = await pool.execute(
+      "SELECT id, name, email, role, phone, position, avatar, created_at as createdAt FROM users ORDER BY created_at DESC"
+    );
+    reply.send(rows);
+  });
+
+  app.put('/users/:id/role', async (req, reply) => {
+    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    const { id } = req.params as any;
+    const { role } = req.body as any;
+    if (!['admin','manager','member'].includes(role)) return reply.status(400).send({ error: 'Invalid role' });
+    await pool.execute("UPDATE users SET role = ? WHERE id = ?", [role, id]);
+    reply.send({ success: true });
+  });
+
+  app.delete('/users/:id', async (req, reply) => {
+    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    const { id } = req.params as any;
+    await pool.execute("DELETE FROM users WHERE id = ?", [id]);
     reply.send({ success: true });
   });
 });
