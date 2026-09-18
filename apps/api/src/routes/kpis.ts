@@ -29,7 +29,8 @@ export default async function (app: FastifyInstance) {
       );
     }
     reply.send({ success: true });
-  
+  });
+
   app.get('/kpis-summary/:month', async (req, reply) => {
     const { month } = req.params as any;
     const m = month || new Date().toISOString().slice(0, 7);
