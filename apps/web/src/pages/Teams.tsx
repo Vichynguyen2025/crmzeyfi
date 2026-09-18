@@ -465,17 +465,17 @@ export default function Teams() {
                           </div>
                         ) : ''}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 w-24">
                         {!isTotal ? (
                           <span className="text-xs font-medium">{(r.actualOrders || 0) > 0 ? (r.actualOrders || 0).toLocaleString('vi-VN') : ''}</span>
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0)}</span>}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 w-24">
                         {!isTotal ? (
                           <span className="text-xs">{(r.fixedCost || 0) > 0 ? (r.fixedCost || 0).toLocaleString('vi-VN') + 'đ' : ''}</span>
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0).toLocaleString('vi-VN')}</span>}
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 w-24">
                         {!isTotal ? (
                           <span className="text-xs font-medium">{(r.actualOrders || 0) > 0 ? Math.round((r.fixedCost || 0) / (r.actualOrders || 0)).toLocaleString('vi-VN') + 'đ' : ''}</span>
                         ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + ((r2.costPerOrder || 0) * (r2.actualOrders || 0)), 0) / Math.max(1, actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0))}</span>}
@@ -504,6 +504,8 @@ export default function Teams() {
                 <p className="text-xs text-muted mt-0.5">Tháng {actualMonth}</p>
               </div>
               <div className="flex items-center gap-3">
+                <input type="date" value={dailyDate} onChange={e => { const v = e.target.value; setDailyDate(v); setDailyRows(dailyRows.map((r: any) => ({...r, date: v}))); }}
+                  className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none" />
                 <select value={dailyProduct} onChange={e => { const v = e.target.value; setDailyProduct(v); setTimeout(() => loadDailyWithProduct(dailyUser.userId, v), 50); }}
                   className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer">
                   <option value="">Tất cả sản phẩm</option>
@@ -541,8 +543,8 @@ export default function Teams() {
                       const closeRate = r.messages > 0 ? (r.orders || 0) / r.messages * 100 : 0;
                       return (
                         <tr key={i} className="border-b border-border hover:bg-gray-50 transition-all">
-                          <td className="p-2.5"><input type="date" value={r.date} onChange={e => updateDaily(i, 'date', e.target.value)} className="w-full px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" /></td>
-                          <td className="p-2.5">
+                          <td className="p-2.5 w-24"><input type="date" value={r.date} onChange={e => updateDaily(i, 'date', e.target.value)} className="w-full px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" /></td>
+                          <td className="p-2.5 w-28">
                             <select value={r.product} onChange={e => updateDaily(i, 'product', e.target.value)} className="w-full px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none cursor-pointer">
                               <option value="">—</option>
                               {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
