@@ -59,18 +59,18 @@ export default function Customers() {
         <table className="w-full table-fixed text-sm"><colgroup><col className="w-44"/><col className="w-36"/><col className="w-52"/><col className="w-28"/><col className="w-28"/><col className="w-24"/></colgroup>
           <thead>
             <tr className="border-b border-border bg-gray-50">
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Khách hàng</th>
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Liên hệ</th>
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Nguồn</th>
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">CSKH</th>
-              <th className="text-center p-4 font-semibold text-muted text-xs uppercase tracking-wider">Trạng thái</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Khách hàng</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Liên hệ</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Nguồn</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">CSKH</th>
+              <th className="text-center px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Trạng thái</th>
               <th className="p-4"></th>
             </tr>
           </thead>
           <tbody>
             {customers.map(c => (
               <tr key={c.id} className="border-b border-border hover:bg-gray-50 transition-all">
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shrink-0">
                       {c.name?.charAt(0)?.toUpperCase() || '?'}
@@ -81,21 +81,21 @@ export default function Customers() {
                     </div>
                   </div>
                 </td>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   <div className="space-y-1">
                     {c.phone && <p className="flex items-center gap-1.5 text-muted"><Phone size={12} />{c.phone}</p>}
                     {c.address && <p className="flex items-center gap-1.5 text-muted"><MapPin size={12} className="shrink-0" />{c.address}</p>}
                   </div>
                 </td>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   {c.source ? <span className="px-3 py-1 bg-indigo-50 text-[#4f46e5] rounded-full text-xs font-medium">{c.source}</span> : <span className="text-muted">—</span>}
                 </td>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium">
                     <MessageCircle size={12} />{c.contactCount} lần
                   </span>
                 </td>
-                <td className="p-4 text-center">
+                <td className="px-4 py-3 text-xs text-center">
                   <span className={'px-3 py-1 rounded-full text-xs font-medium ' + (
                     c.status === 'new' ? 'bg-blue-50 text-blue-600' :
                     c.status === 'contacted' ? 'bg-amber-50 text-amber-600' :
@@ -105,7 +105,7 @@ export default function Customers() {
                     {c.status === 'new' ? 'Mới' : c.status === 'contacted' ? 'Đã liên hệ' : c.status === 'qualified' ? 'Tiềm năng' : c.status}
                   </span>
                 </td>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   <div className="flex items-center gap-2">
                     <button onClick={() => contact(c.id)} className="px-3 py-1.5 bg-[#4f46e5] text-white rounded-lg text-xs font-medium hover:bg-[#4338ca] transition-all">
                       + CSKH

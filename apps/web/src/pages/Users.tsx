@@ -139,7 +139,7 @@ export default function UsersPage() {
           <tbody>
             {users.map(u => (
               <tr key={u.id} className={'border-b border-border hover:bg-gray-50 transition-all ' + (u.is_blocked ? 'opacity-60' : '')}>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shrink-0">
                       {u.name?.charAt(0)?.toUpperCase() || '?'}
@@ -152,7 +152,7 @@ export default function UsersPage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   {u.team_names ? (
                     <div className="flex flex-wrap gap-1">
                       {u.team_names.split(', ').map((t: string, i: number) => (
@@ -163,14 +163,14 @@ export default function UsersPage() {
                     </div>
                   ) : <span className="text-muted">—</span>}
                 </td>
-                <td className="p-4"><span className="text-[#171717]">{u.position || <span className="text-muted">—</span>}</span></td>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs"><span className="text-[#171717]">{u.position || <span className="text-muted">—</span>}</span></td>
+                <td className="px-4 py-3 text-xs">
                   {u.hometown ? <span className="flex items-center gap-1.5 text-xs"><MapPin size={12} className="text-muted shrink-0" />{u.hometown}</span> : <span className="text-muted">—</span>}
                 </td>
-                <td className="p-4 text-xs">
+                <td className="px-4 py-3 text-xs">
                   {u.joinDate ? <span className="flex items-center gap-1.5"><Calendar size={12} className="text-muted shrink-0" />{new Date(u.joinDate).toLocaleDateString('vi-VN')}</span> : <span className="text-muted">—</span>}
                 </td>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   {u.is_blocked ? (
                     <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-medium"><Ban size={11} />Bị khoá</span>
                   ) : (
@@ -189,7 +189,7 @@ export default function UsersPage() {
                     </span>
                   )}
                 </td>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   <select value={u.role} onChange={e => changeRole(u.id, e.target.value)}
                     className={'px-3 py-1.5 rounded-xl text-xs font-medium border border-border outline-none cursor-pointer bg-white ' + (ROLE_COLORS[u.role] || 'bg-gray-100 text-muted')}>
                     <option value="admin">Quản trị</option>
@@ -197,7 +197,7 @@ export default function UsersPage() {
                     <option value="member">Nhân sự</option>
                   </select>
                 </td>
-                <td className="p-4">
+                <td className="px-4 py-3 text-xs">
                   <div className="flex items-center gap-1">
                     <button onClick={() => setEdit({
                       ...u, joinDate: u.joinDate ? u.joinDate.split('T')[0] : ''

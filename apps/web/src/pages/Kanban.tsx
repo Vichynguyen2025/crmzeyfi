@@ -13,13 +13,13 @@ const STATUSES = [
 const PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const;
 
 const COLUMNS = [
-  { key: 'title', label: 'Tên công việc', type: 'text', w: 'min-w-[200px]', editable: true },
-  { key: 'content', label: 'Nội dung', type: 'content', w: 'min-w-[180px]', editable: false },
-  { key: 'productLink', label: 'Link sản phẩm', type: 'link', w: 'min-w-[180px]', editable: true },
-  { key: 'status', label: 'Trạng thái', type: 'select', w: 'w-32', editable: true, options: STATUSES.map(s => ({ value: s.key, label: s.label })) },
-  { key: 'priority', label: 'Độ ưu tiên', type: 'select', w: 'w-36', editable: true, options: PRIORITIES.map(p => ({ value: p, label: p === 'urgent' ? 'Khẩn cấp' : p === 'high' ? 'Cao' : p === 'medium' ? 'Trung bình' : 'Thấp' })) },
-  { key: 'dueDate', label: 'Hạn hoàn thành', type: 'date', w: 'w-28', editable: true },
-  { key: 'createdAt', label: 'Ngày tạo', type: 'date', w: 'w-28', editable: false },
+  { key: 'title', label: 'Tên công việc', type: 'text', w: 'w-56', editable: true },
+  { key: 'content', label: 'Nội dung', type: 'content', w: 'w-64', editable: false },
+  { key: 'productLink', label: 'Link sản phẩm', type: 'link', w: 'w-44', editable: true },
+  { key: 'status', label: 'Trạng thái', type: 'select', w: 'w-28', editable: true, options: STATUSES.map(s => ({ value: s.key, label: s.label })) },
+  { key: 'priority', label: 'Độ ưu tiên', type: 'select', w: 'w-28', editable: true, options: PRIORITIES.map(p => ({ value: p, label: p === 'urgent' ? 'Khẩn cấp' : p === 'high' ? 'Cao' : p === 'medium' ? 'Trung bình' : 'Thấp' })) },
+  { key: 'dueDate', label: 'Hạn hoàn thành', type: 'date', w: 'w-36', editable: true },
+  { key: 'createdAt', label: 'Ngày tạo', type: 'date', w: 'w-32', editable: false },
   { key: 'createdByName', label: 'Người tạo', type: 'text', w: 'w-36', editable: false },
   { key: 'assigneeName', label: 'Người thực hiện', type: 'text', w: 'w-36', editable: false },
 ];
@@ -313,7 +313,7 @@ export default function Kanban() {
       {view === 'sheet' && (
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="overflow-auto max-h-[65vh]">
-            <table className="w-full table-fixed"><colgroup><col className="w-10"/><col className="min-w-[180px]"/><col className="min-w-[160px]"/><col className="min-w-[160px]"/><col className="w-28"/><col className="w-28"/><col className="w-32"/><col className="w-36"/><col className="w-36"/><col className="w-24"/></colgroup>
+            <table className="w-full table-fixed"><colgroup><col className="w-10"/><col className="w-14"/><col className="w-56"/><col className="w-64"/><col className="w-44"/><col className="w-28"/><col className="w-28"/><col className="w-36"/><col className="w-32"/><col className="w-36"/><col className="w-36"/></colgroup>
               <thead className="sticky top-0 z-10">
                 <tr className="bg-gray-50/90 border-b-2 border-border">
                   <th className="w-10 p-0 text-center py-3">
@@ -349,7 +349,7 @@ export default function Kanban() {
                         const val = task[col.key] || '';
                         const cellEdit = isEdit && editing?.col === col.key;
                         return (
-                          <td key={col.key} className={'py-2 px-3 ' + col.w}>
+                          <td key={col.key} className={'py-2 px-3 overflow-hidden ' + col.w}>
                             {cellEdit ? (
                               col.type === 'select' ? (
                                 <select value={editValue} onChange={e => setEditValue(e.target.value)}
@@ -380,7 +380,7 @@ export default function Kanban() {
                                     review: 'bg-indigo-100 text-indigo-700', done: 'bg-green-100 text-green-700',
                                   }[val] || 'bg-gray-100 text-muted')}>{STATUSES.find(s => s.key === val)?.label || val}</span>
                                 ) : col.key === 'priority' ? (
-                                  <div className="flex items-center justify-center px-2.5 py-2">
+                                  <div className="flex items-center px-2.5 py-2">
                                     <span className={'px-2.5 py-1 rounded-md text-[11px] font-medium text-center ' + ({
                                       urgent: 'bg-red-100 text-red-700', high: 'bg-amber-100 text-amber-700',
                                       medium: 'bg-blue-100 text-blue-700', low: 'bg-gray-100 text-gray-600',
@@ -389,7 +389,7 @@ export default function Kanban() {
                                 ) : col.key === 'content' ? (
                                   <div onClick={e => { e.stopPropagation(); if (task) setContentEditor({id: task.id, text: task.description || ''}); }}
                                     className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer hover:bg-gray-100/80 transition-all">
-                                    <span className={'truncate max-w-[160px] ' + (task.description ? 'text-[#171717]' : 'text-muted italic')}>
+                                    <span className={'block overflow-hidden text-ellipsis whitespace-nowrap ' + (task.description ? 'text-[#171717]' : 'text-muted italic')}>
                                       {task.description ? contentSummary(task.description) : 'Viết nội dung...'}
                                     </span>
                                   </div>
@@ -397,7 +397,7 @@ export default function Kanban() {
                                   <div className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs">
                                     {val ? (
                                       <span onClick={() => window.open(val.startsWith('http') ? val : val, '_blank')}
-                                        className="flex items-center gap-1.5 text-[#4f46e5] hover:underline cursor-pointer truncate max-w-[140px]">
+                                        className="text-[#4f46e5] hover:underline cursor-pointer block overflow-hidden text-ellipsis whitespace-nowrap" title={(driveFiles.find((f:any)=>val.includes(f.id))?.name || val.split('/').pop() || val)}>
                                         {(driveFiles.find((f:any)=>val.includes(f.id))?.name || val.split('/').pop() || val)}
                                       </span>
                                     ) : (

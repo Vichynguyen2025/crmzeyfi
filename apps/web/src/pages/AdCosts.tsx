@@ -19,7 +19,7 @@ export default function AdCosts() {
     </div>}
     <div className="bg-white rounded-2xl border border-border overflow-hidden">
       <table className="w-full table-fixed text-sm"><colgroup><col className="w-32"/><col className="w-36"/><col className="w-32"/><col/></colgroup><thead><tr className="border-b border-border bg-gray-50"><th className="text-left px-4 py-3 text-xs font-semibold text-muted">Ngày</th><th className="text-left px-4 py-3 text-xs font-semibold text-muted">Platform</th><th className="text-left px-4 py-3 text-xs font-semibold text-muted">Số tiền</th><th className="text-left px-4 py-3 text-xs font-semibold text-muted">Mô tả</th></tr></thead>
-      <tbody>{costs.map(c => <tr key={c.id} className="border-b border-border hover:bg-gray-50"><td className="px-4 py-3 text-xs text-muted">{c.date}</td><td className="px-4 py-3"><span className="px-3 py-1 bg-indigo-50 text-primary rounded-full text-xs font-medium">{c.platform}</span></td><td className="px-4 py-3 font-semibold text-right">{Number(c.amount).toLocaleString('vi-VN')}đ</td><td className="px-4 py-3 text-xs text-muted truncate max-w-[200px]">c.description||'—'}</td></tr>)}</tbody></table>
+      <tbody>{costs.map(c => <tr key={c.id} className="border-b border-border hover:bg-gray-50"><td className="px-4 py-3 text-xs text-muted">{c.date}</td><td className="px-4 py-3"><span className="px-3 py-1 bg-indigo-50 text-primary rounded-full text-xs font-medium">{c.platform}</span></td><td className="px-4 py-3 font-semibold text-right">{Number(c.amount).toLocaleString('vi-VN')}đ</td><td className="px-4 py-3 text-xs text-muted truncate max-w-[200px]">{c.description||'—'}</td></tr>)}</tbody></table>
     </div>
   </div>);
 }
