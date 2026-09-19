@@ -123,16 +123,16 @@ export default function UsersPage() {
       )}
 
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-        <table className="w-full table-fixed text-sm">
+        <table className="w-full table-fixed text-sm"><colgroup><col className="w-44"/><col className="w-52"/><col className="w-36"/><col className="w-32"/><col className="w-28"/><col className="w-28"/><col className="w-32"/><col className="w-24"/></colgroup>
           <thead>
             <tr className="border-b border-border bg-gray-50">
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Nhân sự</th>
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Team</th>
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Chức vụ</th>
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Quê quán</th>
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Ngày vào</th>
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Trạng thái</th>
-              <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Vai trò</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Nhân sự</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Team</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Chức vụ</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Quê quán</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Ngày vào</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Trạng thái</th>
+              <th className="text-left px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Vai trò</th>
               <th className="p-4"></th>
             </tr>
           </thead>

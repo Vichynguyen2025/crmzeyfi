@@ -313,7 +313,7 @@ export default function Kanban() {
       {view === 'sheet' && (
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="overflow-auto max-h-[65vh]">
-            <table className="w-full table-fixed">
+            <table className="w-full table-fixed"><colgroup><col className="w-10"/><col className="min-w-[180px]"/><col className="min-w-[160px]"/><col className="min-w-[160px]"/><col className="w-28"/><col className="w-28"/><col className="w-32"/><col className="w-36"/><col className="w-36"/><col className="w-24"/></colgroup>
               <thead className="sticky top-0 z-10">
                 <tr className="bg-gray-50/90 border-b-2 border-border">
                   <th className="w-10 p-0 text-center py-3">
