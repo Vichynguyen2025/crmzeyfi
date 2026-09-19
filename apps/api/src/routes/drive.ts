@@ -2,19 +2,18 @@ import { FastifyInstance } from 'fastify';
 import { v4 as uuid } from 'uuid';
 import { pool } from '../db/index';
 import { io } from '../index';
+import fs from 'fs';
+import path from 'path';
 
 export default async function (app: FastifyInstance) {
   app.get('/drive', async (req, reply) => {
+    if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
     const q = req.query as any;
-    const parentId = q.parentId || null;
-    let sql, params;
-    if (parentId) {
-      sql = "SELECT df.*, u.name as uploadedByName FROM drive_files df LEFT JOIN users u ON u.id = df.uploaded_by WHERE df.parent_id = ? ORDER BY df.type = 'folder' DESC, df.created_at DESC";
-      params = [parentId];
-    } else {
-      sql = "SELECT df.*, u.name as uploadedByName FROM drive_files df LEFT JOIN users u ON u.id = df.uploaded_by WHERE df.parent_id IS NULL ORDER BY df.type = 'folder' DESC, df.created_at DESC";
-      params = [];
-    }
+    let sql = "SELECT df.*, u.name as uploadedByName FROM drive_files df LEFT JOIN users u ON u.id = df.uploaded_by";
+    const params: any[] = [];
+    if (q.parentId) { sql += " WHERE df.parent_id = ?"; params.push(q.parentId); }
+    else { sql += " WHERE df.parent_id IS NULL"; }
+    sql += " ORDER BY df.type DESC, df.created_at DESC";
     const [rows] = await pool.execute(sql, params);
     reply.send(rows);
   });
@@ -24,27 +23,35 @@ export default async function (app: FastifyInstance) {
     const { name, parentId } = req.body as any;
     const id = uuid();
     await pool.execute(
-      "INSERT INTO drive_files (id, name, type, parent_id, uploaded_by) VALUES (?, ?, 'folder', ?, ?)",
-      [id, name, parentId || null, req.user.id]
+      "INSERT INTO drive_files (id, name, type, uploaded_by, parent_id) VALUES (?, ?, 'folder', ?, ?)",
+      [id, name, req.user.id || '', parentId || null]
     );
-    const [u] = await pool.execute("SELECT name FROM users WHERE id = ?", [req.user.id]);
-    const userName = (u as any[])[0]?.name || 'Unknown';
-    io.emit('drive:update', { id, name, type: 'folder', parentId, uploadedByName: userName });
-    reply.send({ id, success: true });
+    io.emit('drive:update', { id, name, action: 'create' });
+    reply.send({ success: true, id });
   });
 
+  // Upload file: receive base64 data
   app.post('/drive/upload', async (req, reply) => {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
-    const { name, mimeType, size, url, parentId } = req.body as any;
+    const { name, mimeType, size, data, parentId } = req.body as any;
     const id = uuid();
+    let url = '';
+    // Save file to disk if base64 data provided
+    if (data) {
+      const uploadDir = '/opt/crmzeyfi-ts/uploads';
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+      const ext = path.extname(name);
+      const savedName = id + ext;
+      const buffer = Buffer.from(data, 'base64');
+      fs.writeFileSync(path.join(uploadDir, savedName), buffer);
+      url = '/uploads/' + savedName;
+    }
     await pool.execute(
       "INSERT INTO drive_files (id, name, type, mime_type, size, url, parent_id, uploaded_by) VALUES (?, ?, 'file', ?, ?, ?, ?, ?)",
-      [id, name, mimeType, size || 0, url, parentId || null, req.user.id]
+      [id, name, mimeType || '', size || 0, url, parentId || null, req.user.id || '']
     );
-    const [u] = await pool.execute("SELECT name FROM users WHERE id = ?", [req.user.id]);
-    const userName = (u as any[])[0]?.name || 'Unknown';
-    io.emit('drive:update', { id, name, mimeType, size, type: 'file', parentId, uploadedByName: userName });
-    reply.send({ id, success: true });
+    io.emit('drive:update', { id, name, action: 'upload' });
+    reply.send({ success: true, id, url });
   });
 
   app.put('/drive/:id', async (req, reply) => {
@@ -58,7 +65,6 @@ export default async function (app: FastifyInstance) {
   app.delete('/drive/:id', async (req, reply) => {
     const { id } = req.params as any;
     await pool.execute("DELETE FROM drive_files WHERE id = ?", [id]);
-    // Also delete children
     await pool.execute("DELETE FROM drive_files WHERE parent_id = ?", [id]);
     io.emit('drive:update', { id, action: 'delete' });
     reply.send({ success: true });

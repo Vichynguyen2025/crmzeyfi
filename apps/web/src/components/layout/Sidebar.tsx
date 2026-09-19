@@ -3,17 +3,17 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, ClipboardList, KanbanSquare, PhoneCall, DollarSign, Calendar, UserCog, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package } from 'lucide-react';
 
 const NAV = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-  { label: 'Tài khoản', icon: UserCog, path: '/users' },
-  { label: 'Kinh doanh 3M', icon: Users, path: '/teams' },
-  { label: 'Kho dữ liệu', icon: HardDrive, path: '/drive' },
-  { label: 'Kênh Marketing', icon: Globe, path: '/channels' },
-  { label: 'Sản phẩm', icon: Package, path: '/products' },
-  { label: 'Báo cáo', icon: ClipboardList, path: '/reports' },
-  { label: 'Kanban', icon: KanbanSquare, path: '/kanban' },
-  { label: 'Khách hàng', icon: PhoneCall, path: '/customers' },
-  { label: 'Chi phí QC', icon: DollarSign, path: '/ad-costs' },
-  { label: 'Lịch', icon: Calendar, path: '/calendar' },
+  { label: 'Dashboard', icon: LayoutDashboard, path: '/crm/dashboard' },
+  { label: 'Tài khoản', icon: UserCog, path: '/crm/users' },
+  { label: 'Kinh doanh 3M', icon: Users, path: '/crm/teams' },
+  { label: 'Kho dữ liệu', icon: HardDrive, path: '/crm/drive' },
+  { label: 'Kênh Marketing', icon: Globe, path: '/crm/channels' },
+  { label: 'Sản phẩm', icon: Package, path: '/crm/products' },
+  { label: 'Báo cáo', icon: ClipboardList, path: '/crm/reports' },
+  { label: 'Công việc', icon: KanbanSquare, path: '/crm/kanban' },
+  { label: 'Khách hàng', icon: PhoneCall, path: '/crm/customers' },
+  { label: 'Chi phí QC', icon: DollarSign, path: '/crm/ad-costs' },
+  { label: 'Lịch', icon: Calendar, path: '/crm/calendar' },
 ];
 
 export default function Sidebar() {

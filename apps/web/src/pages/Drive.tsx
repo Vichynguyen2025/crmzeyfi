@@ -40,6 +40,7 @@ export default function Drive() {
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [folderName, setFolderName] = useState('');
   const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  const [preview, setPreview] = useState<any>(null);
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({type, message});
@@ -123,13 +124,18 @@ export default function Drive() {
             <input type="file" className="hidden" onChange={async (e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              try {
-                await api('/drive/upload', { method:'POST', body:JSON.stringify({
-                  name: file.name, mimeType: file.type, size: file.size, url: '', parentId: currentFolder
-                })});
-                showToast('success', 'Đã tải lên "' + file.name + '"');
-                load();
-              } catch { showToast('error', 'Lỗi tải lên'); }
+              const reader = new FileReader();
+              reader.onload = async (ev) => {
+                try {
+                  const base64 = (ev.target?.result as string)?.split(',')[1] || '';
+                  await api('/drive/upload', { method:'POST', body:JSON.stringify({
+                    name: file.name, mimeType: file.type, size: file.size, data: base64, parentId: currentFolder
+                  })});
+                  showToast('success', 'Đã tải lên "' + file.name + '"');
+                  load();
+                } catch(e: any) { showToast('error', 'Lỗi tải lên: ' + (e.message||'')); }
+              };
+              reader.readAsDataURL(file);
             }} />
           </label>
         </div>
@@ -170,7 +176,7 @@ export default function Drive() {
                     onClick={() => item.type === 'folder' && openFolder(item.id, item.name)}>
                     {item.type === 'folder' ? <Folder size={22} className="text-amber-500" /> : <Icon size={22} className="text-[#4f46e5]" />}
                   </div>
-                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => item.type === 'folder' && openFolder(item.id, item.name)}>
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => { if (item.type === 'folder') openFolder(item.id, item.name); else setPreview(item); }}>
                     <p className="font-medium text-sm text-[#171717] truncate">{item.name}</p>
                     <div className="flex items-center gap-3 text-xs text-muted mt-0.5">
                       <span>{item.type === 'folder' ? 'Thư mục' : formatSize(item.size) || 'File'}</span>
@@ -198,6 +204,60 @@ export default function Drive() {
           </div>
         )}
       </div>
+    {/* Preview Modal */}
+      {preview && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setPreview(null)}>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center">
+                  {(() => { const Icon = getFileIcon(preview.mime_type); return <Icon size={20} className="text-[#4f46e5]" />; })()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-[#171717]">{preview.name}</h3>
+                  <p className="text-xs text-muted">{preview.mime_type || 'File'} — {formatSize(preview.size)}</p>
+                </div>
+              </div>
+              <button onClick={() => setPreview(null)} className="p-2 rounded-xl hover:bg-gray-100 transition-all"><X size={20} /></button>
+            </div>
+            <div className="flex-1 overflow-auto bg-gray-50/50">
+              {preview.mime_type?.startsWith('image/') ? (
+                <div className="p-6 flex items-center justify-center min-h-[400px]">
+                  <img src={preview.url || '/placeholder'} alt={preview.name}
+                    className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-sm" onError={(e: any) => { e.target.style.display = 'none'; }} />
+                </div>
+              ) : preview.mime_type === 'application/pdf' ? (
+                <embed src={preview.url} type="application/pdf" className="w-full h-[70vh]" />
+              ) : preview.mime_type?.startsWith('video/') ? (
+                <div className="p-6 flex items-center justify-center min-h-[400px]">
+                  <video src={preview.url} controls className="max-w-full max-h-[65vh] rounded-xl shadow-sm" />
+                </div>
+              ) : (
+                <div className="p-6 flex flex-col items-center justify-center min-h-[200px]">
+                  {(preview.mime_type?.includes('wordprocessing') || preview.mime_type?.includes('spreadsheet') || preview.mime_type?.includes('presentation')) ? (
+                    preview.url ? (
+                      <iframe src={'https://docs.google.com/viewer?url=' + encodeURIComponent(window.location.origin + preview.url) + '&embedded=true'}
+                        className="w-full h-[70vh] rounded-xl border border-border" title="Preview" />
+                    ) : (
+                      <div className="text-center text-muted">
+                        <FileText size={64} className="mx-auto mb-4 opacity-30" />
+                        <p className="font-medium">Không thể xem trước</p>
+                        <p className="text-sm mt-1">File này chưa có dữ liệu. Hãy tải lại file.</p>
+                      </div>
+                    )
+                  ) : (
+                    <div className="text-center text-muted">
+                      <FileText size={64} className="mx-auto mb-4 opacity-30" />
+                      <p className="font-medium">Không thể xem trước</p>
+                      <p className="text-sm mt-1">Định dạng {preview.mime_type || 'không xác định'} chưa hỗ trợ xem trước</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

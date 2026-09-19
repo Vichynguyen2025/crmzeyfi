@@ -20,7 +20,7 @@ export default function Login() {
       const data = await api('/auth/login', { method: 'POST', body: JSON.stringify(body) });
       localStorage.setItem('zeyfi_token', data.accessToken);
       localStorage.setItem('zeyfi_user', JSON.stringify(data.user));
-      nav('/dashboard');
+      nav('/crm/dashboard');
     } catch (e: any) { setError(e.message || 'Lỗi đăng nhập'); }
     setLoading(false);
   };
@@ -59,9 +59,6 @@ export default function Login() {
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
-        <p className="text-center text-sm text-[#6b7280] mt-6">
-          Chưa có tài khoản? <a href="/register" className="text-[#4f46e5] font-semibold hover:underline">Đăng ký</a>
-        </p>
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Users, Plus, X, Phone, Mail, Shield, Edit3, Trash2, BarChart3, Globe, ExternalLink, User, CheckCircle, AlertCircle } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
+import { slugify } from '../lib/utils';
 import { getSocket } from '../lib/socket';
 
 const COLORS = ['#4f46e5','#f59e0b','#22c55e','#ec4899','#06b6d4','#f97316','#8b5cf6'];
@@ -22,6 +24,9 @@ export default function Teams() {
   const [kpiMonth, setKpiMonth] = useState(new Date().toISOString().slice(0, 7));
   const [planData, setPlanData] = useState<any[]>([]);
   const [planMonth, setPlanMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [slugMap, setSlugMap] = useState<Record<string,any>>({});
+  const { teamSlug } = useParams();
+  const nav = useNavigate();
   const [actualMonth, setActualMonth] = useState(new Date().toISOString().slice(0, 7));
   const [actualView, setActualView] = useState<'week'|'month'>('month');
   const [dailyUser, setDailyUser] = useState<any>(null);
@@ -185,6 +190,27 @@ export default function Teams() {
   const load = () => { api('/teams').then(setTeams); api('/users').then(setUsers).catch(() => {}); };
   useEffect(() => { load(); loadPlan(planMonth); }, []);
 
+  // URL-based team detail
+  useEffect(() => {
+    if (teamSlug) {
+      const team = slugMap[teamSlug];
+      if (team) openTeam(team);
+      else if (teams.length > 0) {
+        const found = teams.find((t: any) => slugify(t.name) === teamSlug);
+        if (found) openTeam(found);
+      }
+    }
+  }, [teamSlug, teams, slugMap]);
+
+  // Build slug map when teams load
+  useEffect(() => {
+    const map: Record<string,any> = {};
+    teams.forEach((t: any) => { map[slugify(t.name)] = t; });
+    setSlugMap(map);
+  }, [teams]);
+
+  // Realtime
+
   // Realtime
   useEffect(() => {
     const sock = getSocket();
@@ -267,7 +293,7 @@ export default function Teams() {
         {/* Back button + Team header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => setSelectedTeam(null)} className="px-3 py-2 bg-white border border-border rounded-xl text-sm hover:bg-gray-50 transition-all">← Quay lại</button>
+            <button onClick={() => nav('/crm/teams')} className="px-3 py-2 bg-white border border-border rounded-xl text-sm hover:bg-gray-50 transition-all">← Quay lại</button>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl grid place-items-center text-white font-bold text-lg shadow-sm" style={{backgroundColor: selectedTeam.color || '#4f46e5'}}>
                 {selectedTeam.name?.charAt(0)?.toUpperCase() || '?'}
@@ -759,8 +785,7 @@ export default function Teams() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
         {teams.map(t => (
-          <div key={t.id} className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-all overflow-hidden cursor-pointer"
-            onClick={() => openTeam(t)}>
+          <div key={t.id} onClick={() => nav('/crm/teams/' + slugify(t.name))} className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-all cursor-pointer">
             <div className="p-5">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl grid place-items-center text-white font-bold text-sm shadow-sm"
