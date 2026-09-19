@@ -17,7 +17,7 @@ const COLUMNS = [
   { key: 'content', label: 'Nội dung', type: 'content', w: 'min-w-[180px]', editable: false },
   { key: 'productLink', label: 'Link sản phẩm', type: 'link', w: 'min-w-[180px]', editable: true },
   { key: 'status', label: 'Trạng thái', type: 'select', w: 'w-32', editable: true, options: STATUSES.map(s => ({ value: s.key, label: s.label })) },
-  { key: 'priority', label: 'Độ ưu tiên', type: 'select', w: 'w-28', editable: true, options: PRIORITIES.map(p => ({ value: p, label: p === 'urgent' ? 'Khẩn cấp' : p === 'high' ? 'Cao' : p === 'medium' ? 'Trung bình' : 'Thấp' })) },
+  { key: 'priority', label: 'Độ ưu tiên', type: 'select', w: 'w-36', editable: true, options: PRIORITIES.map(p => ({ value: p, label: p === 'urgent' ? 'Khẩn cấp' : p === 'high' ? 'Cao' : p === 'medium' ? 'Trung bình' : 'Thấp' })) },
   { key: 'dueDate', label: 'Hạn hoàn thành', type: 'date', w: 'w-28', editable: true },
   { key: 'createdAt', label: 'Ngày tạo', type: 'date', w: 'w-28', editable: false },
   { key: 'createdByName', label: 'Người tạo', type: 'text', w: 'w-36', editable: false },
@@ -313,7 +313,7 @@ export default function Kanban() {
       {view === 'sheet' && (
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="overflow-auto max-h-[65vh]">
-            <table className="w-full">
+            <table className="w-full table-fixed">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-gray-50/90 border-b-2 border-border">
                   <th className="w-10 p-0 text-center py-3">
@@ -380,10 +380,12 @@ export default function Kanban() {
                                     review: 'bg-indigo-100 text-indigo-700', done: 'bg-green-100 text-green-700',
                                   }[val] || 'bg-gray-100 text-muted')}>{STATUSES.find(s => s.key === val)?.label || val}</span>
                                 ) : col.key === 'priority' ? (
-                                  <span className={'px-2.5 py-1 rounded-md text-[11px] font-medium ' + ({
-                                    urgent: 'bg-red-100 text-red-700', high: 'bg-amber-100 text-amber-700',
-                                    medium: 'bg-blue-100 text-blue-700', low: 'bg-gray-100 text-gray-600',
-                                  }[val] || 'bg-gray-100 text-gray-600')}>{PRIORITY_MAP[val] || val || 'Trung bình'}</span>
+                                  <div className="flex items-center justify-center px-2.5 py-2">
+                                    <span className={'px-2.5 py-1 rounded-md text-[11px] font-medium text-center ' + ({
+                                      urgent: 'bg-red-100 text-red-700', high: 'bg-amber-100 text-amber-700',
+                                      medium: 'bg-blue-100 text-blue-700', low: 'bg-gray-100 text-gray-600',
+                                    }[val] || 'bg-gray-100 text-gray-600')}>{PRIORITY_MAP[val] || val || 'Trung bình'}</span>
+                                  </div>
                                 ) : col.key === 'content' ? (
                                   <div onClick={e => { e.stopPropagation(); if (task) setContentEditor({id: task.id, text: task.description || ''}); }}
                                     className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer hover:bg-gray-100/80 transition-all">
@@ -394,14 +396,16 @@ export default function Kanban() {
                                 ) : col.key === 'productLink' ? (
                                   <div className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs">
                                     {val ? (
-                                      <a href={val} target="_blank" rel="noopener noreferrer"
-                                        className="text-[#4f46e5] hover:underline truncate max-w-[130px]">{val}</a>
+                                      <span onClick={() => window.open(val.startsWith('http') ? val : val, '_blank')}
+                                        className="flex items-center gap-1.5 text-[#4f46e5] hover:underline cursor-pointer truncate max-w-[140px]">
+                                        {(driveFiles.find((f:any)=>val.includes(f.id))?.name || val.split('/').pop() || val)}
+                                      </span>
                                     ) : (
                                       <span className="text-muted italic">—</span>
                                     )}
                                     <button onClick={e => { e.stopPropagation(); setDrivePicker({taskId: task.id, open: true}); setEditing(null); }}
-                                      className="ml-1 p-1 rounded hover:bg-indigo-50 text-muted hover:text-[#4f46e5] transition-all" title="Chọn từ Kho dữ liệu">
-                                      <span className="text-[10px]">📎</span>
+                                      className="ml-1 p-0.5 rounded hover:bg-indigo-50 text-muted hover:text-[#4f46e5] transition-all shrink-0" title="Chọn từ Kho dữ liệu">
+                                      <span className="text-[11px]">📎</span>
                                     </button>
                                   </div>
                                 ) : col.key === 'createdAt' ? (

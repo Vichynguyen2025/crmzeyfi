@@ -286,7 +286,7 @@ export default function Reports() {
           </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b border-border bg-gray-50">
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-40">Nhân sự</th>
@@ -344,7 +344,7 @@ export default function Reports() {
             <span className="text-xs text-muted">Chi tiết ngày giờ gửi</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b border-border bg-gray-50">
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-left">Ngày</th>

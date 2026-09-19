@@ -56,7 +56,7 @@ export default function Customers() {
 
       {/* Customer list */}
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full table-fixed text-sm">
           <thead>
             <tr className="border-b border-border bg-gray-50">
               <th className="text-left p-4 font-semibold text-muted text-xs uppercase tracking-wider">Khách hàng</th>

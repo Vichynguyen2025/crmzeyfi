@@ -18,7 +18,7 @@ export default function AdCosts() {
       <div className="flex gap-2"><button onClick={async () => { await api('/ad-costs',{method:'POST',body:JSON.stringify({...form,teamId:'',date:new Date().toISOString().slice(0,10)})}); setShow(false); }} className="px-4 py-2 bg-[#4f46e5] text-white rounded-xl text-sm font-medium">Lưu</button><button onClick={() => setShow(false)} className="px-4 py-2 bg-gray-100 rounded-xl text-sm">Huỷ</button></div>
     </div>}
     <div className="bg-white rounded-2xl border border-border overflow-hidden">
-      <table className="w-full text-sm"><thead><tr className="border-b border-border bg-gray-50"><th className="text-left p-4 font-semibold text-muted">Ngày</th><th className="text-left p-4 font-semibold text-muted">Platform</th><th className="text-left p-4 font-semibold text-muted">Số tiền</th><th className="text-left p-4 font-semibold text-muted">Mô tả</th></tr></thead>
+      <table className="w-full table-fixed text-sm"><thead><tr className="border-b border-border bg-gray-50"><th className="text-left p-4 font-semibold text-muted">Ngày</th><th className="text-left p-4 font-semibold text-muted">Platform</th><th className="text-left p-4 font-semibold text-muted">Số tiền</th><th className="text-left p-4 font-semibold text-muted">Mô tả</th></tr></thead>
       <tbody>{costs.map(c => <tr key={c.id} className="border-b border-border hover:bg-gray-50"><td className="p-4">{c.date}</td><td className="p-4"><span className="px-3 py-1 bg-indigo-50 text-primary rounded-full text-xs font-medium">{c.platform}</span></td><td className="p-4 font-semibold">{Number(c.amount).toLocaleString('vi-VN')}đ</td><td className="p-4 text-muted">{c.description||'—'}</td></tr>)}</tbody></table>
     </div>
   </div>);

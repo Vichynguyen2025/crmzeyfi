@@ -372,7 +372,7 @@ export default function Teams() {
           </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b border-border bg-gray-50">
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Nhân sự</th>
@@ -467,7 +467,7 @@ export default function Teams() {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full table-fixed text-sm">
               <thead>
                 <tr className="border-b border-border bg-gray-50">
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Nhân sự</th>
@@ -575,7 +575,7 @@ export default function Teams() {
             </div>
             <div className="p-6">
               <div className="overflow-x-auto max-h-[50vh] overflow-y-auto relative">
-                <table className="w-full text-sm">
+                <table className="w-full table-fixed text-sm">
                   <thead className="sticky top-0 z-10 bg-white">
                     <tr className="border-b border-border bg-gray-50">
                       <th className="p-2.5 text-xs font-semibold text-muted uppercase text-left w-24">Ngày</th>
@@ -738,7 +738,7 @@ export default function Teams() {
             className="px-4 py-2 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full table-fixed text-sm">
             <thead>
               <tr className="border-b border-border bg-gray-50/80">
                 <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-44">Team</th>
