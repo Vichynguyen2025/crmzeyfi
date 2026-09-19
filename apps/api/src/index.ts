@@ -15,6 +15,7 @@ import productsRoutes from './routes/products';
 import kpiRoutes from './routes/kpis';
 import actualRoutes from './routes/actuals';
 import dailyPerfRoutes from './routes/daily-perf';
+import seoRoutes from './routes/seo';
 import mysql from 'mysql2/promise';
 
 const pool = mysql.createPool({ socketPath: '/tmp/mysql.sock', user: 'root', password: '8ffcb61af33a11f0', database: 'crmzeyfi', waitForConnections: true, connectionLimit: 5 });

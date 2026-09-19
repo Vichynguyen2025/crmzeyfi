@@ -13,11 +13,15 @@ const STATUSES = [
 const PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const;
 
 const COLUMNS = [
-  { key: 'title', label: 'Tên công việc', type: 'text', w: 'min-w-[240px]', editable: true },
-  { key: 'status', label: 'Trạng thái', type: 'select', w: 'w-36', editable: true, options: STATUSES.map(s => ({ value: s.key, label: s.label })) },
+  { key: 'title', label: 'Tên công việc', type: 'text', w: 'min-w-[200px]', editable: true },
+  { key: 'content', label: 'Nội dung', type: 'content', w: 'min-w-[180px]', editable: false },
+  { key: 'productLink', label: 'Link sản phẩm', type: 'link', w: 'min-w-[180px]', editable: true },
+  { key: 'status', label: 'Trạng thái', type: 'select', w: 'w-32', editable: true, options: STATUSES.map(s => ({ value: s.key, label: s.label })) },
   { key: 'priority', label: 'Độ ưu tiên', type: 'select', w: 'w-28', editable: true, options: PRIORITIES.map(p => ({ value: p, label: p === 'urgent' ? 'Khẩn cấp' : p === 'high' ? 'Cao' : p === 'medium' ? 'Trung bình' : 'Thấp' })) },
-  { key: 'assigneeName', label: 'Người thực hiện', type: 'text', w: 'w-40', editable: false },
-  { key: 'created_at', label: 'Ngày tạo', type: 'date', w: 'w-28', editable: false },
+  { key: 'dueDate', label: 'Hạn hoàn thành', type: 'date', w: 'w-28', editable: true },
+  { key: 'createdAt', label: 'Ngày tạo', type: 'date', w: 'w-28', editable: false },
+  { key: 'createdByName', label: 'Người tạo', type: 'text', w: 'w-36', editable: false },
+  { key: 'assigneeName', label: 'Người thực hiện', type: 'text', w: 'w-36', editable: false },
 ];
 
 const PRIORITY_MAP: Record<string, string> = { urgent: 'Khẩn cấp', high: 'Cao', medium: 'Trung bình', low: 'Thấp' };
@@ -29,11 +33,17 @@ export default function Kanban() {
   const [drag, setDrag] = useState<any>(null);
   const [view, setView] = useState<'kanban' | 'sheet'>('sheet');
   const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterPriority, setFilterPriority] = useState('');
+  const [filterAssignee, setFilterAssignee] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<{id: string, col: string} | null>(null);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{type: 'success' | 'error', msg: string} | null>(null);
+  const [contentEditor, setContentEditor] = useState<{id: string, text: string} | null>(null);
+  const [drivePicker, setDrivePicker] = useState<{taskId: string, open: boolean}>({taskId: '', open: false});
+  const [driveFiles, setDriveFiles] = useState<any[]>([]);
 
   const showToast = (type: 'success' | 'error', msg: string) => { setToast({type, msg}); setTimeout(() => setToast(null), 2000); };
 
@@ -44,7 +54,18 @@ export default function Kanban() {
     return () => { sock.off('task:new'); sock.off('task:updated'); sock.off('task:deleted'); };
   }, [load]);
 
-  const filtered = tasks.filter(t => !search || t.title?.toLowerCase().includes(search.toLowerCase()));
+  // Load drive files when picker opens
+  useEffect(() => {
+    if (drivePicker.open) { api('/drive').then(setDriveFiles).catch(() => {}); }
+  }, [drivePicker.open]);
+
+  const filtered = tasks.filter(t => {
+    if (search && !t.title?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterStatus && t.status !== filterStatus) return false;
+    if (filterPriority && t.priority !== filterPriority) return false;
+    if (filterAssignee && t.assigneeName !== filterAssignee && (t.assigneeName || '') !== filterAssignee) return false;
+    return true;
+  });
   const allSelected = filtered.length > 0 && selectedIds.size === filtered.length;
 
   const saveField = async (id: string, field: string, value: string) => {
@@ -91,8 +112,75 @@ export default function Kanban() {
   const confirmEdit = () => { if (editing) saveField(editing.id, editing.col, editValue); };
   const cancelEdit = () => setEditing(null);
 
+  const contentSummary = (text: string) => {
+    if (!text) return '';
+    const first = text.split('\n')[0] || '';
+    return first.length > 60 ? first.slice(0, 60) + '...' : first;
+  };
+
+  const PRIORITY_MAP2: Record<string, string> = { urgent: 'Khẩn cấp', high: 'Cao', medium: 'Trung bình', low: 'Thấp' };
+  const STATUS_COLORS: Record<string, string> = {
+    todo: 'bg-red-100 text-red-700', in_progress: 'bg-amber-100 text-amber-700',
+    review: 'bg-indigo-100 text-indigo-700', done: 'bg-green-100 text-green-700',
+  };
+  const PRIORITY_COLORS: Record<string, string> = {
+    urgent: 'bg-red-100 text-red-700', high: 'bg-amber-100 text-amber-700',
+    medium: 'bg-blue-100 text-blue-700', low: 'bg-gray-100 text-gray-600',
+  };
+
   return (
     <div className="text-sm leading-[1.5] text-[#171717]">
+      {toast && (
+        <div className={'fixed top-4 right-4 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl shadow-xl border text-sm font-medium animate-slide-in ' +
+          (toast.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700')}>
+          {toast.type === 'success' ? <Check size={18} className="shrink-0" /> : <AlertCircle size={18} className="shrink-0" />}
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Content Editor Modal */}
+      {contentEditor && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setContentEditor(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
+            {/* Toolbar */}
+            <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-gray-50/80">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold">&#9998;</div>
+                <div>
+                  <h3 className="font-bold text-sm text-[#171717]">Soạn nội dung công việc</h3>
+                  <p className="text-xs text-muted mt-0.5">{tasks.find(t => t.id === contentEditor.id)?.title || ''}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={async () => {
+                  await saveField(contentEditor.id, 'description', contentEditor.text);
+                  setContentEditor(null);
+                }} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all shadow-sm">
+                  <Check size={16} /> Lưu & Đóng
+                </button>
+                <button onClick={() => setContentEditor(null)} className="p-2.5 rounded-xl hover:bg-gray-100 transition-all"><X size={18} /></button>
+              </div>
+            </div>
+            {/* Word-like editor */}
+            <div className="flex-1 overflow-auto p-8 bg-[#fafafa]">
+              <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-border p-8 min-h-[500px]">
+                <textarea value={contentEditor.text} onChange={e => setContentEditor({...contentEditor, text: e.target.value})}
+                  placeholder="Viết nội dung chi tiết tại đây...&#10;&#10;Bạn có thể viết nhiều dòng,&#10;dòng đầu tiên sẽ hiển thị tóm tắt trên bảng."
+                  className="w-full min-h-[450px] resize-none bg-transparent border-0 text-sm text-[#171717] leading-7 outline-none placeholder-muted/40"
+                  style={{fontFamily: "'Inter', sans-serif", fontSize: '14px', lineHeight: '1.8'}}
+                />
+              </div>
+            </div>
+            {/* Status bar */}
+            <div className="px-6 py-2.5 bg-gray-50/80 border-t border-border flex items-center gap-4 text-xs text-muted">
+              <span><span className="font-medium">Dòng đầu</span> sẽ hiển thị tóm tắt trên bảng</span>
+              <span className="w-px h-3 bg-border/60" />
+              <span>{contentEditor.text?.length || 0} ký tự</span>
+              <span className="ml-auto">Ctrl+S để lưu</span>
+            </div>
+          </div>
+        </div>
+      )}
       {toast && (
         <div className={'fixed top-4 right-4 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl shadow-xl border text-sm font-medium animate-slide-in ' +
           (toast.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700')}>
@@ -104,7 +192,7 @@ export default function Kanban() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-[#171717]">Công việc</h1>
+          <h1 className="text-2xl font-bold text-[#171717]">Marketing eSim</h1>
           <div className="flex items-center gap-1 bg-white rounded-xl border border-border shadow-sm p-0.5">
             {(['kanban', 'sheet'] as const).map(v => (
               <button key={v} onClick={() => setView(v)}
@@ -121,8 +209,28 @@ export default function Kanban() {
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Tìm kiếm..."
-              className="w-48 pl-9 pr-4 py-2 bg-white border border-border rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25 transition-all" />
+              className="w-40 pl-9 pr-4 py-2 bg-white border border-border rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25 transition-all" />
           </div>
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+            className="px-3 py-2 bg-white border border-border rounded-xl text-xs text-ink outline-none focus:ring-2 focus:ring-[#4f46e5]/25 cursor-pointer">
+            <option value="">Trạng thái</option>
+            {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+          </select>
+          <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)}
+            className="px-3 py-2 bg-white border border-border rounded-xl text-xs text-ink outline-none focus:ring-2 focus:ring-[#4f46e5]/25 cursor-pointer">
+            <option value="">Độ ưu tiên</option>
+            <option value="urgent">Khẩn cấp</option>
+            <option value="high">Cao</option>
+            <option value="medium">Trung bình</option>
+            <option value="low">Thấp</option>
+          </select>
+          <select value={filterAssignee} onChange={e => setFilterAssignee(e.target.value)}
+            className="px-3 py-2 bg-white border border-border rounded-xl text-xs text-ink outline-none focus:ring-2 focus:ring-[#4f46e5]/25 cursor-pointer">
+            <option value="">Người thực hiện</option>
+            {[...new Set(tasks.filter(t => t.assigneeName).map(t => t.assigneeName))].map(name =>
+              <option key={name} value={name}>{name}</option>
+            )}
+          </select>
           <button onClick={() => setShowAdd(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all shadow-sm">
             <Plus size={16} /> Thêm
@@ -249,6 +357,11 @@ export default function Kanban() {
                                   className="w-full px-2.5 py-2 bg-white border-2 border-[#4f46e5] rounded-lg text-xs text-ink outline-none">
                                   {col.options?.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                 </select>
+                              ) : col.type === 'date' ? (
+                                <input type="date" value={editValue || ''} onChange={e => setEditValue(e.target.value)}
+                                  onBlur={confirmEdit} autoFocus
+                                  onKeyDown={e => { if (e.key === 'Enter') confirmEdit(); if (e.key === 'Escape') cancelEdit(); }}
+                                  className="w-full px-2.5 py-2 bg-white border-2 border-[#4f46e5] rounded-lg text-xs text-ink outline-none" />
                               ) : (
                                 <input value={editValue} onChange={e => setEditValue(e.target.value)}
                                   onBlur={confirmEdit} autoFocus
@@ -271,8 +384,36 @@ export default function Kanban() {
                                     urgent: 'bg-red-100 text-red-700', high: 'bg-amber-100 text-amber-700',
                                     medium: 'bg-blue-100 text-blue-700', low: 'bg-gray-100 text-gray-600',
                                   }[val] || 'bg-gray-100 text-gray-600')}>{PRIORITY_MAP[val] || val || 'Trung bình'}</span>
-                                ) : col.key === 'created_at' ? (
+                                ) : col.key === 'content' ? (
+                                  <div onClick={e => { e.stopPropagation(); if (task) setContentEditor({id: task.id, text: task.description || ''}); }}
+                                    className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer hover:bg-gray-100/80 transition-all">
+                                    <span className={'truncate max-w-[160px] ' + (task.description ? 'text-[#171717]' : 'text-muted italic')}>
+                                      {task.description ? contentSummary(task.description) : 'Viết nội dung...'}
+                                    </span>
+                                  </div>
+                                ) : col.key === 'productLink' ? (
+                                  <div className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs">
+                                    {val ? (
+                                      <a href={val} target="_blank" rel="noopener noreferrer"
+                                        className="text-[#4f46e5] hover:underline truncate max-w-[130px]">{val}</a>
+                                    ) : (
+                                      <span className="text-muted italic">—</span>
+                                    )}
+                                    <button onClick={e => { e.stopPropagation(); setDrivePicker({taskId: task.id, open: true}); setEditing(null); }}
+                                      className="ml-1 p-1 rounded hover:bg-indigo-50 text-muted hover:text-[#4f46e5] transition-all" title="Chọn từ Kho dữ liệu">
+                                      <span className="text-[10px]">📎</span>
+                                    </button>
+                                  </div>
+                                ) : col.key === 'createdAt' ? (
                                   <span className="text-muted">{val ? new Date(val).toLocaleDateString('vi-VN') : '—'}</span>
+                                ) : col.key === 'dueDate' ? (
+                                  <div onClick={() => col.editable && startEdit(task.id, col.key, val)}
+                                    className={'flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs transition-all ' +
+                                      (col.editable ? 'cursor-pointer hover:bg-gray-100/80' : '')}>
+                                    <span className={val ? 'text-[#171717]' : 'text-muted italic'}>{val ? new Date(val).toLocaleDateString('vi-VN') : '—'}</span>
+                                  </div>
+                                ) : col.key === 'createdByName' ? (
+                                  <span className="text-muted">{val || <span className="italic">—</span>}</span>
                                 ) : (
                                   <span className={val ? 'text-[#171717]' : 'text-muted italic'}>{val || '—'}</span>
                                 )}
@@ -305,6 +446,38 @@ export default function Kanban() {
           <div className="flex items-center justify-between px-5 py-3 bg-gray-50/80 border-t border-border">
             <span className="text-xs text-muted">{filtered.length} công việc</span>
             <span className="text-xs text-muted/60">Click để sửa · Tab chuyển cột · Enter lưu · Ctrl+C copy dòng</span>
+          </div>
+        </div>
+      )}
+      {/* Drive Picker Modal */}
+      {drivePicker.open && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDrivePicker({taskId: '', open: false})}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[60vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h3 className="font-bold text-sm text-[#171717]">Chọn tài liệu từ Kho dữ liệu</h3>
+              <button onClick={() => setDrivePicker({taskId: '', open: false})} className="p-2 rounded-xl hover:bg-gray-100 transition-all"><X size={18} /></button>
+            </div>
+            <div className="flex-1 overflow-auto p-4 space-y-2">
+              {driveFiles.filter((f: any) => f.type === 'file').map((f: any) => (
+                <div key={f.id} onClick={async () => {
+                  const url = f.url || f.name;
+                  await saveField(drivePicker.taskId, 'productLink', url);
+                  setDrivePicker({taskId: '', open: false});
+                }}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-all border border-border">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 grid place-items-center text-[#4f46e5] text-xs font-bold">
+                    {f.name.split('.').pop()?.toUpperCase() || '?'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-[#171717] truncate">{f.name}</p>
+                    <p className="text-[10px] text-muted">{f.url || 'Chưa tải lên'}</p>
+                  </div>
+                </div>
+              ))}
+              {driveFiles.filter((f: any) => f.type === 'file').length === 0 && (
+                <div className="text-center py-8 text-xs text-muted">Chưa có tài liệu trong Kho dữ liệu</div>
+              )}
+            </div>
           </div>
         </div>
       )}

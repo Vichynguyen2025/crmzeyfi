@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, text, int, decimal, date, timestamp, mysqlEnum, json } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, text, int, float, decimal, date, timestamp, mysqlEnum, json } from 'drizzle-orm/mysql-core';
 
 export const users = mysqlTable('users', {
   id: varchar('id', { length: 36 }).primaryKey(),
@@ -162,4 +162,57 @@ export const teamDailyPerf = mysqlTable('team_daily_perf', {
   cancelledOrders: int('cancelled_orders').default(0),
   month: varchar('month', { length: 7 }).default(''),
   createdAt: timestamp('created_at').defaultNow(),
+});
+
+// SEO Kế hoạch & KPI
+export const seoPlans = mysqlTable('seo_plans', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  period: varchar('period', { length: 7 }).notNull(),
+  objective: text('objective'),
+  kpi: varchar('kpi', { length: 255 }),
+  task: varchar('task', { length: 255 }).notNull(),
+  assigneeId: varchar('assignee_id', { length: 36 }).references(() => users.id),
+  deadline: date('deadline'),
+  plannedQty: int('planned_qty').default(0),
+  completedQty: int('completed_qty').default(0),
+  status: mysqlEnum('status', ['not_started','in_progress','completed','overdue','paused']).default('not_started'),
+  note: text('note'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// SEO Báo cáo công việc
+export const seoWorkReports = mysqlTable('seo_work_reports', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  date: date('date').notNull(),
+  employeeId: varchar('employee_id', { length: 36 }).notNull().references(() => users.id),
+  category: varchar('category', { length: 100 }),
+  task: varchar('task', { length: 255 }).notNull(),
+  url: varchar('url', { length: 500 }),
+  qty: int('qty').default(0),
+  status: mysqlEnum('status', ['pending','in_progress','completed','paused','overdue']).default('pending'),
+  completionPercent: int('completion_percent').default(0),
+  planId: varchar('plan_id', { length: 36 }).references(() => seoPlans.id),
+  note: text('note'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// SEO Kết quả
+export const seoResults = mysqlTable('seo_results', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  date: date('date').notNull(),
+  keyword: varchar('keyword', { length: 255 }).notNull(),
+  url: varchar('url', { length: 500 }),
+  prevRank: int('prev_rank'),
+  currRank: int('curr_rank'),
+  clicks: int('clicks').default(0),
+  impressions: int('impressions').default(0),
+  ctr: float('ctr'),
+  traffic: int('traffic').default(0),
+  leads: int('leads').default(0),
+  orders: int('orders').default(0),
+  revenue: float('revenue').default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });

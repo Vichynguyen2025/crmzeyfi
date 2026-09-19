@@ -4,7 +4,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Teams from './pages/Teams';
 import Reports from './pages/Reports';
-import Kanban from './pages/Kanban';
+import MarketingESim from './pages/Kanban';
+import SeoPage from './pages/Seo';
 import Customers from './pages/Customers';
 import AdCosts from './pages/AdCosts';
 import CalendarPage from './pages/Calendar';
@@ -45,7 +46,8 @@ export default function App() {
         <Route path="/crm/teams" element={<ProtectedRoute><AppLayout><Teams /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/teams/:teamSlug" element={<ProtectedRoute><AppLayout><Teams /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/reports" element={<ProtectedRoute><AppLayout><Reports /></AppLayout></ProtectedRoute>} />
-        <Route path="/crm/kanban" element={<ProtectedRoute><AppLayout><Kanban /></AppLayout></ProtectedRoute>} />
+        <Route path="/crm/seo" element={<ProtectedRoute><AppLayout><SeoPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/crm/marketing" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/customers" element={<ProtectedRoute><AppLayout><Customers /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/ad-costs" element={<ProtectedRoute><AppLayout><AdCosts /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/calendar" element={<ProtectedRoute><AppLayout><CalendarPage /></AppLayout></ProtectedRoute>} />
@@ -59,7 +61,8 @@ export default function App() {
         <Route path="/teams" element={<Navigate to="/crm/teams" replace />} />
         <Route path="/teams/:teamSlug" element={<Navigate to="/crm/teams/:teamSlug" replace />} />
         <Route path="/reports" element={<Navigate to="/crm/reports" replace />} />
-        <Route path="/kanban" element={<Navigate to="/crm/kanban" replace />} />
+        <Route path="/seo" element={<Navigate to="/crm/seo" replace />} />
+        <Route path="/marketing" element={<Navigate to="/crm/kanban" replace />} />
         <Route path="/customers" element={<Navigate to="/crm/customers" replace />} />
         <Route path="/ad-costs" element={<Navigate to="/crm/ad-costs" replace />} />
         <Route path="/calendar" element={<Navigate to="/crm/calendar" replace />} />
