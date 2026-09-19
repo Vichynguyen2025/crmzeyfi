@@ -34,19 +34,43 @@ export default async function (app: FastifyInstance) {
   app.get('/kpis-summary/:month', async (req, reply) => {
     const { month } = req.params as any;
     const m = month || new Date().toISOString().slice(0, 7);
-    const [rows] = await pool.execute(
-      "SELECT tk.*, u.name as userName, t.name as teamName, t.color as teamColor FROM team_kpis tk JOIN users u ON u.id = tk.user_id JOIN teams t ON t.id = tk.team_id WHERE tk.month = ? ORDER BY t.name, u.name, tk.product",
+    // Get all teams + their KPI data
+    const [allTeams] = await pool.execute("SELECT id, name, color FROM teams ORDER BY name");
+    const [kpiRows] = await pool.execute(
+      "SELECT tk.*, t.name as teamName, t.color as teamColor FROM team_kpis tk JOIN teams t ON t.id = tk.team_id WHERE tk.month = ? ORDER BY t.name, tk.product",
       [m]
     );
-    // Group by team
-    const byTeam: Record<string, any> = {};
-    for (const r of rows as any[]) {
-      if (!byTeam[r.team_id]) byTeam[r.team_id] = { id: r.team_id, name: r.teamName, color: r.teamColor, products: [], totalTarget: 0, totalBudget: 0, totalOrders: 0 };
-      byTeam[r.team_id].products.push({ name: r.product, target: r.monthly_orders || 0, budget: r.daily_budget || 0, messages: r.daily_messages || 0 });
-      byTeam[r.team_id].totalTarget += r.monthly_orders || 0;
-      byTeam[r.team_id].totalBudget += r.daily_budget || 0;
-      byTeam[r.team_id].totalOrders += r.monthly_orders || 0;
+    // Build KPI lookup by team
+    const kpiByTeam: Record<string, any[]> = {};
+    for (const r of kpiRows as any[]) {
+      if (!kpiByTeam[r.team_id]) kpiByTeam[r.team_id] = [];
+      kpiByTeam[r.team_id].push({ name: r.product, target: r.monthly_orders || 0, budget: r.daily_budget || 0 });
     }
-    reply.send(Object.values(byTeam));
+    // Get member counts
+    const [memberCounts] = await pool.execute(
+      "SELECT team_id, COUNT(*) as c FROM team_members GROUP BY team_id"
+    );
+    const memberByTeam: Record<string, number> = {};
+    for (const m of memberCounts as any[]) memberByTeam[m.team_id] = m.c;
+
+    const result = [];
+    for (const team of allTeams as any[]) {
+      const products = kpiByTeam[team.id] || [];
+      // Deduplicate products by name
+      const unique: Record<string, any> = {};
+      for (const p of products) {
+        if (unique[p.name]) { unique[p.name].target += p.target; unique[p.name].budget += p.budget; }
+        else unique[p.name] = {...p};
+      }
+      const totalTarget = Object.values(unique).reduce((s: number, p: any) => s + (p.target || 0), 0);
+      const totalBudget = Object.values(unique).reduce((s: number, p: any) => s + (p.budget || 0), 0);
+      result.push({
+        id: team.id, name: team.name, color: team.color,
+        products: Object.values(unique),
+        totalTarget, totalBudget,
+        memberCount: memberByTeam[team.id] || 0,
+      });
+    }
+    reply.send(result);
   });
 }

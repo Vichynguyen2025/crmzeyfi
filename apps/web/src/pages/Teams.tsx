@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Plus, X, Phone, Mail, Shield, Edit3, Trash2, BarChart3, Globe, ExternalLink, User, CheckCircle, AlertCircle } from 'lucide-react';
+import { Users, Plus, X, Phone, Mail, Shield, Edit3, Trash2, BarChart3, Globe, ExternalLink, User, CheckCircle, AlertCircle, Target } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { slugify } from '../lib/utils';
@@ -726,57 +726,92 @@ export default function Teams() {
       
       {/* Business Plan 3M */}
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-border bg-gray-50/50 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-[#171717]">Kế hoạch Kinh doanh 3M — Tháng {planMonth}</h2>
+        <div className="px-6 py-5 border-b border-border bg-gray-50/50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-sm font-bold">3M</div>
+            <div>
+              <h2 className="text-sm font-bold text-[#171717]">Kế hoạch Kinh doanh 3M</h2>
+              <p className="text-[11px] text-muted mt-0.5">Tổng hợp mục tiêu kinh doanh theo team</p>
+            </div>
+          </div>
           <input type="month" value={planMonth} onChange={e => { setPlanMonth(e.target.value); loadPlan(e.target.value); }}
-            className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
+            className="px-4 py-2 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-gray-50">
-                <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Team</th>
-                <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Sản phẩm</th>
-                <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Mục tiêu</th>
-                <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">Ngân sách/th</th>
-                <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">CP/đơn</th>
+              <tr className="border-b border-border bg-gray-50/80">
+                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-44">Team</th>
+                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-36">Sản phẩm</th>
+                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-24">Mục tiêu</th>
+                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-28">Ngân sách/th</th>
+                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-24">CP/đơn</th>
+                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-center w-20">Thành viên</th>
+                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-24">%KPI</th>
               </tr>
             </thead>
-            <tbody>
-              {planData.map((team: any, ti: number) => (
-                team.products.map((p: any, pi: number) => {
-                  const costPerOrder = p.target > 0 ? Math.round((p.budget * 30) / p.target) : 0;
-                  return (
-                    <tr key={team.id + '-' + pi} className="border-b border-border hover:bg-gray-50 transition-all">
-                      {pi === 0 && (
-                        <td rowSpan={team.products.length || 1} className="p-3 text-xs font-medium align-top">
-                          <span className="inline-flex items-center gap-1.5">
-                            <div className="w-5 h-5 rounded-full grid place-items-center text-white text-[7px] font-bold" style={{backgroundColor: team.color || '#4f46e5'}}>
-                              {team.name?.charAt(0) || '?'}
+            <tbody className="divide-y divide-border">
+              {planData.map((team: any, ti: number) => {
+                const totalCostPerOrder = team.totalTarget > 0 ? Math.round((team.totalBudget * 30) / team.totalTarget) : 0;
+                return (
+                  <tr key={team.id} className="hover:bg-gray-50/60 transition-all">
+                    <td className="p-4 text-xs font-medium align-top">
+                      <button onClick={() => nav('/crm/teams/' + slugify(team.name))}
+                        className="inline-flex items-center gap-2 hover:text-[#4f46e5] transition-all group">
+                        <div className="w-7 h-7 rounded-lg grid place-items-center text-white text-[9px] font-bold shadow-sm group-hover:shadow-md transition-all" style={{backgroundColor: team.color || '#4f46e5'}}>
+                          {team.name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                        <span className="font-medium group-hover:underline">{team.name}</span>
+                      </button>
+                    </td>
+                    <td className="p-4">
+                      {team.products.length > 0 ? (
+                        <div className="space-y-1">
+                          {team.products.map((p: any, pi: number) => (
+                            <div key={pi} className="flex items-center justify-between gap-3">
+                              <span className="text-xs text-ink">{p.name || <span className="italic text-muted">—</span>}</span>
+                              <span className="text-[11px] text-muted">{p.target ? p.target.toLocaleString('vi-VN') + ' đơn' : ''}</span>
                             </div>
-                            <span>{team.name}</span>
-                          </span>
-                        </td>
-                      )}
-                      <td className="p-3 text-xs">{p.name || <span className="italic text-muted">—</span>}</td>
-                      <td className="p-3 text-xs text-right">{p.target > 0 ? p.target.toLocaleString('vi-VN') : ''}</td>
-                      <td className="p-3 text-xs text-right">{(p.budget * 30).toLocaleString('vi-VN') + 'đ'}</td>
-                      <td className="p-3 text-xs text-right">{costPerOrder > 0 ? costPerOrder.toLocaleString('vi-VN') + 'đ' : ''}</td>
-                    </tr>
-                  );
-                })
-              ))}
+                          ))}
+                        </div>
+                      ) : <span className="text-xs italic text-muted/60">Chưa có KPI</span>}
+                    </td>
+                    <td className="p-4 text-xs text-right font-medium align-top">{team.totalTarget > 0 ? team.totalTarget.toLocaleString('vi-VN') : ''}</td>
+                    <td className="p-4 text-xs text-right align-top">{team.totalBudget > 0 ? (team.totalBudget * 30).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    <td className="p-4 text-xs text-right align-top">{totalCostPerOrder > 0 ? totalCostPerOrder.toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    <td className="p-4 text-xs text-center align-top">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-muted font-medium text-xs">{team.memberCount || 0}</span>
+                    </td>
+                    <td className="p-4 text-xs text-right font-bold align-top">
+                      {team.totalTarget > 0 ? (() => {
+                        const pct = team.totalTarget > 0 ? Math.min(Math.round(team.totalTarget / team.totalTarget * 100), 100) : 0;
+                        // Actually %KPI needs actual data too. Calculate from available.
+                        // Since we only have KPI targets here, not actuals, show a placeholder or use actuals
+                        return <span className="text-muted italic">—</span>;
+                      })() : <span className="text-muted italic">—</span>}
+                    </td>
+                  </tr>
+                );
+              })}
               {/* Total row */}
               {planData.length > 0 && (
                 <tr className="bg-gray-50/80 font-semibold border-t-2 border-border">
-                  <td colSpan={2} className="p-3 text-xs font-bold text-[#4f46e5]">Tổng</td>
-                  <td className="p-3 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
-                  <td className="p-3 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
-                  <td className="p-3 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                  <td colSpan={2} className="p-4 text-xs font-bold text-[#4f46e5]">Tổng cộng</td>
+                  <td className="p-4 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
+                  <td className="p-4 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
+                  <td className="p-4 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                  <td className="p-4 text-xs text-center">{planData.reduce((s: number, t: any) => s + (t.memberCount || 0), 0)}</td>
+                  <td className="p-4 text-xs text-right">—</td>
                 </tr>
               )}
               {planData.length === 0 && (
-                <tr><td colSpan={5} className="p-6 text-center text-sm text-muted">Chưa có dữ liệu kế hoạch. Chọn tháng và nhập KPI trong Team.</td></tr>
+                <tr><td colSpan={7} className="p-12 text-center text-sm text-muted">
+                  <div className="flex flex-col items-center gap-2">
+                    <Target size={40} className="opacity-20" />
+                    <p className="font-medium">Chưa có dữ liệu kế hoạch</p>
+                    <p className="text-sm">Vào team và nhập KPI để thấy dữ liệu</p>
+                  </div>
+                </td></tr>
               )}
             </tbody>
           </table>
