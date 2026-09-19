@@ -207,50 +207,86 @@ export default function Drive() {
     {/* Preview Modal */}
       {preview && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setPreview(null)}>
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-white shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center shrink-0">
                   {(() => { const Icon = getFileIcon(preview.mime_type); return <Icon size={20} className="text-[#4f46e5]" />; })()}
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm text-[#171717]">{preview.name}</h3>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-sm text-[#171717] truncate max-w-[300px]">{preview.name}</h3>
                   <p className="text-xs text-muted">{preview.mime_type || 'File'} — {formatSize(preview.size)}</p>
                 </div>
               </div>
-              <button onClick={() => setPreview(null)} className="p-2 rounded-xl hover:bg-gray-100 transition-all"><X size={20} /></button>
+              <div className="flex items-center gap-2 shrink-0">
+                {preview.url && (
+                  <a href={preview.url.startsWith('http') ? preview.url : preview.url} download={preview.name}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-xl text-xs font-medium hover:bg-gray-50 transition-all">
+                    <Download size={14} /> Tải xuống
+                  </a>
+                )}
+                <button onClick={() => setPreview(null)} className="p-2.5 rounded-xl hover:bg-gray-100 transition-all"><X size={20} /></button>
+              </div>
             </div>
+            {/* Content */}
             <div className="flex-1 overflow-auto bg-gray-50/50">
+              {/* Image */}
               {preview.mime_type?.startsWith('image/') ? (
                 <div className="p-6 flex items-center justify-center min-h-[400px]">
-                  <img src={preview.url || '/placeholder'} alt={preview.name}
-                    className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-sm" onError={(e: any) => { e.target.style.display = 'none'; }} />
+                  {preview.url ? (
+                    <img src={preview.url} alt={preview.name}
+                      className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-sm"
+                      onError={(e: any) => {
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML = '<div class="text-center text-muted py-12"><p class="font-medium">Không thể tải ảnh</p><p class="text-sm mt-1">Vui lòng thử tải xuống</p></div>';
+                      }} />
+                  ) : (
+                    <div className="text-center text-muted py-12">
+                      <FileText size={48} className="mx-auto mb-3 opacity-30" />
+                      <p className="font-medium">File chưa có dữ liệu</p>
+                    </div>
+                  )}
                 </div>
+              /* PDF */
               ) : preview.mime_type === 'application/pdf' ? (
-                <embed src={preview.url} type="application/pdf" className="w-full h-[70vh]" />
+                <div className="p-2 min-h-[400px]">
+                  {preview.url ? (
+                    <embed src={preview.url} type="application/pdf" className="w-full h-[75vh] rounded-lg" />
+                  ) : (
+                    <div className="text-center text-muted py-12">
+                      <FileText size={48} className="mx-auto mb-3 opacity-30" />
+                      <p className="font-medium">File chưa có dữ liệu</p>
+                    </div>
+                  )}
+                </div>
+              /* Video */
               ) : preview.mime_type?.startsWith('video/') ? (
                 <div className="p-6 flex items-center justify-center min-h-[400px]">
-                  <video src={preview.url} controls className="max-w-full max-h-[65vh] rounded-xl shadow-sm" />
-                </div>
-              ) : (
-                <div className="p-6 flex flex-col items-center justify-center min-h-[200px]">
-                  {(preview.mime_type?.includes('wordprocessing') || preview.mime_type?.includes('spreadsheet') || preview.mime_type?.includes('presentation')) ? (
-                    preview.url ? (
-                      <iframe src={'https://docs.google.com/viewer?url=' + encodeURIComponent(window.location.origin + preview.url) + '&embedded=true'}
-                        className="w-full h-[70vh] rounded-xl border border-border" title="Preview" />
-                    ) : (
-                      <div className="text-center text-muted">
-                        <FileText size={64} className="mx-auto mb-4 opacity-30" />
-                        <p className="font-medium">Không thể xem trước</p>
-                        <p className="text-sm mt-1">File này chưa có dữ liệu. Hãy tải lại file.</p>
-                      </div>
-                    )
+                  {preview.url ? (
+                    <video src={preview.url} controls className="max-w-full max-h-[70vh] rounded-xl shadow-sm" />
                   ) : (
-                    <div className="text-center text-muted">
-                      <FileText size={64} className="mx-auto mb-4 opacity-30" />
-                      <p className="font-medium">Không thể xem trước</p>
-                      <p className="text-sm mt-1">Định dạng {preview.mime_type || 'không xác định'} chưa hỗ trợ xem trước</p>
+                    <div className="text-center text-muted py-12">
+                      <FileText size={48} className="mx-auto mb-3 opacity-30" />
+                      <p className="font-medium">File chưa có dữ liệu</p>
                     </div>
+                  )}
+                </div>
+              /* Office / Unsupported */
+              ) : (
+                <div className="p-12 flex flex-col items-center justify-center min-h-[300px] text-center">
+                  <FileText size={64} className="mx-auto mb-5 opacity-20 text-muted" />
+                  <p className="font-medium text-[#171717]">Không hỗ trợ xem trước loại file này</p>
+                  <p className="text-sm text-muted mt-1 mb-6">
+                    {preview.mime_type?.includes('word') || preview.mime_type?.includes('spreadsheet') || preview.mime_type?.includes('presentation') 
+                      ? 'File văn phòng cần tải xuống để xem'
+                      : 'Định dạng ' + (preview.mime_type || 'không xác định') + ' chưa được hỗ trợ'}
+                  </p>
+                  {preview.url && (
+                    <a href={preview.url} download={preview.name}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:shadow-md hover:bg-[#5e6ad2] transition-all">
+                      <Download size={16} /> Tải xuống
+                    </a>
                   )}
                 </div>
               )}
