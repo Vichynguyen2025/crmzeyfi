@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Plus, X, Phone, Mail, Shield, Edit3, Trash2, BarChart3, Globe, ExternalLink, User, CheckCircle, AlertCircle, Target } from 'lucide-react';
+import { Users, Plus, X, Phone, Mail, Shield, Edit3, Trash2, BarChart3, Globe, ExternalLink, User, CheckCircle, AlertCircle, Target , Lock} from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { slugify } from '../lib/utils';
@@ -10,6 +10,7 @@ const ROLE_LABELS: Record<string,string> = {admin:'Quản trị',manager:'Quản
 
 export default function Teams() {
   const [teams, setTeams] = useState<any[]>([]);
+  const [tablePerms, setTablePerms] = useState<string[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [add, setAdd] = useState(false);
   const [name, setName] = useState('');
@@ -41,6 +42,8 @@ export default function Teams() {
   // Auto-save Actuals data with debounce
   // Actuals are auto-calculated from daily data, no manual save needed
 
+  const canEdit = (t: string) => tablePerms.includes(t);
+
   // Auto-save KPI data with debounce
   useEffect(() => {
     if (!selectedTeam || kpiRows.length === 0) return;
@@ -51,12 +54,12 @@ export default function Teams() {
     return () => clearTimeout(timer);
   }, [kpiRows, kpiMonth, selectedTeam?.id]);
 
-  const updateActual = (idx: number, field: string, val: any) => {
+  const updateActual = (idx: number, field: string, val: any) => { if (!canEdit('b2')) return;
     const rows = [...actualRows];
     if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setActualRows(rows); }
   };
 
-  const addActualRow = (afterIdx: number) => {
+  const addActualRow = (afterIdx: number) => { if (!canEdit('b2')) return;
     const rows = [...actualRows];
     const ref = rows[afterIdx];
     const newRow = {name: ref.name, userId: ref.userId, product: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0};
@@ -64,7 +67,7 @@ export default function Teams() {
     setActualRows(rows);
   };
 
-  const addKpiRow = (afterIdx: number) => {
+  const addKpiRow = (afterIdx: number) => { if (!canEdit('b1')) return;
     const rows = [...kpiRows];
     const ref = rows[afterIdx];
     // Insert new row after the current one, with same user
@@ -81,7 +84,7 @@ export default function Teams() {
     }
   };
 
-  const updateKpi = (idx: number, field: string, val: any) => {
+  const updateKpi = (idx: number, field: string, val: any) => { if (!canEdit('b1')) return;
     const rows = [...kpiRows];
     if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setKpiRows(rows); }
   };
@@ -130,11 +133,11 @@ export default function Teams() {
     return () => clearTimeout(timer);
   }, [dailyRows, dailyUser?.userId, actualMonth]);
 
-  const addDailyRow = () => {
+  const addDailyRow = () => { if (!canEdit('b3')) return;
     setDailyRows([...dailyRows, {date: new Date().toISOString().slice(0, 10), product: dailyProduct, totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
   };
 
-  const updateDaily = (idx: number, field: string, val: any) => {
+  const updateDaily = (idx: number, field: string, val: any) => { if (!canEdit('b3')) return;
     const rows = [...dailyRows];
     if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setDailyRows(rows); }
   };
@@ -144,7 +147,19 @@ export default function Teams() {
       const p = new URLSearchParams({month, groupBy: actualView}); if (actualDateFrom) p.set('dateFrom', actualDateFrom); const saved = await api('/actuals/' + teamId + '?' + p.toString());
       if (saved && saved.length > 0) {
         const filtered = saved.filter((s: any) => s.product && s.product.trim() !== '');
-        setActualRows([...filtered.map((s: any) => ({name: s.userName || s.name, userId: s.user_id || s.userId, product: s.product || '', period: s.periodLabel || '', actualOrders: Number(s.actualOrders || s.actual_orders || 0), fixedCost: Number(s.fixedCost || s.fixed_cost || 0), costPerOrder: Number(s.costPerOrder || s.cost_per_order || 0)})), {type: 'total'}]);
+        const merged = [...filtered.map((s: any) => ({name: s.userName || s.name, userId: s.user_id || s.userId, product: s.product || '', period: s.periodLabel || '', actualOrders: Number(s.actualOrders || s.actual_orders || 0), fixedCost: Number(s.fixedCost || s.fixed_cost || 0), costPerOrder: Number(s.costPerOrder || s.cost_per_order || 0)}))];
+        // Auto-add members chưa có dòng trong B2
+        const list = memberList || members;
+        if (list && list.length > 0) {
+          const existing = new Set(merged.map((r: any) => r.userId));
+          list.forEach((m: any) => {
+            if (!existing.has(m.id)) {
+              merged.push({ name: m.name, userId: m.id, product: '', period: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0 });
+              existing.add(m.id);
+            }
+          });
+        }
+        setActualRows([...merged, {type: 'total'}]);
         return true;
       }
     } catch {}
@@ -184,7 +199,11 @@ export default function Teams() {
     try { const d = await api('/kpis-summary/' + month); setPlanData(d || []); } catch { setPlanData([]); }
   };
 
-  const load = () => { api('/teams').then(setTeams); api('/users').then(setUsers).catch(() => {}); };
+  const load = () => { api('/teams').then(setTeams); api('/users').then(setUsers).catch(() => {});
+    const u = JSON.parse(localStorage.getItem('zeyfi_user') || '{}');
+    if (u.role !== 'admin') api('/my-table-perms').then(setTablePerms).catch(() => {});
+    else setTablePerms(['b1','b2','b3','b4']);
+  };
   useEffect(() => { load(); loadPlan(planMonth); }, []);
 
   // URL-based team detail
@@ -245,6 +264,16 @@ export default function Teams() {
     await api('/teams/' + selectedTeam.id + '/members', { method:'POST', body:JSON.stringify({userId}) });
     const m = await api('/teams/' + selectedTeam.id + '/members');
     setMembers(m);
+    // B2: tự động thêm dòng cho nhân sự mới
+    const newM = (m || []).find((mm: any) => mm.id === userId);
+    if (newM) {
+      setActualRows(prev => {
+        const hasRow = prev.some((r: any) => r.type !== 'total' && r.userId === userId);
+        if (hasRow) return prev;
+        const rows = prev.filter((r: any) => r.type !== 'total');
+        return [...rows, {name: newM.name, userId: newM.id, product: '', period: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0}, {type: 'total'}];
+      });
+    }
     showToast('success', 'Đã thêm thành viên');
     load();
   };
@@ -363,7 +392,10 @@ export default function Teams() {
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
             <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[#171717]">Đề xuất mục tiêu & Ngân sách quảng cáo</h2>
+            <div className="flex items-center gap-3">
+        <h2 className="text-sm font-bold text-[#171717]">Đề xuất mục tiêu & Ngân sách quảng cáo</h2>
+        {!canEdit('b1') && <span className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-[10px] font-medium"><Lock size={10} /> Chỉ đọc</span>}
+      </div>
             <div className="flex items-center gap-2">
               <input type="month" value={kpiMonth} onChange={e => { setKpiMonth(e.target.value); loadKpi(selectedTeam?.id, e.target.value); }}
                 className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
@@ -468,7 +500,7 @@ export default function Teams() {
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-[#171717]">Tình hình Thực tế ({actualMonth})</h2>
+              <h2 className="text-sm font-bold text-[#171717]">Tình hình Thực tế ({actualMonth}) {!canEdit('b2') && <span className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-[10px] font-medium ml-2"><Lock size={10} /> Chỉ đọc</span>}</h2>
               <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
                 {['day','week','month'].map(v => (
                   <button key={v} onClick={() => { 
