@@ -235,7 +235,7 @@ export default function Reports() {
           { key: 'create', label: 'Tạo báo cáo', icon: FileText },
           { key: 'history', label: 'Lịch sử', icon: Clock },
         (user.role === 'admin' || user.role === 'manager') && { key: 'received', label: 'Đã nhận', icon: Inbox },
-        ].map(t => (
+        ].filter(Boolean).map(t => (
           <button key={t.key} onClick={() => { setTab(t.key); nav('/crm/reports/' + t.key); }}
             className={'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ' + (tab === t.key as any ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-50')}>
             <t.icon size={15} /> {t.label}
