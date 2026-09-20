@@ -81,7 +81,7 @@ export default async function (app: FastifyInstance) {
     io.emit('report:deleted', { id });
     reply.send({ success: true });
   });
-}
+
   app.get('/reports/received', async (req, reply) => {
     const { userId } = req.query as any;
     if (!userId) return reply.send([]);
@@ -94,3 +94,4 @@ export default async function (app: FastifyInstance) {
     });
     reply.send(filtered);
   });
+}
