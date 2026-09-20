@@ -34,8 +34,9 @@ declare module 'fastify' {
 }
 
 const app = Fastify({ logger: true, bodyLimit: 524288000 });
-app.decorateRequest('user', null);
+export const io = new Server(app.server, { cors: { origin: '*' } });
 app.decorate('io', io);
+app.decorateRequest('user', null);
 app.addHook('onRequest', (req, reply, done) => {
   const header = req.headers.authorization;
   if (!header) { done(); return; }
@@ -71,8 +72,7 @@ async function start() {
 }
 start();
 
-// Export io for routes - created lazily when app.server is ready
-export const io = new Server(app.server, { cors: { origin: '*' } });
+// Export io for routes
 io.on('connection', (socket) => {
   console.log('[CRM] WS connected:', socket.id);
   socket.on('join:team', (tid: string) => socket.join('team:' + tid));
