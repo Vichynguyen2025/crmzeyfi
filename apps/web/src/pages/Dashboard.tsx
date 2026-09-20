@@ -88,44 +88,95 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Per-Team Performance (B2 data — MOST IMPORTANT) */}
+      {/* Per-Team Performance — modern redesign */}
       {data.teams?.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Target size={18} className="text-[#4f46e5]" />
-            <h2 className="text-lg font-bold text-[#171717]">Tình hình từng Team — Bảng B2</h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center"><Target size={16} className="text-white" /></div>
+            <div>
+              <h2 className="text-lg font-bold text-[#171717]">Tình hình Kinh doanh</h2>
+              <p className="text-xs text-muted">Dữ liệu Bảng B2 — Mục tiêu vs Thực tế</p>
+            </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {data.teams.map((t: any) => {
               const pct = t.kpiOrders > 0 ? Math.round(t.actualOrders / t.kpiOrders * 100) : 0;
               const cpOrder = t.actualOrders > 0 ? Math.round(t.actualCosts / t.actualOrders) : 0;
-              const colorClass = pct >= 100 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : pct >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-red-500 bg-red-50 border-red-200';
-              const barColor = pct >= 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500';
+              const gap = t.kpiOrders - t.actualOrders;
+              const barWidth = Math.min(pct, 100);
+              const barColor = pct >= 80 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-rose-500';
+              const gradientId = 'grad-' + t.id?.slice(0,6);
               return (
-                <div key={t.id} className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
-                  <div className="px-5 py-4 border-b border-border bg-gradient-to-r from-gray-50 to-white flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl grid place-items-center text-white font-bold text-sm shadow-sm" style={{backgroundColor: t.color || '#4f46e5'}}>{t.name.charAt(0)}</div>
-                      <div>
-                        <h3 className="font-bold text-[#171717]">{t.name}</h3>
-                        <p className="text-xs text-muted flex items-center gap-1"><Users size={12} /> {t.memberCount || 0} thành viên</p>
+                <div key={t.id} className="relative bg-white rounded-2xl border border-border shadow-sm overflow-hidden group hover:shadow-lg transition-all duration-300">
+                  {/* Top accent bar */}
+                  <div className={'h-1 w-full ' + (pct >= 80 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-rose-500')} />
+
+                  <div className="px-6 py-5">
+                    {/* Header row */}
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl grid place-items-center text-white font-bold text-sm shadow-md transition-transform group-hover:scale-105" 
+                          style={{backgroundColor: t.color || '#4f46e5'}}>
+                          {t.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-[#171717] text-base">{t.name}</h3>
+                          <p className="text-xs text-muted flex items-center gap-1">
+                            <Users size={12} /> {t.memberCount || 0} thành viên
+                          </p>
+                        </div>
+                      </div>
+                      {/* KPI badge */}
+                      <div className={'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border shadow-sm ' + 
+                        (pct >= 80 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 
+                         pct >= 40 ? 'bg-amber-50 border-amber-200 text-amber-700' : 
+                         'bg-rose-50 border-rose-200 text-rose-700')}>
+                        <div className={'w-2 h-2 rounded-full ' + (pct >= 80 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-rose-500')} />
+                        {pct}%
                       </div>
                     </div>
-                    <span className={'px-3 py-1 rounded-full text-xs font-bold border ' + colorClass}>{pct}%</span>
-                  </div>
-                  <div className="px-5 py-4">
-                    <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
-                      <div className={'transition-all duration-500 h-2 rounded-full ' + barColor} style={{width: Math.min(pct, 100) + '%'}} />
+
+                    {/* Progress bar */}
+                    <div className="mb-5">
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="text-muted">Tiến độ KPI</span>
+                        <span className="font-semibold text-[#171717]">{t.actualOrders}/{t.kpiOrders} đơn</span>
+                      </div>
+                      <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                        <div className={'h-full rounded-full transition-all duration-700 ease-out ' + barColor}
+                          style={{width: barWidth + '%'}}>
+                          <div className="h-full w-full bg-gradient-to-r from-white/20 to-transparent" />
+                        </div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 text-center">
-                      <div><p className="text-xs text-muted">Mục tiêu</p><p className="text-sm font-bold text-[#171717]">{t.kpiOrders} đơn</p></div>
-                      <div><p className="text-xs text-muted">Thực tế</p><p className="text-sm font-bold text-[#4f46e5]">{t.actualOrders} đơn</p></div>
-                      <div><p className="text-xs text-muted">Chi phí</p><p className="text-sm font-bold text-[#171717]">{Number(t.actualCosts || 0).toLocaleString('vi-VN')}đ</p></div>
+
+                    {/* Metrics grid */}
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="bg-gray-50/80 rounded-xl p-3 text-center">
+                        <p className="text-[11px] text-muted mb-1">Mục tiêu</p>
+                        <p className="text-base font-bold text-[#171717]">{t.kpiOrders}</p>
+                        <p className="text-[10px] text-muted">đơn</p>
+                      </div>
+                      <div className="bg-indigo-50/80 rounded-xl p-3 text-center">
+                        <p className="text-[11px] text-muted mb-1">Thực tế</p>
+                        <p className="text-base font-bold text-[#4f46e5]">{t.actualOrders}</p>
+                        <p className="text-[10px] text-muted">đơn</p>
+                      </div>
+                      <div className={'rounded-xl p-3 text-center ' + (gap > 0 ? 'bg-rose-50/80' : 'bg-emerald-50/80')}>
+                        <p className="text-[11px] text-muted mb-1">Còn thiếu</p>
+                        <p className={'text-base font-bold ' + (gap > 0 ? 'text-rose-600' : 'text-emerald-600')}>{gap > 0 ? gap : '0'}</p>
+                        <p className="text-[10px] text-muted">đơn</p>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 text-xs text-muted">
-                      <span>CP/Đơn: <b>{cpOrder > 0 ? cpOrder.toLocaleString('vi-VN') + 'đ' : '—'}</b></span>
-                      <span>Báo cáo: <b>{t.reportCount || 0}</b></span>
-                      <span>CP QC: <b>{Number(t.adCostTotal || 0).toLocaleString('vi-VN')}đ</b></span>
+
+                    {/* Bottom details row */}
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50 text-xs">
+                      <div className="flex items-center gap-4">
+                        <span className="text-muted">CP/Đơn: <b className="text-[#171717]">{cpOrder > 0 ? cpOrder.toLocaleString('vi-VN') + 'đ' : '—'}</b></span>
+                        <span className="text-muted">Chi phí: <b className="text-[#171717]">{Number(t.actualCosts || 0).toLocaleString('vi-VN')}đ</b></span>
+                      </div>
+                      <span className="text-muted">CP QC: <b className="text-[#4f46e5]">{Number(t.adCostTotal || 0).toLocaleString('vi-VN')}đ</b></span>
                     </div>
                   </div>
                 </div>
@@ -134,8 +185,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-
-      {/* Charts Row */}
+      
+      {/* Charts      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
           <div className="flex items-center gap-2 mb-4">

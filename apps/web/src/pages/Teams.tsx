@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, X, Phone, Mail, Shield, Edit3, Trash2, BarChart3, Globe, ExternalLink, User, CheckCircle, AlertCircle, Target , Lock} from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
@@ -26,6 +26,9 @@ export default function Teams() {
   const [kpiFilter, setKpiFilter] = useState({search:'',product:''});
   const [actualFilter, setActualFilter] = useState({search:'',product:''});
   const [planData, setPlanData] = useState<any[]>([]);
+  const [b6Data, setB6Data] = useState<any[]>([]);
+  const [b6GroupBy, setB6GroupBy] = useState('day');
+  const [b6Month, setB6Month] = useState(() => new Date().toISOString().slice(0, 7));
   const [planMonth, setPlanMonth] = useState(new Date().toISOString().slice(0, 7));
   const [slugMap, setSlugMap] = useState<Record<string,any>>({});
   const { teamSlug } = useParams();
@@ -194,6 +197,14 @@ export default function Teams() {
     setToast({type:t, message:msg});
     setTimeout(() => setToast(null), 3000);
   };
+
+  const loadB6 = useCallback(async () => {
+    try {
+      const r = await api('/actuals-summary?month=' + b6Month + '&groupBy=' + b6GroupBy);
+      setB6Data(r || []);
+    } catch { setB6Data([]); }
+  }, [b6Month, b6GroupBy]);
+  useEffect(() => { loadB6(); }, [loadB6]);
 
   const loadPlan = async (month: string) => {
     try { const d = await api('/kpis-summary/' + month); setPlanData(d || []); } catch { setPlanData([]); }
@@ -873,6 +884,56 @@ export default function Teams() {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* B6 - Tong tinh hinh kinh doanh thuc te */}
+      <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-border bg-gray-50/60 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 grid place-items-center text-white text-xs font-bold">B6</div>
+            <div>
+              <h2 className="text-sm font-bold text-[#171717]">Tong tinh hinh kinh doanh thuc te</h2>
+              <p className="text-xs text-muted">Du lieu B2 - Daily-Perf theo san pham</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="month" value={b6Month} onChange={e => setB6Month(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
+            <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
+              {['day','week','month'].map(v => (
+                <button key={v} onClick={() => setB6GroupBy(v)} className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (b6GroupBy===v ? 'bg-[#4f46e5] text-white' : 'text-muted hover:text-ink')}>
+                  {v==='day' ? 'Ngay' : v==='week' ? 'Tuan' : 'Thang'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full" style={{tableLayout:'fixed', borderCollapse:'separate', borderSpacing:0}}>
+            <thead>
+              <tr className="bg-gray-50/80 border-b border-border">
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left w-40">Team</th><th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left w-28">San pham</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-24">Ky</th><th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-16">Don</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-24">Chi phi</th><th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-20">CP/Don</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-20">Tin nhan</th><th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-20">Reach</th>
+              </tr>
+            </thead>
+            <tbody>
+              {!b6Data || b6Data.length === 0 ? (
+                <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-muted">Chua co du lieu</td></tr>
+              ) : b6Data.map((r, i) => (
+                <tr key={r.teamId+r.product+r.periodLabel+i} className="border-b border-border/50 hover:bg-gray-50/60 transition-all">
+                  <td className="px-4 py-3 text-xs font-medium">{r.teamName}</td>
+                  <td className="px-4 py-3 text-xs text-muted">{r.product}</td>
+                  <td className="px-4 py-3 text-xs text-muted text-right">{r.periodLabel}</td>
+                  <td className="px-4 py-3 text-xs text-right">{Number(r.actualOrders||0).toLocaleString('vi-VN')}</td>
+                  <td className="px-4 py-3 text-xs text-right">{Number(r.actualCost||0) > 0 ? Number(r.actualCost||0).toLocaleString('vi-VN')+'d' : '-'}</td>
+                  <td className="px-4 py-3 text-xs text-muted text-right">{Number(r.costPerOrder||0) > 0 ? Number(r.costPerOrder||0).toLocaleString('vi-VN')+'d' : '-'}</td>
+                  <td className="px-4 py-3 text-xs text-right">{Number(r.messages||0).toLocaleString('vi-VN')}</td>
+                  <td className="px-4 py-3 text-xs text-right">{Number(r.reach||0).toLocaleString('vi-VN')}</td>
+                </tr>
+              ))}
+            </tbody>          </table>
         </div>
       </div>
 
