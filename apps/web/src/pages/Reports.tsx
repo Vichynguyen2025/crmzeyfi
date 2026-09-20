@@ -50,6 +50,9 @@ export default function Reports() {
       // Load users list for recipient selection
     const users = await api("/users").catch(() => []);
     setAllUsers(users || []);
+    // Auto-select admin/manager as default recipients
+    const adminIds = (users || []).filter((u:any) => u.role === 'admin' || u.role === 'manager').map((u:any) => u.id);
+    setRecipients(prev => prev.length > 0 ? prev : adminIds);
     // First, find which team the user belongs to
       let userTeamId = u.teamId || '';
       let userTeamName = '';
@@ -250,17 +253,17 @@ export default function Reports() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
                   <div>
                     <label className="block text-xs font-medium text-muted mb-1">Lý do</label>
-                    <textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Lý do th\u1ef1c hi\u1ec7n c\u00f4ng vi\u1ec7c..."
+                    <textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="lý do thực hiện công việc..."
                       className="w-full h-20 px-3 py-2 bg-[#f8fafc] border border-border rounded-xl text-xs outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted mb-1">Khó khăn</label>
-                    <textarea value={difficulties} onChange={e => setDifficulties(e.target.value)} placeholder="Khó khăn g\u1eb7p ph\u1ea3i..."
+                    <textarea value={difficulties} onChange={e => setDifficulties(e.target.value)} placeholder="Khó khăn gặp phải..."
                       className="w-full h-20 px-3 py-2 bg-[#f8fafc] border border-border rounded-xl text-xs outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted mb-1">Đề xuất</label>
-                    <textarea value={suggestions} onChange={e => setSuggestions(e.target.value)} placeholder="Đề xuất c\u1ea3i thi\u1ec7n..."
+                    <textarea value={suggestions} onChange={e => setSuggestions(e.target.value)} placeholder="Đề xuất cải thiện..."
                       className="w-full h-20 px-3 py-2 bg-[#f8fafc] border border-border rounded-xl text-xs outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
                   </div>
                 </div>
