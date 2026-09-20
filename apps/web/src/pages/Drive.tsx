@@ -41,6 +41,7 @@ export default function Drive() {
   const [folderName, setFolderName] = useState('');
   const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [preview, setPreview] = useState<any>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({type, message});
@@ -115,6 +116,12 @@ export default function Drive() {
 
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold text-[#171717]">Kho dữ liệu</h1><p className="text-sm text-muted mt-1">Lưu trữ file, tài liệu, hình ảnh</p></div>
+        <div className="flex items-center gap-2 text-xs text-muted bg-gray-50 border border-border rounded-lg px-3 py-1.5">
+          <span className="w-2 h-2 rounded-full bg-green-500" />
+          <span>~18 GB trống</span>
+          <span className="w-px h-3 bg-border/60" />
+          <span>Tối đa 500 MB/file</span>
+        </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setShowNewFolder(true)} className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium hover:bg-gray-50 transition-all">
             <Folder size={16} />Thư mục mới
@@ -176,7 +183,13 @@ export default function Drive() {
                     onClick={() => item.type === 'folder' && openFolder(item.id, item.name)}>
                     {item.type === 'folder' ? <Folder size={22} className="text-amber-500" /> : <Icon size={22} className="text-[#4f46e5]" />}
                   </div>
-                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => { if (item.type === 'folder') openFolder(item.id, item.name); else setPreview(item); }}>
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={async () => {
+                if (item.type === 'folder') { openFolder(item.id, item.name); return; }
+                setPreview(item);
+                if (['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(item.mime_type)) {
+                  try { const res = await api('/drive/preview/'+item.id, {method:'POST'}); if (res?.previewUrl) setPreviewUrl(res.previewUrl); else setPreviewUrl(item.url); } catch { setPreviewUrl(item.url); }
+                } else { setPreviewUrl(item.url); }
+              }}>
                     <p className="font-medium text-sm text-[#171717] truncate">{item.name}</p>
                     <div className="flex items-center gap-3 text-xs text-muted mt-0.5">
                       <span>{item.type === 'folder' ? 'Thư mục' : formatSize(item.size) || 'File'}</span>
@@ -221,7 +234,7 @@ export default function Drive() {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {preview.url && (
-                  <a href={preview.url.startsWith('http') ? preview.url : preview.url} download={preview.name}
+                  <a href={(previewUrl||preview.url).startsWith('http') ? preview.url : preview.url} download={preview.name}
                     className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-xl text-xs font-medium hover:bg-gray-50 transition-all">
                     <Download size={14} /> Tải xuống
                   </a>
@@ -235,7 +248,7 @@ export default function Drive() {
               {preview.mime_type?.startsWith('image/') ? (
                 <div className="p-6 flex items-center justify-center min-h-[400px]">
                   {preview.url ? (
-                    <img src={preview.url} alt={preview.name}
+                    <img src={previewUrl} alt={preview.name}
                       className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-sm"
                       onError={(e: any) => {
                         e.target.style.display = 'none';
@@ -252,7 +265,7 @@ export default function Drive() {
               ) : preview.mime_type === 'application/pdf' ? (
                 <div className="p-2 min-h-[400px]">
                   {preview.url ? (
-                    <embed src={preview.url} type="application/pdf" className="w-full h-[75vh] rounded-lg" />
+                    <embed src={previewUrl} type="application/pdf" className="w-full h-[75vh] rounded-lg" />
                   ) : (
                     <div className="text-center text-muted py-12">
                       <FileText size={48} className="mx-auto mb-3 opacity-30" />
@@ -272,7 +285,19 @@ export default function Drive() {
                     </div>
                   )}
                 </div>
-              /* Office / Unsupported */
+              /* Office documents */
+              ) : (['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(preview.mime_type)) ? (
+                <div className="p-2 min-h-[400px]">
+                  {previewUrl ? (
+                    <iframe src={previewUrl} className="w-full h-[75vh] border-0 rounded-lg" />
+                  ) : (
+                    <div className="flex items-center justify-center min-h-[400px] text-center">
+                      <div><FileText size={48} className="mx-auto mb-3 opacity-20 text-muted" /><p className="font-medium text-muted">Đang chuyển đổi sang PDF...</p></div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="p-12 flex flex-col items-center justify-center min-h-[300px] text-center">
                   <FileText size={64} className="mx-auto mb-5 opacity-20 text-muted" />

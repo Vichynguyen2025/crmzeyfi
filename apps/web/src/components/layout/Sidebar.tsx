@@ -1,25 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, PhoneCall, UserCog, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3 } from 'lucide-react';
+import { api } from '../../lib/api';
+import { LayoutDashboard, Users, ClipboardList, PhoneCall, UserCog, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3, Shield, Lock } from 'lucide-react';
 
 const NAV = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/crm/dashboard' },
-  { label: 'Tài khoản', icon: UserCog, path: '/crm/users' },
-  { label: 'Kinh doanh 3M', icon: Users, path: '/crm/teams' },
-  { label: 'Kho dữ liệu', icon: HardDrive, path: '/crm/drive' },
-  { label: 'Kênh Marketing', icon: Globe, path: '/crm/channels' },
-  { label: 'Sản phẩm', icon: Package, path: '/crm/products' },
-  { label: 'Marketing eSim', icon: BarChart3, path: '/crm/marketing' },
-  { label: 'Báo cáo', icon: ClipboardList, path: '/crm/reports' },
-  { label: 'Khách hàng', icon: PhoneCall, path: '/crm/customers' },
-  { label: 'SEO', icon: BarChart3, path: '/crm/seo' },
+  { label: 'Dashboard', icon: LayoutDashboard, path: '/crm/dashboard', module: 'dashboard' },
+  { label: 'Tài khoản', icon: UserCog, path: '/crm/users', module: 'users' },
+  { label: 'Kinh doanh 3M', icon: Users, path: '/crm/teams', module: 'teams' },
+  { label: 'Kho dữ liệu', icon: HardDrive, path: '/crm/drive', module: 'drive' },
+  { label: 'Kênh Marketing', icon: Globe, path: '/crm/channels', module: 'channels' },
+  { label: 'Sản phẩm', icon: Package, path: '/crm/products', module: 'products' },
+  { label: 'Marketing eSim', icon: BarChart3, path: '/crm/marketing', module: 'marketing' },
+  { label: 'Báo cáo', icon: ClipboardList, path: '/crm/reports', module: 'reports' },
+  { label: 'Khách hàng', icon: PhoneCall, path: '/crm/customers', module: 'customers' },
+  { label: 'SEO', icon: BarChart3, path: '/crm/seo', module: 'seo' },
 ];
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [userModules, setUserModules] = useState<string[]>([]);
+  const [lockedPath, setLockedPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    const u = JSON.parse(localStorage.getItem('zeyfi_user') || '{}');
+    if (u.role === 'admin') { setUserModules(['*']); return; }
+    api('/my-modules').then((mods: string[]) => setUserModules(mods || [])).catch(() => setUserModules([]));
+  }, []);
+
   const nav = useNavigate();
   const loc = useLocation();
   const user = JSON.parse(localStorage.getItem('zeyfi_user') || '{}');
+  const isAdmin = user.role === 'admin' || userModules.includes('*');
+
+  const canAccess = (module: string) => isAdmin || userModules.includes(module);
+
+  const handleNav = (item: any) => {
+    if (canAccess(item.module)) {
+      nav(item.path);
+    } else {
+      setLockedPath(item.path);
+      setTimeout(() => setLockedPath(null), 2500);
+    }
+  };
 
   return (
     <aside className={`${collapsed ? 'w-20' : 'w-64'} transition-all relative duration-300 bg-[#1e1b4b] text-white flex flex-col shrink-0`}>
@@ -31,16 +53,34 @@ export default function Sidebar() {
         {NAV.map(item => {
           const Icon = item.icon;
           const active = loc.pathname.startsWith(item.path);
+          const locked = !canAccess(item.module);
           return (
-            <button key={item.path} onClick={() => nav(item.path)}
+            <button key={item.path} onClick={() => handleNav(item)}
+              title={locked ? 'Bạn không có quyền truy cập' : item.label}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-                ${active ? 'bg-white/10 text-white shadow-sm' : 'text-white/60 hover:bg-white/5 hover:text-white/90'}`}>
+                ${active ? 'bg-white/10 text-white shadow-sm' : locked ? 'text-white/30 hover:bg-white/5 hover:text-white/50' : 'text-white/60 hover:bg-white/5 hover:text-white/90'}`}>
               <Icon size={20} className={active ? 'text-primary' : ''} />
-              {!collapsed && <span>{item.label}</span>}
+              {!collapsed && <span className="flex-1 text-left">{item.label}</span>}
+              {locked && <Lock size={12} className="text-white/20 shrink-0" />}
             </button>
           );
         })}
+        {isAdmin && (
+          <button onClick={() => nav('/crm/admin')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+              ${loc.pathname.startsWith('/crm/admin') ? 'bg-white/10 text-white shadow-sm' : 'text-white/60 hover:bg-white/5 hover:text-white/90'}`}>
+            <Shield size={20} className={loc.pathname.startsWith('/crm/admin') ? 'text-primary' : ''} />
+            {!collapsed && <span className="flex-1 text-left">Phân quyền</span>}
+          </button>
+        )}
       </nav>
+
+      {lockedPath && (
+        <div className="fixed top-5 right-5 z-50 px-5 py-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium shadow-xl animate-slide-in flex items-center gap-2">
+          <Lock size={16} /> Bạn không có quyền truy cập
+        </div>
+      )}
+
       <div className="border-t border-white/10 p-4">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold">

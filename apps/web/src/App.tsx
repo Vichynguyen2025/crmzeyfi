@@ -11,6 +11,7 @@ import DrivePage from './pages/Drive';
 import ChannelsPage from './pages/Channels';
 import ProductsPage from './pages/Products';
 import MarketingESim from './pages/MarketingESim';
+import AdminPermissions from './pages/AdminPermissions';
 import AppLayout from './components/layout/AppLayout';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/crm/products" element={<ProtectedRoute><AppLayout><ProductsPage /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/marketing" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/marketing/:tab" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
+        <Route path="/crm/admin" element={<ProtectedRoute><AppLayout><AdminPermissions /></AppLayout></ProtectedRoute>} />
 
         {/* Redirect old routes to new /crm/ equivalents */}
         <Route path="/dashboard" element={<Navigate to="/crm/dashboard" replace />} />
