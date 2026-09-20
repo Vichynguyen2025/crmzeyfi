@@ -53,6 +53,15 @@ export default async function (app: FastifyInstance) {
     const [channelCount] = await pool.execute("SELECT COUNT(*) as c FROM media_channels");
     const [totalCostActual] = await pool.execute("SELECT COALESCE(SUM(fixed_cost),0) as c FROM team_actuals");
 
+    // Today's daily-perf totals
+    const today = new Date().toISOString().slice(0,10);
+    const [tdOrders] = await pool.execute(
+      "SELECT COALESCE(SUM(orders),0) as o, COALESCE(SUM(total_cost),0) as c, COALESCE(SUM(messages),0) as m, COALESCE(SUM(reach),0) as r, COALESCE(SUM(clicks),0) as cl, COALESCE(SUM(cancelled_orders),0) as co FROM team_daily_perf WHERE date = ?",
+      [today]
+    );
+    // Activity log (last 10)
+    const [logs] = await pool.execute("SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 10");
+
     reply.send({ 
       teams: result, 
       overall: { 
@@ -66,7 +75,17 @@ export default async function (app: FastifyInstance) {
         actualCosts: (totalCostActual as any[])[0]?.c || 0,
         productCount: (productCount as any[])[0]?.c || 0,
         channelCount: (channelCount as any[])[0]?.c || 0,
-      } 
+        todayOrders: (tdOrders as any[])[0]?.o || 0,
+        todayCost: (tdOrders as any[])[0]?.c || 0,
+        todayMessages: (tdOrders as any[])[0]?.m || 0,
+        todayReach: (tdOrders as any[])[0]?.r || 0,
+        todayClicks: (tdOrders as any[])[0]?.cl || 0,
+        todayCancelled: (tdOrders as any[])[0]?.co || 0,
+      },
+      activityLogs: (logs as any[]).map((l: any) => ({
+        ...l,
+        timeAgo: Math.floor((Date.now() - new Date(l.created_at).getTime()) / 60000) + 'p trước'
+      }))
     });
   });
 }

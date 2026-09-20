@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Users, ClipboardList, DollarSign, PhoneCall, Package, Globe, ShoppingCart, Target, TrendingUp } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { Users, ClipboardList, DollarSign, PhoneCall, Package, Globe, ShoppingCart, Target, TrendingUp, Activity, FileText, BarChart2, Layers, Zap, ShieldAlert } from 'lucide-react';
 import { api } from '../lib/api';
 import { getSocket } from '../lib/socket';
 
+const COLORS = ['#4f46e5', '#22c55e', '#f59e0b', '#ef4444', '#7c3aed', '#06b6d4', '#f97316', '#ec4899'];
 const PERIODS = [
   { key: 'today', label: 'Hôm nay', days: 0 },
   { key: 'week', label: '7 ngày', days: 7 },
@@ -23,174 +24,207 @@ export default function Dashboard() {
     return { from: '2024-01-01', to: d.toISOString().slice(0,10) };
   };
 
-  const load = () => {
+  const load = useCallback(() => {
     const { from, to } = calcDates(period);
     api('/dashboard?from=' + from + '&to=' + to).then(setData).catch(() => {});
-  };
+  }, [period]);
 
-  useEffect(load, [period]);
+  useEffect(() => { load(); }, [load]);
 
   // Realtime
   useEffect(() => {
     const sock = getSocket();
     const handler = () => load();
-    sock.on('report:new', handler);
-    sock.on('task:new', handler);
-    sock.on('customer:new', handler);
-    sock.on('channel:update', handler);
-    sock.on('drive:update', handler);
-    return () => {
-      sock.off('report:new', handler); sock.off('task:new', handler);
-      sock.off('customer:new', handler); sock.off('channel:update', handler);
-      sock.off('drive:update', handler);
-    };
-  }, [period]);
+    sock.on('report:new', handler); sock.on('task:new', handler); sock.on('customer:new', handler);
+    sock.on('channel:update', handler); sock.on('drive:update', handler); sock.on('activity:new', handler);
+    return () => { sock.off('report:new', handler); sock.off('task:new', handler); sock.off('customer:new', handler);
+      sock.off('channel:update', handler); sock.off('drive:update', handler); sock.off('activity:new', handler); };
+  }, [load]);
 
-  if (!data) return (
-    <div className="flex h-80 items-center justify-center">
-      <div className="animate-spin w-10 h-10 border-4 border-[#4f46e5] border-t-transparent rounded-full" />
-    </div>
-  );
+  if (!data) return <div className="flex h-80 items-center justify-center"><div className="animate-spin w-10 h-10 border-4 border-[#4f46e5] border-t-transparent rounded-full" /></div>;
 
   const o = data.overall || {};
-  const kpiCol = o.kpiPct >= 100 ? 'text-green-600' : o.kpiPct >= 50 ? 'text-amber-600' : 'text-red-500';
+  const logs = data.activityLogs || [];
 
   return (
     <div className="space-y-6">
-      {/* Header + Filter */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#171717]">Dashboard</h1>
-          <p className="text-sm text-muted mt-1">Tổng quan hiệu suất CRM</p>
+          <p className="text-sm text-muted mt-1">Tổng quan hiệu suất CRM — Quản lý tình hình kinh doanh</p>
         </div>
         <div className="flex items-center gap-1 bg-white rounded-xl border border-border shadow-sm">
           {PERIODS.map(p => (
             <button key={p.key} onClick={() => setPeriod(p.key)}
-              className={'px-4 py-2 text-sm font-medium transition-all first:rounded-l-xl last:rounded-r-xl ' +
-                (period === p.key ? 'bg-[#4f46e5] text-white shadow-sm' : 'hover:bg-gray-50 text-muted')}>
+              className={'px-4 py-2 text-sm font-medium transition-all first:rounded-l-xl last:rounded-r-xl ' + (period === p.key ? 'bg-[#4f46e5] text-white shadow-sm' : 'hover:bg-gray-50 text-muted')}>
               {p.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Top metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center"><ClipboardList className="w-5 h-5 text-[#4f46e5]" /></div>
-            <span className="text-sm font-medium text-muted">Báo cáo</span>
-          </div>
-          <p className="text-3xl font-bold text-[#171717]">{o.reportCount || 0}</p>
-          <p className="text-xs text-muted mt-1">Trong kỳ</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-green-50 grid place-items-center"><PhoneCall className="w-5 h-5 text-[#22c55e]" /></div>
-            <span className="text-sm font-medium text-muted">Khách hàng</span>
-          </div>
-          <p className="text-3xl font-bold text-[#171717]">{o.customerCount || 0}</p>
-          <p className="text-xs text-muted mt-1">Tổng số</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 grid place-items-center"><DollarSign className="w-5 h-5 text-[#f59e0b]" /></div>
-            <span className="text-sm font-medium text-muted">Chi phí QC</span>
-          </div>
-          <p className="text-3xl font-bold text-[#171717]">{Number(o.adCostTotal || 0).toLocaleString('vi-VN')}đ</p>
-          <p className="text-xs text-muted mt-1">Trong kỳ</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 grid place-items-center"><Users className="w-5 h-5 text-[#7c3aed]" /></div>
-            <span className="text-sm font-medium text-muted">Nhân sự</span>
-          </div>
-          <p className="text-3xl font-bold text-[#171717]">{o.userCount || 0}</p>
-          <p className="text-xs text-muted mt-1">Tổng số</p>
-        </div>
-      </div>
-
-      {/* KPI vs Actual */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 grid place-items-center"><Target className="w-5 h-5 text-blue-600" /></div>
-            <div><span className="text-sm font-medium text-muted">KPI Mục tiêu</span><p className="text-xs text-muted">Tổng đơn</p></div>
-          </div>
-          <p className="text-2xl font-bold text-[#171717]">{o.kpiOrders || 0}</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-green-50 grid place-items-center"><ShoppingCart className="w-5 h-5 text-green-600" /></div>
-            <div><span className="text-sm font-medium text-muted">Đơn thực tế</span><p className="text-xs text-muted">Tổng đơn</p></div>
-          </div>
-          <p className="text-2xl font-bold text-[#171717]">{o.actualOrders || 0}</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 grid place-items-center"><TrendingUp className="w-5 h-5 text-rose-600" /></div>
-            <div><span className="text-sm font-medium text-muted">% KPI</span><p className="text-xs text-muted">Thực tế / Mục tiêu</p></div>
-          </div>
-          <p className={'text-2xl font-bold ' + kpiCol}>{o.kpiPct || 0}%</p>
-          <div className="mt-2 w-full bg-gray-100 rounded-full h-2">
-            <div className={'h-2 rounded-full transition-all ' + (o.kpiPct >= 100 ? 'bg-green-500' : o.kpiPct >= 50 ? 'bg-amber-500' : 'bg-red-500')}
-              style={{width: Math.min(o.kpiPct || 0, 100) + '%'}} />
-          </div>
-        </div>
-      </div>
-
-      {/* Bar chart */}
-      <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
-        <h2 className="text-lg font-bold mb-4 text-[#171717]">Thống kê theo Team</h2>
-        <ResponsiveContainer width="100%" height={320}>
-          <BarChart data={data.teams}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="name" tick={{fontSize: 12}} />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="reportCount" name="Báo cáo" fill="#4f46e5" radius={[6,6,0,0]} />
-            <Bar dataKey="customerCount" name="KH mới" fill="#22c55e" radius={[6,6,0,0]} />
-            <Bar dataKey="actualOrders" name="Đơn thực tế" fill="#f59e0b" radius={[6,6,0,0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Team cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-        {data.teams?.map((t: any) => {
-          const pct = t.kpiOrders > 0 ? Math.round(t.actualOrders / t.kpiOrders * 100) : 0;
+      {/* 6 Daily KPI cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {[
+          { label: 'Đơn hàng', val: o.todayOrders, unit: '', icon: ShoppingCart, color: 'indigo' },
+          { label: 'Chi phí', val: o.todayCost, unit: 'đ', icon: DollarSign, color: 'amber', fmt: true },
+          { label: 'Tin nhắn', val: o.todayMessages, unit: '', icon: Activity, color: 'blue' },
+          { label: 'Reach', val: o.todayReach, unit: '', icon: Users, color: 'purple' },
+          { label: 'Click', val: o.todayClicks, unit: '', icon: Target, color: 'emerald' },
+          { label: 'Huỷ', val: o.todayCancelled, unit: '', icon: ShieldAlert, color: 'red' },
+        ].map((c, i) => {
+          const v = c.fmt ? Number(c.val || 0).toLocaleString('vi-VN') + c.unit : String(c.val || 0) + c.unit;
           return (
-            <div key={t.id} className="bg-white rounded-2xl border border-border p-5 shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl grid place-items-center text-white font-bold text-sm shadow-sm" style={{backgroundColor: t.color}}>
-                  {t.name.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="font-bold text-[#171717]">{t.name}</h3>
-                  <p className="text-xs text-muted flex items-center gap-1"><Users size={12} />{t.memberCount} thành viên</p>
-                </div>
+            <div key={i} className="bg-white rounded-xl border border-border shadow-sm p-4 hover:shadow-md transition-all">
+              <div className="flex items-center gap-2 text-xs text-muted mb-2">
+                <c.icon size={14} className={'text-' + c.color + '-500'} />
+                <span>{c.label}</span>
               </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                <div><span className="text-muted">Báo cáo:</span> <span className="font-semibold">{t.reportCount}</span></div>
-                <div><span className="text-muted">KH mới:</span> <span className="font-semibold">{t.customerCount}</span></div>
-                <div><span className="text-muted">CP QC:</span> <span className="font-semibold">{Number(t.adCostTotal||0).toLocaleString('vi-VN')}đ</span></div>
-                <div><span className="text-muted">Tasks:</span> <span className="font-semibold">{Object.values(t.tasks||{}).reduce((a:number,b:number)=>a+b,0)||0}</span></div>
-                <div><span className="text-muted">Đơn mục tiêu:</span> <span className="font-semibold">{t.kpiOrders}</span></div>
-                <div><span className="text-muted">Đơn thực tế:</span> <span className="font-semibold">{t.actualOrders}</span></div>
-                <div className="col-span-2 mt-1">
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-muted">%KPI</span>
-                    <span className={'font-bold ' + (pct >= 100 ? 'text-green-600' : pct >= 50 ? 'text-amber-600' : 'text-red-500')}>{pct}%</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5">
-                    <div className={'h-1.5 rounded-full ' + (pct >= 100 ? 'bg-green-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500')}
-                      style={{width: Math.min(pct, 100) + '%'}} />
-                  </div>
-                </div>
-              </div>
+              <p className="text-xl font-bold text-[#171717] truncate">{v}</p>
+              <p className="text-[10px] text-muted mt-0.5">Hôm nay</p>
             </div>
           );
         })}
+      </div>
+
+      {/* Per-Team Performance (B2 data — MOST IMPORTANT) */}
+      {data.teams?.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Target size={18} className="text-[#4f46e5]" />
+            <h2 className="text-lg font-bold text-[#171717]">Tình hình từng Team — Bảng B2</h2>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {data.teams.map((t: any) => {
+              const pct = t.kpiOrders > 0 ? Math.round(t.actualOrders / t.kpiOrders * 100) : 0;
+              const cpOrder = t.actualOrders > 0 ? Math.round(t.actualCosts / t.actualOrders) : 0;
+              const colorClass = pct >= 100 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : pct >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-red-500 bg-red-50 border-red-200';
+              const barColor = pct >= 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500';
+              return (
+                <div key={t.id} className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
+                  <div className="px-5 py-4 border-b border-border bg-gradient-to-r from-gray-50 to-white flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl grid place-items-center text-white font-bold text-sm shadow-sm" style={{backgroundColor: t.color || '#4f46e5'}}>{t.name.charAt(0)}</div>
+                      <div>
+                        <h3 className="font-bold text-[#171717]">{t.name}</h3>
+                        <p className="text-xs text-muted flex items-center gap-1"><Users size={12} /> {t.memberCount || 0} thành viên</p>
+                      </div>
+                    </div>
+                    <span className={'px-3 py-1 rounded-full text-xs font-bold border ' + colorClass}>{pct}%</span>
+                  </div>
+                  <div className="px-5 py-4">
+                    <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
+                      <div className={'transition-all duration-500 h-2 rounded-full ' + barColor} style={{width: Math.min(pct, 100) + '%'}} />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div><p className="text-xs text-muted">Mục tiêu</p><p className="text-sm font-bold text-[#171717]">{t.kpiOrders} đơn</p></div>
+                      <div><p className="text-xs text-muted">Thực tế</p><p className="text-sm font-bold text-[#4f46e5]">{t.actualOrders} đơn</p></div>
+                      <div><p className="text-xs text-muted">Chi phí</p><p className="text-sm font-bold text-[#171717]">{Number(t.actualCosts || 0).toLocaleString('vi-VN')}đ</p></div>
+                    </div>
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 text-xs text-muted">
+                      <span>CP/Đơn: <b>{cpOrder > 0 ? cpOrder.toLocaleString('vi-VN') + 'đ' : '—'}</b></span>
+                      <span>Báo cáo: <b>{t.reportCount || 0}</b></span>
+                      <span>CP QC: <b>{Number(t.adCostTotal || 0).toLocaleString('vi-VN')}đ</b></span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart2 size={18} className="text-[#4f46e5]" />
+            <h2 className="text-sm font-bold text-[#171717]">Mục tiêu vs Thực tế</h2>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data.teams}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="name" tick={{fontSize: 11}} />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="kpiOrders" name="Mục tiêu" fill="#a5b4fc" radius={[4,4,0,0]} />
+              <Bar dataKey="actualOrders" name="Thực tế" fill="#4f46e5" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <DollarSign size={18} className="text-[#4f46e5]" />
+            <h2 className="text-sm font-bold text-[#171717]">Chi phí theo Team</h2>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data.teams}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="name" tick={{fontSize: 11}} />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="actualCosts" name="Chi phí" fill="#4f46e5" radius={[4,4,0,0]} />
+              <Bar dataKey="adCostTotal" name="CP QC" fill="#f59e0b" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Activity Feed + Module Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-border bg-gray-50/60 flex items-center justify-between">
+            <h3 className="font-semibold text-sm flex items-center gap-2"><Activity size={15} className="text-[#4f46e5]" /> Hoạt động gần đây</h3>
+            <span className="text-xs text-muted">Realtime</span>
+          </div>
+          <div className="divide-y divide-border/50 max-h-[340px] overflow-y-auto">
+            {logs.length === 0 && <div className="px-5 py-10 text-center text-sm text-muted">Chưa có hoạt động</div>}
+            {logs.map((log: any, i: number) => (
+              <div key={log.id || i} className="px-5 py-2.5 flex items-start gap-3 hover:bg-gray-50/60 transition-all">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[10px] font-bold mt-0.5 shrink-0">
+                  {(log.user_name || '?').charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs"><span className="font-medium">{log.user_name || 'Hệ thống'}</span>
+                    <span className="mx-1">·</span>
+                    <span className="text-muted">{log.action === 'grant' ? 'Cấp quyền' : log.action === 'revoke' ? 'Thu hồi' : log.action === 'update' ? 'Cập nhật' : log.action}</span>
+                    <span className="mx-1">·</span>
+                    <span className="font-medium">{log.module}</span></p>
+                  <p className="text-xs text-muted mt-0.5 truncate">{log.entity || ''}{log.detail ? ' — ' + log.detail.slice(0,60) : ''}</p>
+                </div>
+                <span className="text-[10px] text-muted shrink-0">{log.timeAgo || ''}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-border bg-gray-50/60">
+            <h3 className="font-semibold text-sm flex items-center gap-2"><Layers size={15} className="text-[#4f46e5]" /> Tổng quan Module</h3>
+          </div>
+          <div className="divide-y divide-border/50">
+            {[
+              { label: 'Báo cáo', val: o.reportCount, icon: ClipboardList, color: '#4f46e5' },
+              { label: 'Khách hàng', val: o.customerCount, icon: PhoneCall, color: '#22c55e' },
+              { label: 'Sản phẩm', val: o.productCount, icon: Package, color: '#f59e0b' },
+              { label: 'Kênh MKT', val: o.channelCount, icon: Globe, color: '#7c3aed' },
+              { label: 'Nhân sự', val: o.userCount, icon: Users, color: '#06b6d4' },
+              { label: 'File Drive', val: o.reportCount, icon: FileText, color: '#f97316' },
+            ].map((m, i) => (
+              <div key={i} className="px-5 py-3 flex items-center gap-3 hover:bg-gray-50/60 transition-all">
+                <div className="w-8 h-8 rounded-lg grid place-items-center" style={{backgroundColor: m.color + '15'}}>
+                  <m.icon size={14} style={{color: m.color}} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-muted">{m.label}</p>
+                  <p className="text-sm font-bold text-[#171717]">{m.val || 0}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
