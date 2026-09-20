@@ -277,7 +277,7 @@ export default function Reports() {
             <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-[#171717]">Danh sách kết quả công việc của nhân sự</h2>
             {isAdmin && teams.length > 0 && (
-              <select value={teamFilter} onChange={e => setTeamFilter(e.target.value)}
+              <select value={teamFilter} onChange={e => { const v = e.target.value; setTeamFilter(v); const from = calcFromDate(); const to = fmtDate(new Date()); const url = (from ? `/reports?from=${from}&to=${to}` : '/reports') + (v !== 'all' ? '&teamId=' + v : ''); api(url).then(setReports); }}
                 className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25">
                 <option value="all">Tất cả phòng ban</option>
                 {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -328,6 +328,14 @@ export default function Reports() {
                     </td>;
                   })}
                 </tr>
+                {filteredReports.length === 0 && (
+                  <tr><td colSpan={columns.length + 2} className="px-6 py-12 text-center text-sm text-muted">
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="font-medium text-muted">Chưa có báo cáo cho phòng ban này</p>
+                      <p className="text-xs text-muted/60">Chọn phòng ban khác hoặc thêm báo cáo mới</p>
+                    </div>
+                  </td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -381,6 +389,14 @@ export default function Reports() {
                   );
                 })}
               </tbody>
+            {filteredReports.length === 0 && (
+              <tr><td colSpan={columns.length + 2} className="px-6 py-12 text-center text-sm text-muted">
+                <div className="flex flex-col items-center gap-2">
+                  <p className="font-medium text-muted">Chưa có báo cáo cho phòng ban này</p>
+                  <p className="text-xs text-muted/60">Chọn phòng ban khác hoặc thêm báo cáo mới</p>
+                </div>
+              </td></tr>
+            )}
             </table>
           </div>
         </div>

@@ -46,13 +46,17 @@ export default async function (app: FastifyInstance) {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
     const query = req.query as any;
     const isAdmin = req.user.role === 'admin' || req.user.role === 'manager';
+    const teamId = query.teamId || '';
     
-    // Admin sees all, member sees only own reports
+    let whereClause = isAdmin ? "WHERE 1=1" : "WHERE dr.user_id = ?";
+    const params: any[] = isAdmin ? [] : [req.user.id];
+    if (teamId) { whereClause += " AND dr.team_id = ?"; params.push(teamId); }
+    
     const [rows] = await pool.execute(
       "SELECT dr.id, dr.user_id, dr.team_id, DATE_FORMAT(dr.date, '%Y-%m-%d') as date, dr.data, dr.created_at, u.name as user_name, u.avatar as user_avatar FROM daily_reports dr JOIN users u ON u.id = dr.user_id " +
-      (isAdmin ? "" : "WHERE dr.user_id = ? ") +
-      "ORDER BY dr.date DESC, dr.created_at DESC",
-      isAdmin ? [] : [req.user.id]
+      whereClause +
+      " ORDER BY dr.date DESC, dr.created_at DESC",
+      params
     );
     reply.send(rows);
   });

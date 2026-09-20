@@ -25,7 +25,7 @@ export default async function (app: FastifyInstance) {
     for (const r of (rows || [])) {
       if (!r.date) continue;
       const id = uuid();
-      const fmtDate = r.date ? new Date(r.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      const fmtDate = r.date ? r.date.split('T')[0] : new Date().toISOString().split('T')[0];
       await pool.execute(
         "INSERT INTO team_daily_perf (id, team_id, user_id, product, date, total_cost, reach, clicks, messages, orders, cancelled_orders, month) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [id, teamId, userId, r.product || '', fmtDate, r.totalCost || 0, r.reach || 0, r.clicks || 0, r.messages || 0, r.orders || 0, r.cancelledOrders || 0, m]
@@ -38,7 +38,6 @@ export default async function (app: FastifyInstance) {
 }
 
 async function recalcActuals(teamId: string, month: string) {
-  // Sum daily orders per user+product for this month
   await pool.execute("DELETE FROM team_actuals WHERE team_id = ? AND month = ?", [teamId, month]);
   const [summary] = await pool.execute(
     "SELECT user_id, product, SUM(orders) as total_orders, SUM(total_cost) as total_cost FROM team_daily_perf WHERE team_id = ? AND month = ? GROUP BY user_id, product",
@@ -46,9 +45,12 @@ async function recalcActuals(teamId: string, month: string) {
   );
   for (const row of (summary as any[])) {
     const id = uuid();
+    const totalOrders = row.total_orders || 0;
+    const totalCost = row.total_cost || 0;
+    const costPerOrder = totalOrders > 0 ? Math.round(totalCost / totalOrders) : 0;
     await pool.execute(
-      "INSERT INTO team_actuals (id, team_id, user_id, product, actual_orders, fixed_cost, month) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [id, teamId, row.user_id, row.product || '', row.total_orders || 0, row.total_cost || 0, month]
+      "INSERT INTO team_actuals (id, team_id, user_id, product, actual_orders, fixed_cost, cost_per_order, month) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [id, teamId, row.user_id, row.product || '', totalOrders, totalCost, costPerOrder, month]
     );
   }
 }

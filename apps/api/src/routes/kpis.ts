@@ -53,6 +53,14 @@ export default async function (app: FastifyInstance) {
     const memberByTeam: Record<string, number> = {};
     for (const m of memberCounts as any[]) memberByTeam[m.team_id] = m.c;
 
+    // Get actual orders from daily perf for this month across all teams
+    const [actualRows] = await pool.execute(
+      "SELECT d.team_id, SUM(d.orders) as total_orders FROM team_daily_perf d WHERE d.month = ? GROUP BY d.team_id",
+      [m]
+    );
+    const actualByTeam: Record<string, number> = {};
+    for (const a of actualRows as any[]) actualByTeam[a.team_id] = a.total_orders || 0;
+
     const result = [];
     for (const team of allTeams as any[]) {
       const products = kpiByTeam[team.id] || [];
@@ -68,6 +76,7 @@ export default async function (app: FastifyInstance) {
         id: team.id, name: team.name, color: team.color,
         products: Object.values(unique),
         totalTarget, totalBudget,
+        totalActual: actualByTeam[team.id] || 0,
         memberCount: memberByTeam[team.id] || 0,
       });
     }

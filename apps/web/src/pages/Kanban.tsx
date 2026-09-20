@@ -31,7 +31,7 @@ export default function Kanban() {
   const [title, setTitle] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [drag, setDrag] = useState<any>(null);
-  const [view, setView] = useState<'kanban' | 'sheet'>('sheet');
+  const [tab, setTab] = useState<'sheet' | 'quangcao'>('sheet');
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
@@ -42,6 +42,9 @@ export default function Kanban() {
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{type: 'success' | 'error', msg: string} | null>(null);
   const [contentEditor, setContentEditor] = useState<{id: string, text: string} | null>(null);
+  const [adRows, setAdRows] = useState<any[]>([]);
+  const [adSaving, setAdSaving] = useState<Set<string>>(new Set());
+  const [adMonth, setAdMonth] = useState(new Date().toISOString().slice(0, 7));
   const [drivePicker, setDrivePicker] = useState<{taskId: string, open: boolean}>({taskId: '', open: false});
   const [driveFiles, setDriveFiles] = useState<any[]>([]);
 
@@ -58,6 +61,29 @@ export default function Kanban() {
   useEffect(() => {
     if (drivePicker.open) { api('/drive').then(setDriveFiles).catch(() => {}); }
   }, [drivePicker.open]);
+
+  // Ads data
+  const loadAds = useCallback(async (m?: string) => {
+    const month = m || adMonth;
+    try { const data = await api('/ads?month=' + month); setAdRows(data || []); } catch { setAdRows([]); }
+  }, [adMonth]);
+
+  useEffect(() => { loadAds(); }, [loadAds]);
+
+  const saveAdField = async (id: string, field: string, val: any) => {
+    setAdSaving(s => new Set(s).add(id));
+    setAdRows((prev: any[]) => prev.map(r => r.id === id ? {...r, [field]: val} : r));
+    try { await api('/ads/' + id, { method:'PUT', body: JSON.stringify({[field]: val}) }); }
+    catch { setAdRows((prev: any[]) => prev.map(r => r.id === id ? {...r, [field]: (prev.find(x => x.id === id) as any)?.[field] || 0} : r)); }
+    setAdSaving(s => { const n = new Set(s); n.delete(id); return n; });
+  };
+
+  const addAdRow = async () => {
+    const date = new Date().toISOString().slice(0, 10);
+    try { const res = await api('/ads', { method:'POST', body: JSON.stringify({date, platform:'google_ads'}) });
+      if (res?.id) { setAdRows((prev: any[]) => [{id: res.id, date, platform:'google_ads', cost_with_tax:0, revenue:0, orders:0, sims:0, impressions:0, clicks:0, month:adMonth}, ...prev]); }
+    } catch { alert('Lỗi thêm dòng'); }
+  };
 
   const filtered = tasks.filter(t => {
     if (search && !t.title?.toLowerCase().includes(search.toLowerCase())) return false;
@@ -194,12 +220,12 @@ export default function Kanban() {
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-[#171717]">Marketing eSim</h1>
           <div className="flex items-center gap-1 bg-white rounded-xl border border-border shadow-sm p-0.5">
-            {(['kanban', 'sheet'] as const).map(v => (
-              <button key={v} onClick={() => setView(v)}
+            {(['sheet', 'quangcao'] as const).map(v => (
+              <button key={v} onClick={() => setTab(v)}
                 className={'flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all ' +
-                  (view === v ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>
-                {v === 'kanban' ? <LayoutGrid size={16} /> : <List size={16} />}
-                {v === 'kanban' ? 'Kanban' : 'Sheet'}
+                  (tab === v ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>
+                {v === 'sheet' ? <List size={16} /> : <LayoutGrid size={16} />}
+                {v === 'sheet' ? 'Sheet' : 'Quảng cáo'}
               </button>
             ))}
           </div>
@@ -265,69 +291,120 @@ export default function Kanban() {
       )}
 
       {/* Kanban Board */}
-      {view === 'kanban' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {STATUSES.map(s => (
-            <div key={s.key}
-              onDragOver={e => e.preventDefault()}
-              onDrop={e => { e.preventDefault(); if (drag) { move(drag.id, s.key); setDrag(null); } }}
-              className="bg-gray-50/80 rounded-2xl p-5 min-h-[200px] border border-border">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-3 h-3 rounded-full" style={{backgroundColor: s.color}} />
-                <h3 className="font-semibold text-sm text-[#171717]">{s.label}</h3>
-                <span className="ml-auto text-xs text-muted bg-white px-2.5 py-0.5 rounded-full border border-border font-medium">
-                  {tasks.filter(t => t.status === s.key).length}
-                </span>
-              </div>
-              <div className="space-y-3">
-                {tasks.filter(t => t.status === s.key).length === 0 && (
-                  <div className="text-xs text-muted py-8 text-center">Kéo thả task vào đây</div>
-                )}
-                {tasks.filter(t => t.status === s.key).map(task => (
-                  <div key={task.id} draggable onDragStart={() => setDrag(task)}
-                    className="bg-white rounded-xl p-4 border border-border shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-all group">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium text-sm flex-1 text-[#171717]">{task.title}</p>
-                      <button onClick={() => deleteTask(task.id)}
-                        className="p-1 rounded hover:bg-red-50 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all shrink-0">
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                    {task.assigneeName && (
-                      <p className="text-xs text-muted mt-2 flex items-center gap-1.5">
-                        <span className="w-5 h-5 rounded-full bg-[#4f46e5]/10 text-[9px] grid place-items-center text-[#4f46e5] font-medium">
-                          {task.assigneeName.charAt(0).toUpperCase()}
-                        </span>
-                        {task.assigneeName}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
+      {tab === 'quangcao' && (
+        <div className="space-y-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-[#171717]">Quảng cáo</h2>
+              <p className="text-sm text-muted mt-0.5">Nhập chỉ số quảng cáo theo ngày trên Google Ads & Facebook Ads</p>
             </div>
-          ))}
+            <button onClick={() => addAdRow()} className="flex items-center gap-2 px-4 py-2 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all"><Plus size={16} />Thêm dòng</button>
+          </div>
+          <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full table-fixed" style={{borderCollapse:'separate', borderSpacing:0}}>
+                <colgroup>
+                  <col style={{width:100}} /><col style={{width:140}} /><col style={{width:110}} /><col style={{width:110}} /><col style={{width:110}} /><col style={{width:60}} /><col style={{width:60}} /><col style={{width:80}} /><col style={{width:80}} /><col style={{width:60}} /><col style={{width:80}} /><col style={{width:70}} /><col style={{width:70}} /><col style={{width:70}} /><col style={{width:80}} /><col style={{width:40}} />
+                </colgroup>
+                <thead>
+                  <tr className="bg-gray-50/80 border-b border-border">
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Ngày</th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Nền tảng</th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CP (có thuế) <span className="text-[9px] font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CP (chưa thuế) <span className="text-[9px] font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Doanh thu <span className="text-[9px] font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Đơn</th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">SIM</th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Impr.</th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Click</th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CTR <span className="text-[9px] font-normal">%</span></th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CP/Đơn <span className="text-[9px] font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">ROAS</th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CP/DT <span className="text-[9px] font-normal">%</span></th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CPC <span className="text-[9px] font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Thuế 8% <span className="text-[9px] font-normal">đ</span></th>
+                    <th className="px-2 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {adRows.length === 0 && (
+                    <tr><td colSpan={16} className="px-6 py-12 text-center text-sm text-muted">
+                      <div className="flex flex-col items-center gap-2"><p className="font-medium">Chưa có dữ liệu</p><p className="text-xs">Thêm dòng để nhập chỉ số</p></div>
+                    </td></tr>
+                  )}
+                  {adRows.map((r: any) => {
+                    const costExTax = Number(r.cost_with_tax || 0) / 1.08;
+                    const tax = Number(r.cost_with_tax || 0) - costExTax;
+                    const ctr = Number(r.impressions || 0) > 0 ? Number(r.clicks || 0) / Number(r.impressions || 0) * 100 : 0;
+                    const cpOrder = Number(r.orders || 0) > 0 ? costExTax / Number(r.orders || 0) : 0;
+                    const roas = costExTax > 0 ? Number(r.revenue || 0) / costExTax : 0;
+                    const cpDt = costExTax > 0 ? costExTax / Number(r.revenue || 1) * 100 : 0;
+                    const cpc = Number(r.clicks || 0) > 0 ? costExTax / Number(r.clicks || 0) : 0;
+                    const isSaving = adSaving.has(r.id);
+                    return (
+                      <tr key={r.id} className={'hover:bg-gray-50/60 transition-all ' + (isSaving ? 'opacity-50' : '')}>
+                        <td className="px-2 py-1.5 text-xs text-muted">{r.date?.split('T')[0] || ''}</td>
+                        <td className="px-2 py-1.5 text-xs">
+                          <select value={r.platform || 'google_ads'} onChange={e => saveAdField(r.id, 'platform', e.target.value)} className="w-full bg-transparent text-xs outline-none border-0 cursor-pointer">
+                            <option value="google_ads">Google Ads</option>
+                            <option value="facebook_ads">Facebook Ads</option>
+                          </select>
+                        </td>
+                        <td className="px-2 py-1.5 text-xs text-right">
+                          <input type="number" value={r.cost_with_tax || 0} onBlur={e => saveAdField(r.id, 'cost_with_tax', Number(e.target.value))} onChange={e => setAdRows((prev:any[]) => prev.map(x => x.id === r.id ? {...x, cost_with_tax: Number(e.target.value)} : x))} className="w-full bg-transparent text-xs text-right outline-none border-0" />
+                        </td>
+                        <td className="px-2 py-1.5 text-xs text-right text-muted">{Math.round(costExTax).toLocaleString('vi-VN')}</td>
+                        <td className="px-2 py-1.5 text-xs text-right">
+                          <input type="number" value={r.revenue || 0} onBlur={e => saveAdField(r.id, 'revenue', Number(e.target.value))} onChange={e => setAdRows((prev:any[]) => prev.map(x => x.id === r.id ? {...x, revenue: Number(e.target.value)} : x))} className="w-full bg-transparent text-xs text-right outline-none border-0" />
+                        </td>
+                        <td className="px-2 py-1.5 text-xs text-right">
+                          <input type="number" value={r.orders || 0} onBlur={e => saveAdField(r.id, 'orders', Number(e.target.value))} onChange={e => setAdRows((prev:any[]) => prev.map(x => x.id === r.id ? {...x, orders: Number(e.target.value)} : x))} className="w-full bg-transparent text-xs text-right outline-none border-0" />
+                        </td>
+                        <td className="px-2 py-1.5 text-xs text-right">
+                          <input type="number" value={r.sims || 0} onBlur={e => saveAdField(r.id, 'sims', Number(e.target.value))} onChange={e => setAdRows((prev:any[]) => prev.map(x => x.id === r.id ? {...x, sims: Number(e.target.value)} : x))} className="w-full bg-transparent text-xs text-right outline-none border-0" />
+                        </td>
+                        <td className="px-2 py-1.5 text-xs text-right">
+                          <input type="number" value={r.impressions || 0} onBlur={e => saveAdField(r.id, 'impressions', Number(e.target.value))} onChange={e => setAdRows((prev:any[]) => prev.map(x => x.id === r.id ? {...x, impressions: Number(e.target.value)} : x))} className="w-full bg-transparent text-xs text-right outline-none border-0" />
+                        </td>
+                        <td className="px-2 py-1.5 text-xs text-right">
+                          <input type="number" value={r.clicks || 0} onBlur={e => saveAdField(r.id, 'clicks', Number(e.target.value))} onChange={e => setAdRows((prev:any[]) => prev.map(x => x.id === r.id ? {...x, clicks: Number(e.target.value)} : x))} className="w-full bg-transparent text-xs text-right outline-none border-0" />
+                        </td>
+                        <td className="px-2 py-1.5 text-xs text-right text-muted">{ctr.toFixed(1)}</td>
+                        <td className="px-2 py-1.5 text-xs text-right text-muted">{cpOrder > 0 ? Math.round(cpOrder).toLocaleString('vi-VN') : '—'}</td>
+                        <td className="px-2 py-1.5 text-xs text-right font-medium text-emerald-600">{roas.toFixed(1)}x</td>
+                        <td className="px-2 py-1.5 text-xs text-right text-muted">{cpDt.toFixed(1)}</td>
+                        <td className="px-2 py-1.5 text-xs text-right text-muted">{cpc > 0 ? Math.round(cpc).toLocaleString('vi-VN') : '—'}</td>
+                        <td className="px-2 py-1.5 text-xs text-right text-red-500 font-medium">{Math.round(tax).toLocaleString('vi-VN')}</td>
+                        <td className="px-2 py-1.5 text-xs text-center">
+                          <button onClick={() => { if (confirm('Xoá?')) { api('/ads/' + r.id, {method:'DELETE'}).then(() => setAdRows((prev:any[]) => prev.filter(x => x.id !== r.id))).catch(() => {}); }}} className="p-1 rounded hover:bg-red-50 text-muted hover:text-red-500 transition-all"><X size={14} /></button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Sheet / Data Grid */}
-      {view === 'sheet' && (
+      {tab === 'sheet' && (
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="overflow-auto max-h-[65vh]">
             <table className="w-full table-fixed"><colgroup><col className="w-10"/><col className="w-14"/><col className="w-56"/><col className="w-64"/><col className="w-44"/><col className="w-28"/><col className="w-28"/><col className="w-36"/><col className="w-32"/><col className="w-36"/><col className="w-36"/></colgroup>
               <thead className="sticky top-0 z-10">
                 <tr className="bg-gray-50/90 border-b-2 border-border">
-                  <th className="w-10 p-0 text-center py-3">
+                  <th className="w-10 p-0 text-center py-1.5">
                     <input type="checkbox" checked={allSelected}
                       onChange={() => setSelectedIds(allSelected ? new Set() : new Set(filtered.map(t => t.id)))}
                       className="accent-[#4f46e5]" />
                   </th>
-                  <th className="py-3 px-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-10">STT</th>
+                  <th className="py-1.5 px-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-10">STT</th>
                   {COLUMNS.map(c => (
-                    <th key={c.key} className={'py-3 px-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left ' + c.w}>
+                    <th key={c.key} className={'py-1.5 px-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left ' + c.w}>
                       {c.label}
                     </th>
                   ))}
-                  <th className="w-10 py-3 px-3"></th>
+                  <th className="w-10 py-1.5 px-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -337,19 +414,19 @@ export default function Kanban() {
                   return (
                     <tr key={task.id}
                       className={'transition-all ' + (isSel ? 'bg-indigo-50/50' : 'hover:bg-gray-50/60')}>
-                      <td className="p-0 text-center py-3">
+                      <td className="p-0 text-center py-1">
                         <input type="checkbox" checked={isSel} onChange={() => {
                           const n = new Set(selectedIds);
                           isSel ? n.delete(task.id) : n.add(task.id);
                           setSelectedIds(n);
                         }} className="accent-[#4f46e5]" />
                       </td>
-                      <td className="py-3 px-3 text-xs text-muted text-center">{i + 1}</td>
+                      <td className="py-1 px-3 text-xs text-muted text-center">{i + 1}</td>
                       {COLUMNS.map((col, ci) => {
                         const val = task[col.key] || '';
                         const cellEdit = isEdit && editing?.col === col.key;
                         return (
-                          <td key={col.key} className={'py-2 px-3 overflow-hidden ' + col.w}>
+                          <td key={col.key} className={'py-1 px-3 overflow-hidden ' + col.w}>
                             {cellEdit ? (
                               col.type === 'select' ? (
                                 <select value={editValue} onChange={e => setEditValue(e.target.value)}
@@ -426,7 +503,7 @@ export default function Kanban() {
                           </td>
                         );
                       })}
-                      <td className="py-2 px-3 text-center">
+                      <td className="py-1 px-3 text-center">
                         <button onClick={() => deleteTask(task.id)}
                           className="p-1.5 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-all opacity-0 hover:opacity-100">
                           <Trash2 size={12} />

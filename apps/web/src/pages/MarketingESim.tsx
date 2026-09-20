@@ -34,10 +34,16 @@ export default function MarketingESim() {
   const [wordEditor, setWordEditor] = useState<any>(null);
   const [adRows, setAdRows] = useState<any[]>([]);
   const [adMonth, setAdMonth] = useState(new Date().toISOString().slice(0, 7));
-  const [adGroupBy, setAdGroupBy] = useState('month');
+  const [adGroupBy, setAdGroupBy] = useState('day');
   const [adFilterPlatform, setAdFilterPlatform] = useState('');
   const [adFilterUser, setAdFilterUser] = useState('');
   const [adSaving, setAdSaving] = useState<Set<string>>(new Set());
+  const [tkMonth, setTkMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [tkGroupBy, setTkGroupBy] = useState('month');
+  const [tkSocialData, setTkSocialData] = useState<any[]>([]);
+  const [tkAdsData, setTkAdsData] = useState<any[]>([]);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newMember, setNewMember] = useState({name:'', email:'', phone:'', password:'', role:'member'});
 
   const showToast = (type:string, msg:string) => { setToast({type,msg}); setTimeout(()=>setToast(null),2000); };
 
@@ -94,12 +100,39 @@ export default function MarketingESim() {
     setAdSaving(s => { const n = new Set(s); n.delete(id); return n; });
   };
 
-  const addAdRow = async () => {
+const addAdRow = async () => {
     try {
-      const u = (JSON.parse(localStorage.getItem('zeyfi_user')||'{}'));
+      const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
       const res = await api('/ads', {method:'POST', body:JSON.stringify({date:new Date().toISOString().slice(0,10), platform:'facebook_ads', userId:u.id||''})});
       if (res?.id) { loadAds(); showToast('success','✓ Đã thêm'); }
     } catch { showToast('error','✗ Lỗi'); }
+  };
+
+  const loadTk = useCallback(async () => {
+    try {
+      const [social, ads] = await Promise.all([
+        api('/social-content?month='+tkMonth),
+        api('/ads?month='+tkMonth+'&groupBy='+tkGroupBy)
+      ]);
+      setTkSocialData(social||[]);
+      setTkAdsData(ads||[]);
+    } catch { setTkSocialData([]); setTkAdsData([]); }
+  }, [tkMonth, tkGroupBy]);
+
+  useEffect(() => { loadTk(); }, [loadTk]);
+
+  const addMember = async () => {
+    if (!newMember.name.trim() || !newMember.email.trim() || !newMember.password.trim()) {
+      showToast('error', '✗ Nhập tên, email và mật khẩu'); return;
+    }
+    try {
+      await api('/auth/register', {method:'POST', body:JSON.stringify(newMember)});
+      setShowAddMember(false);
+      setNewMember({name:'', email:'', phone:'', password:'', role:'member'});
+      load();
+      loadTk();
+      showToast('success', '✓ Đã thêm thành viên');
+    } catch(e:any) { showToast('error', '✗ ' + e.message); }
   };
 
   const filteredRows = rows.filter((r:any) => {
@@ -131,16 +164,218 @@ export default function MarketingESim() {
         </div>
       </div>
 
-      {tab === 'thongke' && (
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-12">
-          <div className="flex flex-col items-center justify-center gap-4 text-center">
-            <BarChart3 size={48} className="text-muted opacity-30" />
-            <h2 className="text-lg font-semibold text-[#171717]">Thống kê</h2>
-            <p className="text-sm text-muted max-w-md">Đang thiết kế</p>
+      {tab === 'thongke' && (() => {
+    const totalSocial = tkSocialData.length;
+    const published = tkSocialData.filter((r:any) => r.status === 'published').length;
+    const inProgress = tkSocialData.filter((r:any) => r.status === 'writing' || r.status === 'review').length;
+    const completionRate = totalSocial > 0 ? Math.round(published / totalSocial * 100) : 0;
+    const platformCount: Record<string, number> = {};
+    tkSocialData.forEach((r:any) => { const p = r.platform || 'unknown'; platformCount[p] = (platformCount[p]||0) + 1; });
+    const topPlatform = Object.entries(platformCount).sort((a,b) => b[1]-a[1]);
+    const sum = (f:string) => tkAdsData.reduce((a:number,r:any) => a + Number(r[f]||0), 0);
+    const sumTax = sum('cost_with_tax');
+    const sumEx = sumTax > 0 ? sumTax / 1.08 : 0;
+    const sumRev = sum('revenue'); const sumOrd = sum('orders'); const sumSim = sum('sims');
+    const sumImp = sum('impressions'); const sumClk = sum('clicks');
+    const roas = sumEx > 0 ? sumRev / sumEx : 0;
+    const cpOrder = sumOrd > 0 ? sumEx / sumOrd : 0;
+    const cpc = sumClk > 0 ? sumEx / sumClk : 0;
+    const ctr = sumImp > 0 ? sumClk / sumImp * 100 : 0;
+    const tax = sumTax - sumEx;
+    const costPerContent = totalSocial > 0 ? sumEx / totalSocial : 0;
+    const revPerContent = totalSocial > 0 ? sumRev / totalSocial : 0;
+    const roasPct = sumRev > 0 ? sumRev / Math.max(1,sumTax) * 100 : 0;
+    const fmt = (n:number) => Math.round(n).toLocaleString('vi-VN');
+
+    return (
+      <div className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-[#171717]">Thống kê Marketing</h1>
+            <input type="month" value={tkMonth} onChange={e => setTkMonth(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
+          </div>
+          <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
+            {(['day','week','month'] as const).map(v => (
+              <button key={v} onClick={() => setTkGroupBy(v)}
+                className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (tkGroupBy===v ? 'bg-[#4f46e5] text-white' : 'text-muted hover:text-ink')}>
+                {v==='day' ? 'Ngày' : v==='week' ? 'Tuần' : 'Tháng'}
+              </button>
+            ))}
           </div>
         </div>
-      )}
 
+        {/* KPI row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="bg-white rounded-xl border border-border shadow-sm p-4">
+            <p className="text-xs text-muted mb-1">Tổng đầu tư (có thuế)</p>
+            <p className="text-xl font-bold text-[#171717]">{sumTax > 0 ? fmt(sumTax)+'đ' : '0đ'}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-border shadow-sm p-4">
+            <p className="text-xs text-muted mb-1">Tổng doanh thu</p>
+            <p className="text-xl font-bold text-green-600">{sumRev > 0 ? fmt(sumRev)+'đ' : '0đ'}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-border shadow-sm p-4">
+            <p className="text-xs text-muted mb-1">Đơn hàng</p>
+            <p className="text-xl font-bold text-[#171717]">{sumOrd} đơn · {sumSim} SIM</p>
+          </div>
+          <div className="bg-white rounded-xl border border-border shadow-sm p-4">
+            <p className="text-xs text-muted mb-1">Hiệu quả</p>
+            <p className="text-xl font-bold text-[#4f46e5]">{roas.toFixed(1)}x ROAS</p>
+          </div>
+        </div>
+
+        {/* 2-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Content Social */}
+          <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between">
+              <h3 className="font-semibold text-sm text-[#171717]">Content Social</h3>
+              <span className="text-xs text-muted">{totalSocial} bài</span>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-3 bg-indigo-50/50 rounded-xl">
+                  <p className="text-lg font-bold text-[#4f46e5]">{published}</p>
+                  <p className="text-[10px] text-muted mt-0.5">Đã đăng</p>
+                </div>
+                <div className="text-center p-3 bg-amber-50/50 rounded-xl">
+                  <p className="text-lg font-bold text-amber-600">{inProgress}</p>
+                  <p className="text-[10px] text-muted mt-0.5">Đang xử lý</p>
+                </div>
+                <div className="text-center p-3 bg-blue-50/50 rounded-xl">
+                  <p className="text-lg font-bold text-blue-600">{completionRate}%</p>
+                  <p className="text-[10px] text-muted mt-0.5">Hoàn thành</p>
+                </div>
+              </div>
+              {topPlatform.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {topPlatform.map(([p,c]:[string,number]) => (
+                    <span key={p} className="px-2 py-0.5 bg-gray-50 border border-border rounded text-[10px] text-muted font-medium">
+                      {p==='Facebook'?'FB':p==='Instagram'?'IG':p==='Tiktok'?'TT':p==='Zalo'?'ZL':p==='Youtube'?'YT':p==='Website'?'WEB':p} {c}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50">
+                <div className="bg-gray-50 rounded-lg p-2.5">
+                  <p className="text-[10px] text-muted">CP / bài</p>
+                  <p className="text-sm font-bold text-[#171717]">{costPerContent>0 ? fmt(costPerContent)+'đ' : '—'}</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-2.5">
+                  <p className="text-[10px] text-muted">DT / bài</p>
+                  <p className="text-sm font-bold text-[#171717]">{revPerContent>0 ? fmt(revPerContent)+'đ' : '—'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quảng cáo */}
+          <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between">
+              <h3 className="font-semibold text-sm text-[#171717]">Quảng cáo</h3>
+              <span className="text-xs text-muted">{tkAdsData.length} dòng</span>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-3 bg-indigo-50/50 rounded-xl">
+                  <p className="text-lg font-bold text-[#4f46e5]">{sumTax>0 ? fmt(sumTax)+'đ' : '0đ'}</p>
+                  <p className="text-[10px] text-muted mt-0.5">CP (có thuế)</p>
+                </div>
+                <div className="text-center p-3 bg-emerald-50/50 rounded-xl">
+                  <p className="text-lg font-bold text-green-600">{sumRev>0 ? fmt(sumRev)+'đ' : '0đ'}</p>
+                  <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
+                </div>
+                <div className="text-center p-3 bg-amber-50/50 rounded-xl">
+                  <p className="text-lg font-bold text-amber-600">{sumOrd} đơn</p>
+                  <p className="text-[10px] text-muted mt-0.5">{sumSim} SIM</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-gradient-to-br from-indigo-50 to-white rounded-lg p-2.5 border border-indigo-100">
+                  <p className="text-[10px] text-muted">ROAS</p>
+                  <p className="text-sm font-bold text-[#4f46e5]">{roas.toFixed(1)}x</p>
+                </div>
+                <div className="text-center bg-gray-50 rounded-lg p-2.5">
+                  <p className="text-[10px] text-muted">CTR</p>
+                  <p className="text-sm font-bold text-[#171717]">{ctr.toFixed(1)}%</p>
+                </div>
+                <div className="text-center bg-gray-50 rounded-lg p-2.5">
+                  <p className="text-[10px] text-muted">CPC</p>
+                  <p className="text-sm font-bold text-[#171717]">{cpc>0 ? fmt(cpc)+'đ' : '—'}</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 bg-red-50/50 rounded-lg border border-red-100">
+                <span className="text-xs text-muted">Thuế 8%</span>
+                <span className="text-sm font-bold text-red-500">{tax>0 ? fmt(tax)+'đ' : '0đ'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Member list */}
+        <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between">
+            <h3 className="font-semibold text-sm text-[#171717]">Thành viên</h3>
+            <button onClick={() => setShowAddMember(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] text-white rounded-lg text-xs font-medium hover:bg-[#4338ca] transition-all"><Plus size={13} /> Thêm</button>
+          </div>
+          <div className="divide-y divide-border/50">
+            {members.length === 0 && <div className="px-5 py-8 text-center text-sm text-muted">Chưa có thành viên</div>}
+            {members.map((m:any) => {
+              const mySocial = tkSocialData.filter((r:any) => r.assignee === m.id);
+              const myAds = tkAdsData.filter((r:any) => r.user_id === m.id);
+              const myPublished = mySocial.filter((r:any) => r.status === 'published').length;
+              const myCPSum = myAds.reduce((a:number,r:any) => a + Number(r.cost_with_tax||0), 0);
+              const myRev = myAds.reduce((a:number,r:any) => a + Number(r.revenue||0), 0);
+              const myOrders = myAds.reduce((a:number,r:any) => a + Number(r.orders||0), 0);
+              return (
+                <div key={m.id} className="px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/60 transition-all">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shrink-0">
+                    {(m.name||'?').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#171717] truncate">{m.name}</p>
+                    <p className="text-[11px] text-muted">{mySocial.length} bài · {myPublished} đã đăng</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs font-bold text-[#171717]">{myCPSum>0 ? fmt(myCPSum)+'đ' : '0đ'}</p>
+                    <p className="text-[10px] text-muted">CP · {myRev>0 ? fmt(myRev)+'đ' : '0đ'} DT</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Add member modal */}
+        {showAddMember && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAddMember(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="px-5 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between">
+                <h3 className="font-bold text-sm text-[#171717]">Thêm thành viên</h3>
+                <button onClick={() => setShowAddMember(false)} className="p-1 rounded hover:bg-gray-200 text-muted"><X size={16} /></button>
+              </div>
+              <div className="p-5 space-y-4">
+                <input value={newMember.name} onChange={e => setNewMember({...newMember, name:e.target.value})} placeholder="Tên *" className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+                <input value={newMember.email} onChange={e => setNewMember({...newMember, email:e.target.value})} placeholder="Email *" className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+                <div className="grid grid-cols-2 gap-3">
+                  <input value={newMember.phone} onChange={e => setNewMember({...newMember, phone:e.target.value})} placeholder="Số điện thoại" className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+                  <select value={newMember.role} onChange={e => setNewMember({...newMember, role:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none cursor-pointer">
+                    <option value="member">Nhân viên</option>
+                    <option value="manager">Quản lý</option>
+                  </select>
+                </div>
+                <input type="password" value={newMember.password} onChange={e => setNewMember({...newMember, password:e.target.value})} placeholder="Mật khẩu *" className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+                <div className="flex gap-3 pt-1">
+                  <button onClick={addMember} className="flex-1 px-5 py-2.5 bg-[#4f46e5] text-white font-semibold rounded-xl text-sm hover:bg-[#4338ca] transition-all"><Plus size={15} className="inline mr-1" />Thêm</button>
+                  <button onClick={() => setShowAddMember(false)} className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-muted rounded-xl text-sm font-medium transition-all">Huỷ</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  })()}
       {tab === 'quangcao' && (
         <>
           <div className="flex flex-wrap items-center gap-2">
@@ -250,21 +485,21 @@ export default function MarketingESim() {
                 </colgroup>
                 <thead>
                   <tr className="bg-gray-50/80 border-b border-border">
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Ngày</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Nền tảng</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">CP(có)</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">CP(chưa)</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">D.thu</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">Đơn</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">SIM</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">Impr</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">Click</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">CTR</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">CP/Đ</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">ROAS</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">CP/DT</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">CPC</th>
-                    <th className="px-1 py-1.5 text-[11px] font-semibold text-muted uppercase text-right">Thuế</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-left">Ngày</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-left">Nền tảng</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CP(có)</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CP(chưa)</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">D.thu</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">Đơn</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">SIM</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">Impr</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">Click</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CTR</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CP/Đ</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">ROAS</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CP/DT</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CPC</th>
+                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">Thuế</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -282,57 +517,65 @@ export default function MarketingESim() {
                     const roas = costEx>0 ? Number(r.revenue||0)/costEx : 0;
                     const cpDt = costEx>0 ? costEx/Math.max(1,Number(r.revenue||0))*100 : 0;
                     const cpc = Number(r.clicks||0)>0 ? costEx/Number(r.clicks||0) : 0;
-                    const isGrouped = adGroupBy!=='day' || !r.id;
+                    const isGrouped = adGroupBy !== 'day';
                     return (
                       <tr key={r.id||idx} className={'hover:bg-gray-50/60 transition-all ' + (adSaving.has(r.id) ? 'opacity-50' : '')}>
-                        <td className="px-1 py-0.5 text-xs text-muted">{adGroupBy==='day' ? (r.dateStr||(r.date||'').split('T')[0]||r.periodLabel||'') : r.periodLabel||''}</td>
-                        <td className="px-1 py-0.5 text-xs">{r.platform==='google_ads'?'Google':r.platform==='facebook_ads'?'Facebook':r.platform==='tiktok_ads'?'Tiktok':r.platform||'-'}</td>
-                        <td className="px-1 py-0.5 text-xs text-right">
+                        <td className="px-1 py-1 text-sm text-muted">{adGroupBy==='day' ? (r.dateStr||(r.date||'').split('T')[0]||r.periodLabel||'') : r.periodLabel||''}</td>
+                        <td className="px-1 py-0.5 text-sm">
+                        {isGrouped ? <span className="text-muted">{r.platform==='google_ads'?'Google':r.platform==='facebook_ads'?'Facebook':r.platform==='tiktok_ads'?'Tiktok':r.platform||'-'}</span> :
+                          <select value={r.platform||'facebook_ads'} onChange={e => saveAdField(r.id,'platform',e.target.value)}
+                            className="w-full bg-transparent text-sm outline-none border-0 cursor-pointer">
+                            <option value="google_ads">Google Ads</option>
+                            <option value="facebook_ads">Facebook Ads</option>
+                            <option value="tiktok_ads">Tiktok Ads</option>
+                          </select>}
+                      </td>
+                        <td className="px-1 py-0.5 text-sm text-right">
                           {isGrouped ? <span className="text-muted">{Math.round(Number(r.cost_with_tax||0)).toLocaleString('vi-VN')}</span> :
                             <input type="number" value={r.cost_with_tax||0}
                               onBlur={e => saveAdField(r.id,'cost_with_tax',Number(e.target.value))}
                               onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,cost_with_tax:Number(e.target.value)}:x))}
-                              className="w-full bg-transparent text-xs text-right outline-none border-0" />}
+                              className="w-full bg-transparent text-sm text-right outline-none border-0" />}
                         </td>
-                        <td className="px-1 py-0.5 text-xs text-right text-muted">{Math.round(costEx).toLocaleString('vi-VN')}</td>
-                        <td className="px-1 py-0.5 text-xs text-right">
+                        <td className="px-1 py-0.5 text-sm text-right text-muted">{Math.round(costEx).toLocaleString('vi-VN')}</td>
+                        <td className="px-1 py-0.5 text-sm text-right">
                           {isGrouped ? <span className="text-muted">{Math.round(Number(r.revenue||0)).toLocaleString('vi-VN')}</span> :
                             <input type="number" value={r.revenue||0}
                               onBlur={e => saveAdField(r.id,'revenue',Number(e.target.value))}
                               onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,revenue:Number(e.target.value)}:x))}
-                              className="w-full bg-transparent text-xs text-right outline-none border-0" />}
+                              className="w-full bg-transparent text-sm text-right outline-none border-0" />}
                         </td>
-                        <td className="px-1 py-0.5 text-xs text-right">{isGrouped ? <span className="text-muted">{Number(r.orders||0)}</span> :
+                        <td className="px-1 py-0.5 text-sm text-right">{isGrouped ? <span className="text-muted">{Number(r.orders||0)}</span> :
                           <input type="number" value={r.orders||0}
                             onBlur={e => saveAdField(r.id,'orders',Number(e.target.value))}
                             onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,orders:Number(e.target.value)}:x))}
-                            className="w-full bg-transparent text-xs text-right outline-none border-0" />}
+                            className="w-full bg-transparent text-sm text-right outline-none border-0" />}
                         </td>
-                        <td className="px-1 py-0.5 text-xs text-right">{isGrouped ? <span className="text-muted">{Number(r.sims||0)}</span> :
+                        <td className="px-1 py-0.5 text-sm text-right">{isGrouped ? <span className="text-muted">{Number(r.sims||0)}</span> :
                           <input type="number" value={r.sims||0}
                             onBlur={e => saveAdField(r.id,'sims',Number(e.target.value))}
                             onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,sims:Number(e.target.value)}:x))}
-                            className="w-full bg-transparent text-xs text-right outline-none border-0" />}
+                            className="w-full bg-transparent text-sm text-right outline-none border-0" />}
                         </td>
-                        <td className="px-1 py-0.5 text-xs text-right">{isGrouped ? <span className="text-muted">{Math.round(Number(r.impressions||0)).toLocaleString('vi-VN')}</span> :
+                        <td className="px-1 py-0.5 text-sm text-right">{isGrouped ? <span className="text-muted">{Math.round(Number(r.impressions||0)).toLocaleString('vi-VN')}</span> :
                           <input type="number" value={r.impressions||0}
                             onBlur={e => saveAdField(r.id,'impressions',Number(e.target.value))}
                             onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,impressions:Number(e.target.value)}:x))}
-                            className="w-full bg-transparent text-xs text-right outline-none border-0" />}
+                            className="w-full bg-transparent text-sm text-right outline-none border-0" />}
                         </td>
-                        <td className="px-1 py-0.5 text-xs text-right">{isGrouped ? <span className="text-muted">{Math.round(Number(r.clicks||0)).toLocaleString('vi-VN')}</span> :
+                        <td className="px-1 py-0.5 text-sm text-right">{isGrouped ? <span className="text-muted">{Math.round(Number(r.clicks||0)).toLocaleString('vi-VN')}</span> :
                           <input type="number" value={r.clicks||0}
                             onBlur={e => saveAdField(r.id,'clicks',Number(e.target.value))}
                             onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,clicks:Number(e.target.value)}:x))}
-                            className="w-full bg-transparent text-xs text-right outline-none border-0" />}
+                            className="w-full bg-transparent text-sm text-right outline-none border-0" />}
                         </td>
-                        <td className="px-1 py-0.5 text-xs text-right text-muted">{ctr.toFixed(1)}</td>
-                        <td className="px-1 py-0.5 text-xs text-right text-muted">{cpOrder>0 ? Math.round(cpOrder).toLocaleString('vi-VN') : '—'}</td>
-                        <td className="px-1 py-0.5 text-xs text-right font-medium text-[#4f46e5]">{roas.toFixed(1)}x</td>
-                        <td className="px-1 py-0.5 text-xs text-right text-muted">{cpDt.toFixed(1)}</td>
-                        <td className="px-1 py-0.5 text-xs text-right text-muted">{cpc>0 ? Math.round(cpc).toLocaleString('vi-VN') : '—'}</td>
-                        <td className="px-1 py-0.5 text-xs text-right text-red-500 font-medium">{Math.round(tax).toLocaleString('vi-VN')}</td>
-                        <td className="px-1 py-0.5 text-xs text-center">
+                        <td className="px-1 py-0.5 text-sm text-right text-muted">{ctr.toFixed(1)}</td>
+                        <td className="px-1 py-0.5 text-sm text-right text-muted">{cpOrder>0 ? Math.round(cpOrder).toLocaleString('vi-VN') : '—'}</td>
+                        <td className="px-1 py-0.5 text-sm text-right font-medium text-[#4f46e5]">{roas.toFixed(1)}x</td>
+                        <td className="px-1 py-0.5 text-sm text-right text-muted">{cpDt.toFixed(1)}</td>
+                        <td className="px-1 py-0.5 text-sm text-right text-muted">{cpc>0 ? Math.round(cpc).toLocaleString('vi-VN') : '—'}</td>
+                        <td className="px-1 py-0.5 text-sm text-right text-red-500 font-medium">{Math.round(tax).toLocaleString('vi-VN')}</td>
+                        <td className="px-1 py-1 text-sm text-center">
                           {!isGrouped && <button onClick={() => { if(confirm('Xoá?')){api('/ads/'+r.id,{method:'DELETE'}).then(()=>loadAds()).catch(()=>{});}}} className="p-0.5 rounded hover:bg-red-50 text-muted hover:text-red-500"><X size={10} /></button>}
                         </td>
                       </tr>
@@ -342,10 +585,10 @@ export default function MarketingESim() {
                     <td colSpan={16} className="px-2 py-2 text-xs text-center">
                       <button onClick={async () => {
                         try {
-                          const res = await fetch('/api/ads', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('zeyfi_token')||'')}, body:JSON.stringify({date:new Date().toISOString().slice(0,10), platform:'facebook_ads'})});
-                          const data = await res.json();
-                          if (data?.id) { window.location.reload(); }
-                        } catch(e) { alert('Loi: '+e.message); }
+                          const res = await api('/ads', {method:'POST', body:JSON.stringify({date:new Date().toISOString().slice(0,10), platform:'facebook_ads'})});
+                          if (res?.id) { loadAds(); showToast('success','✓ Đã thêm dòng'); }
+                          else { showToast('error','✗ Lỗi thêm'); }
+                        } catch(e:any) { showToast('error','✗ '+e.message); }
                       }} className="flex items-center justify-center gap-1 w-full py-2 text-xs text-muted hover:text-[#4f46e5] border-2 border-dashed border-border/50 rounded-lg hover:bg-gray-50/30 transition-all">
                         <Plus size={14} /> Thêm dòng
                       </button>

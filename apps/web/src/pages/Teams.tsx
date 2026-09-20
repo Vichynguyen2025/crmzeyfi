@@ -22,13 +22,16 @@ export default function Teams() {
   const [kpiRows, setKpiRows] = useState<any[]>([]);
   const [actualRows, setActualRows] = useState<any[]>([]);
   const [kpiMonth, setKpiMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [kpiFilter, setKpiFilter] = useState({search:'',product:''});
+  const [actualFilter, setActualFilter] = useState({search:'',product:''});
   const [planData, setPlanData] = useState<any[]>([]);
   const [planMonth, setPlanMonth] = useState(new Date().toISOString().slice(0, 7));
   const [slugMap, setSlugMap] = useState<Record<string,any>>({});
   const { teamSlug } = useParams();
   const nav = useNavigate();
   const [actualMonth, setActualMonth] = useState(new Date().toISOString().slice(0, 7));
-  const [actualView, setActualView] = useState<'week'|'month'>('month');
+  const [actualDateFrom, setActualDateFrom] = useState('');
+  const [actualView, setActualView] = useState<'day'|'week'|'month'>('month');
   const [dailyUser, setDailyUser] = useState<any>(null);
   const [dailyRows, setDailyRows] = useState<any[]>([]);
   const [dailyProduct, setDailyProduct] = useState('');
@@ -36,14 +39,7 @@ export default function Teams() {
   const [products, setProducts] = useState<any[]>([]);
 
   // Auto-save Actuals data with debounce
-  useEffect(() => {
-    if (!selectedTeam || actualRows.length === 0) return;
-    const timer = setTimeout(async () => {
-      try { await api('/actuals/' + selectedTeam.id, { method:'POST', body:JSON.stringify({rows: actualRows, month: actualMonth}) }); }
-      catch {}
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [actualRows, actualMonth, selectedTeam?.id]);
+  // Actuals are auto-calculated from daily data, no manual save needed
 
   // Auto-save KPI data with debounce
   useEffect(() => {
@@ -96,7 +92,7 @@ export default function Teams() {
       const url = '/daily-perf/' + selectedTeam.id + '/' + userId + '?month=' + actualMonth + (product ? '&product=' + product : '');
       const saved = await api(url);
       if (saved && saved.length > 0) {
-        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date, product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
+        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date?.split('T')[0] || '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
       } else {
         setDailyRows([{date: dailyDate, product: product || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
       }
@@ -111,7 +107,7 @@ export default function Teams() {
       const url = '/daily-perf/' + selectedTeam.id + '/' + userId + '?month=' + actualMonth + (dailyProduct ? '&product=' + dailyProduct : '');
       const saved = await api(url);
       if (saved && saved.length > 0) {
-        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date, product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
+        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date?.split('T')[0] || '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
       } else {
         // Init with one empty row for today
         setDailyRows([{date: dailyDate, product: dailyProduct || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
@@ -145,9 +141,10 @@ export default function Teams() {
 
   const loadActuals = async (teamId: string, month: string, memberList?: any[]) => {
     try {
-      const saved = await api('/actuals/' + teamId + '?month=' + month);
+      const p = new URLSearchParams({month, groupBy: actualView}); if (actualDateFrom) p.set('dateFrom', actualDateFrom); const saved = await api('/actuals/' + teamId + '?' + p.toString());
       if (saved && saved.length > 0) {
-        setActualRows([...saved.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', actualOrders: s.actual_orders || 0, fixedCost: s.fixed_cost || 0, costPerOrder: s.cost_per_order || 0})), {type: 'total'}]);
+        const filtered = saved.filter((s: any) => s.product && s.product.trim() !== '');
+        setActualRows([...filtered.map((s: any) => ({name: s.userName || s.name, userId: s.user_id || s.userId, product: s.product || '', period: s.periodLabel || '', actualOrders: Number(s.actualOrders || s.actual_orders || 0), fixedCost: Number(s.fixedCost || s.fixed_cost || 0), costPerOrder: Number(s.costPerOrder || s.cost_per_order || 0)})), {type: 'total'}]);
         return true;
       }
     } catch {}
@@ -293,7 +290,7 @@ export default function Teams() {
         {/* Back button + Team header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => nav('/crm/teams')} className="px-3 py-2 bg-white border border-border rounded-xl text-sm hover:bg-gray-50 transition-all">← Quay lại</button>
+            <button onClick={() => { setSelectedTeam(null); nav('/crm/teams'); }} className="px-3 py-2 bg-white border border-border rounded-xl text-sm hover:bg-gray-50 transition-all">← Quay lại</button>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl grid place-items-center text-white font-bold text-lg shadow-sm" style={{backgroundColor: selectedTeam.color || '#4f46e5'}}>
                 {selectedTeam.name?.charAt(0)?.toUpperCase() || '?'}
@@ -367,8 +364,12 @@ export default function Teams() {
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
             <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-[#171717]">Đề xuất mục tiêu & Ngân sách quảng cáo</h2>
-            <input type="month" value={kpiMonth} onChange={e => { setKpiMonth(e.target.value); loadKpi(selectedTeam?.id, e.target.value); }}
-              className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
+            <div className="flex items-center gap-2">
+              <input type="month" value={kpiMonth} onChange={e => { setKpiMonth(e.target.value); loadKpi(selectedTeam?.id, e.target.value); }}
+                className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
+              <input value={kpiFilter?.search||''} onChange={e=>setKpiFilter(p=>({...p,search:e.target.value}))} placeholder="Lọc nhân sự..." className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none w-36" />
+              <input value={kpiFilter?.product||''} onChange={e=>setKpiFilter(p=>({...p,product:e.target.value}))} placeholder="Lọc sản phẩm..." className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none w-36" />
+            </div>
           </div>
           </div>
           <div className="overflow-x-auto">
@@ -385,10 +386,11 @@ export default function Teams() {
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-20">Tỷ lệ chốt</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">CP/đơn</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">NS đề xuất</th>
+                  <th className="p-3 text-center w-10"></th>
                 </tr>
               </thead>
               <tbody>
-                {kpiRows.map((r, i) => {
+                {kpiRows.filter((r:any)=>r.type==='total'||!kpiFilter?.search||(r.name||'').toLowerCase().includes(kpiFilter.search.toLowerCase())).filter((r:any)=>r.type==='total'||!kpiFilter?.product||(r.product||'').toLowerCase().includes(kpiFilter.product.toLowerCase())).map((r, i) => {
                   const isTotal = r.type === 'total';
                   const totalBudget = isTotal ? kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.budget || 0), 0) : (r.budget || 0);
                   const totalMessages = isTotal ? kpiRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.messages || 0), 0) : (r.messages || 0);
@@ -447,6 +449,13 @@ export default function Teams() {
                       <td className="p-3 text-xs text-right">{closeRate > 0 ? closeRate.toFixed(1) + '%' : ''}</td>
                       <td className="p-3 text-xs text-right">{costPerOrder > 0 ? costPerOrder.toLocaleString('vi-VN', {maximumFractionDigits:0}) + 'đ' : ''}</td>
                       <td className="p-3 text-xs text-right font-bold text-[#4f46e5]">{proposedBudget > 0 ? proposedBudget.toLocaleString('vi-VN') + 'đ' : ''}</td>
+                      <td className="p-3 text-center">
+                        {r.type !== 'total' && (
+                          <button onClick={() => deleteKpiRow(i)} className="p-1 rounded hover:bg-red-50 text-red-400 hover:text-red-600 transition-all" title="Xoá">
+                            <Trash2 size={12} />
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -460,9 +469,34 @@ export default function Teams() {
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-[#171717]">Tình hình Thực tế ({actualMonth})</h2>
+              <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
+                {['day','week','month'].map(v => (
+                  <button key={v} onClick={() => { 
+                        const p = new URLSearchParams({month: actualMonth, groupBy: v});
+                        if (actualDateFrom) p.set('dateFrom', actualDateFrom);
+                       
+                        api('/actuals/' + selectedTeam.id + '?' + p.toString()).then(saved => {
+                          if (saved && saved.length > 0) {
+                            const filtered = saved.filter((s: any) => s.product && s.product.trim() !== '');
+                            setActualRows([...filtered.map((s: any) => ({name: s.userName || s.name, userId: s.user_id || s.userId, product: s.product || '', period: s.periodLabel || '', actualOrders: Number(s.actualOrders || s.actual_orders || 0), fixedCost: Number(s.fixedCost || s.fixed_cost || 0), costPerOrder: Number(s.costPerOrder || s.cost_per_order || 0)})), {type: 'total'}]);
+                          }
+                        }).catch(() => {});
+                        setActualView(v as any);
+                        setActualDateFrom('');
+                        
+                      }}
+                    className={'px-3 py-1.5 rounded-md text-xs font-medium transition-all ' + (actualView === v ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>{v === 'day' ? 'Ngày' : v === 'week' ? 'Tuần' : 'Tháng'}</button>
+                ))}
+              </div>
               <div className="flex items-center gap-2">
                 <input type="month" value={actualMonth} onChange={e => { const v = e.target.value; setActualMonth(v); if (selectedTeam) loadActuals(selectedTeam.id, v, members); }}
                   className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
+                <>
+                <input type="date" value={actualDateFrom} onChange={e=>setActualDateFrom(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none" />
+                <button onClick={()=>{if(!selectedTeam)return;const v=actualView;const d=actualDateFrom;const p='month='+actualMonth+'&groupBy='+v+(d?'&dateFrom='+d:'');api('/actuals/'+selectedTeam.id+'?'+p).then((s:any)=>{if(s&&s.length>0){const f=s.filter((x:any)=>x.product&&x.product.trim()!=='');setActualRows([...f.map((x:any)=>({name:x.userName||x.name,userId:x.user_id||x.userId,product:x.product||'',period:x.periodLabel||'',actualOrders:Number(x.actualOrders||x.actual_orders||0),fixedCost:Number(x.fixedCost||x.fixed_cost||0),costPerOrder:Number(x.costPerOrder||x.cost_per_order||0)})),{type:'total'}]);}else{const list=members||[];if(list.length>0){setActualRows([...list.map((m:any)=>({name:m.name,userId:m.id,product:'',period:'',actualOrders:0,fixedCost:0,costPerOrder:0})),{type:'total'}]);}else{setActualRows([{type:'total'}]);}}}).catch(()=>{setActualRows([{type:'total'}]);});}} className="px-3 py-1.5 bg-[#4f46e5] text-white rounded-xl text-xs font-medium">Áp dụng</button>
+                </>
+                <input value={actualFilter?.search||''} onChange={e=>setActualFilter(p=>({...p,search:e.target.value}))} placeholder="Lọc nhân sự..." className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none w-36" />
+                <input value={actualFilter?.product||''} onChange={e=>setActualFilter(p=>({...p,product:e.target.value}))} placeholder="Lọc sản phẩm..." className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none w-36" />
               </div>
             </div>
           </div>
@@ -472,6 +506,7 @@ export default function Teams() {
                 <tr className="border-b border-border bg-gray-50">
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Nhân sự</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-40">Sản phẩm</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-center w-20" style={{display: actualView==='month'?'none':''}}>Kỳ</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Tổng đơn</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Chi phí QC</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">CP/đơn</th>
@@ -482,7 +517,7 @@ export default function Teams() {
                 </tr>
               </thead>
               <tbody>
-                {actualRows.map((r: any, i: number) => {
+                {actualRows.filter((r:any)=>!actualFilter.search || (r.name||'').toLowerCase().includes(actualFilter.search.toLowerCase())).filter((r:any)=>!actualFilter.product || (r.product||'').toLowerCase().includes(actualFilter.product.toLowerCase())).map((r: any, i: number) => {
                   const isTotal = r.type === 'total';
                   const totalActualOrders = actualRows.filter((r2: any) => r2.type !== 'total' && r2.userId === r.userId || false).reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0);
                   // Find KPI target for this product from kpiRows
@@ -492,8 +527,8 @@ export default function Teams() {
                   // Total KPI for this user
                   const userKpiTotal = kpiRows.filter((k: any) => k.userId === r.userId && k.type !== 'total').reduce((s: number, k: any) => s + (k.orders || 0), 0);
                   const userActualTotal = actualRows.filter((r2: any) => r2.type !== 'total' && r2.userId === r.userId).reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0);
-                  const totalKpiPct = userKpiTotal > 0 ? (userActualTotal / userKpiTotal * 100) : 0;
-                  const totalCost = (r.fixedCost || 0);
+                  const totalKpiPct = userKpiTotal > 0 ? ((r.actualOrders || 0) / userKpiTotal * 100) : 0;
+                  const totalCost = (r.fixedCost || 0) * 1.1;
                   return (
                     <tr key={i} className={'border-b border-border hover:bg-gray-50 transition-all ' + (isTotal ? 'bg-gray-50/80 font-semibold' : '')}>
                       <td className="p-3 text-xs w-36">
@@ -511,35 +546,30 @@ export default function Teams() {
                           </div>
                         ) : ''}
                       </td>
+                      <td className="p-3 text-center w-28" style={{display: actualView==='month'?'none':''}}><span className="text-xs text-muted">{actualView==='day' ? (r.period||'').split('-').reverse().join('/') : r.period || ''}</span></td>
                       <td className="p-3 w-24">
-                        {!isTotal ? (
-                          <input type="number" value={r.actualOrders || ''} onChange={e => updateActual(i, 'actualOrders', Number(e.target.value))}
-                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
-                        ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0)}</span>}
+                        {isTotal ? <span className="block text-right font-semibold">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0).toLocaleString('vi-VN')}</span> : <span className="block px-2 py-1.5 text-xs font-medium text-right">{Number(r.actualOrders || 0).toLocaleString('vi-VN')}</span>}
                       </td>
                       <td className="p-3 w-24">
-                        {!isTotal ? (
-                          <input type="number" value={r.fixedCost || ''} onChange={e => updateActual(i, 'fixedCost', Number(e.target.value))}
-                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
-                        ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0).toLocaleString('vi-VN')}</span>}
+                        {isTotal ? <span className="block text-right font-semibold">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0).toLocaleString('vi-VN')}đ</span> : <span className="block px-2 py-1.5 text-xs font-medium text-right">{Number(r.fixedCost || 0).toLocaleString('vi-VN')}đ</span>}
                       </td>
                       <td className="p-3 w-24">
-                        {!isTotal ? (
-                          <input type="number" value={r.costPerOrder || ''} onChange={e => updateActual(i, 'costPerOrder', Number(e.target.value))}
-                            className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" />
-                        ) : <span className="block text-right">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + ((r2.costPerOrder || 0) * (r2.actualOrders || 0)), 0) / Math.max(1, actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0))}</span>}
+                        {isTotal ? <span className="block text-right font-semibold">{(() => { const totalFixed = actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0); const totalOrders = actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0); return totalOrders > 0 ? Math.round(totalFixed / totalOrders).toLocaleString('vi-VN') : 0; })()}đ</span> : <span className="block px-2 py-1.5 text-xs font-medium text-right">{Number(r.costPerOrder || 0).toLocaleString('vi-VN')}đ</span>}
                       </td>
-                      <td className="p-3 text-xs text-right font-medium w-28">{totalCost.toLocaleString('vi-VN')}đ</td>
-                      <td className="p-3 text-xs text-right font-bold w-20">{kpiPct.toFixed(1)}%</td>
-                      <td className="p-3 text-xs text-right font-bold text-[#4f46e5] w-24">{totalKpiPct.toFixed(1)}%</td>
+                      <td className="p-3 text-xs text-right font-medium w-28">{isTotal ? (actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0) * 1.1).toLocaleString('vi-VN') + 'đ' : totalCost.toLocaleString('vi-VN') + 'đ'}</td>
+                      <td className="p-3 text-xs text-right w-20">{isTotal ? (actualRows.filter((r2:any)=>r2.type!=='total').reduce((s:number,r2:any)=>s+(r2.actualOrders||0),0) / Math.max(1, kpiRows.filter((k:any)=>k.type!=='total').reduce((s:number,k:any)=>s+(k.orders||0),0)) * 100).toFixed(1) + '%' : kpiPct.toFixed(1) + '%'}</td>
+                      <td className="p-3 text-xs text-right w-24">{isTotal ? (actualRows.filter((r2:any)=>r2.type!=='total').reduce((s:number,r2:any)=>s+(r2.actualOrders||0),0) / Math.max(1, kpiRows.filter((k:any)=>k.type!=='total').reduce((s:number,k:any)=>s+(k.orders||0),0)) * 100).toFixed(1) + '%' : totalKpiPct.toFixed(1) + '%'}</td>
                       <td className="p-3 text-center">
                         {!isTotal && (
-                          <button onClick={() => {
-                            const rows = [...actualRows]; rows.splice(i, 1); setActualRows(rows);
-                          }} className="p-1 rounded hover:bg-red-50 text-red-400 transition-all" title="Xoá">
-                            <X size={12} />
+                          <button onClick={() => { 
+                            const rows = [...actualRows]; 
+                            if (i < rows.length) { rows.splice(i, 1); setActualRows(rows); }
+                            // Also remove from backend via daily data
+                          }} className="p-1 rounded hover:bg-red-50 text-red-400 hover:text-red-600 transition-all" title="Xoá">
+                            <Trash2 size={12} />
                           </button>
-                        )}</td>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -729,42 +759,43 @@ export default function Teams() {
         <div className="px-6 py-5 border-b border-border bg-gray-50/50 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-sm font-bold">3M</div>
-            <div>
+            <div className="flex items-center gap-3">
               <h2 className="text-sm font-bold text-[#171717]">Kế hoạch Kinh doanh 3M</h2>
-              <p className="text-[11px] text-muted mt-0.5">Tổng hợp mục tiêu kinh doanh theo team</p>
+              <span className="px-2 py-0.5 bg-[#4f46e5]/10 text-[#4f46e5] text-[10px] font-semibold rounded-md">Tổng quan</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="month" value={planMonth} onChange={e => { setPlanMonth(e.target.value); loadPlan(e.target.value); }}
+                className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs text-ink outline-none cursor-pointer" />
             </div>
           </div>
-          <input type="month" value={planMonth} onChange={e => { setPlanMonth(e.target.value); loadPlan(e.target.value); }}
-            className="px-4 py-2 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full table-fixed text-sm">
+        <div className="overflow-x-auto border-t border-border">
+          <table className="w-full" style={{tableLayout:'fixed', borderCollapse:'separate', borderSpacing:0}}>
             <thead>
-              <tr className="border-b border-border bg-gray-50/80">
-                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-44">Team</th>
-                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-36">Sản phẩm</th>
-                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-24">Mục tiêu</th>
-                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-28">Ngân sách/th</th>
-                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-24">CP/đơn</th>
-                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-center w-20">Thành viên</th>
-                <th className="p-4 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-24">%KPI</th>
+              <tr>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left" style={{width:200}}>Team</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left" style={{width:160}}>Sản phẩm</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Mục tiêu</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:120}}>Ngân sách</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>CP/đơn</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-center" style={{width:80}}>TV</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>%KPI</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {planData.map((team: any, ti: number) => {
                 const totalCostPerOrder = team.totalTarget > 0 ? Math.round((team.totalBudget * 30) / team.totalTarget) : 0;
                 return (
-                  <tr key={team.id} className="hover:bg-gray-50/60 transition-all">
-                    <td className="p-4 text-xs font-medium align-top">
-                      <button onClick={() => nav('/crm/teams/' + slugify(team.name))}
-                        className="inline-flex items-center gap-2 hover:text-[#4f46e5] transition-all group">
-                        <div className="w-7 h-7 rounded-lg grid place-items-center text-white text-[9px] font-bold shadow-sm group-hover:shadow-md transition-all" style={{backgroundColor: team.color || '#4f46e5'}}>
+                  <tr key={team.id} className="border-b border-border/50 hover:bg-[#f8f9fc] transition-all">
+                    <td className="px-4 py-3.5 text-xs font-medium">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[9px] font-bold shadow-sm" style={{backgroundColor: team.color || '#4f46e5'}}>
                           {team.name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
-                        <span className="font-medium group-hover:underline">{team.name}</span>
-                      </button>
+                        <button onClick={() => nav('/crm/teams/' + slugify(team.name))} className="font-medium text-[#171717] hover:text-[#4f46e5] transition-colors">{team.name}</button>
+                      </div>
                     </td>
-                    <td className="p-4">
+                    <td className="px-4 py-3.5">
                       {team.products.length > 0 ? (
                         <div className="space-y-1">
                           {team.products.map((p: any, pi: number) => (
@@ -783,33 +814,28 @@ export default function Teams() {
                       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-muted font-medium text-xs">{team.memberCount || 0}</span>
                     </td>
                     <td className="p-4 text-xs text-right font-bold align-top">
-                      {team.totalTarget > 0 ? (() => {
-                        const pct = team.totalTarget > 0 ? Math.min(Math.round(team.totalTarget / team.totalTarget * 100), 100) : 0;
-                        // Actually %KPI needs actual data too. Calculate from available.
-                        // Since we only have KPI targets here, not actuals, show a placeholder or use actuals
-                        return <span className="text-muted italic">—</span>;
-                      })() : <span className="text-muted italic">—</span>}
+                      {(() => { const totalAllTarget = planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0); return team.totalActual > 0 && totalAllTarget > 0 ? <span className="text-[#4f46e5]">{Math.round(team.totalActual / totalAllTarget * 100)}%</span> : <span className="text-muted italic">—</span>; })()}
                     </td>
                   </tr>
                 );
               })}
               {/* Total row */}
               {planData.length > 0 && (
-                <tr className="bg-gray-50/80 font-semibold border-t-2 border-border">
-                  <td colSpan={2} className="p-4 text-xs font-bold text-[#4f46e5]">Tổng cộng</td>
-                  <td className="p-4 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
-                  <td className="p-4 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
-                  <td className="p-4 text-xs text-right">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
-                  <td className="p-4 text-xs text-center">{planData.reduce((s: number, t: any) => s + (t.memberCount || 0), 0)}</td>
-                  <td className="p-4 text-xs text-right">—</td>
+                <tr className="bg-[#f8f9fc] font-semibold border-t-2 border-[#e2e4e7]">
+                  <td colSpan={2} className="px-4 py-3.5 text-xs font-bold text-[#4f46e5]">Tổng cộng</td>
+                  <td className="px-4 py-3.5 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
+                  <td className="px-4 py-3.5 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
+                  <td className="px-4 py-3.5 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                  <td className="px-4 py-3.5 text-xs text-center font-semibold">{planData.reduce((s: number, t: any) => s + (t.memberCount || 0), 0)}</td>
+                  <td className="px-4 py-3.5 text-xs text-right font-bold text-[#4f46e5]">{(()=>{const a=planData.reduce((s:number,t:any)=>s+(t.totalActual||0),0);const b=planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0);return a>0&&b>0?Math.round(a/b*100)+'%':'—';})()}</td>
                 </tr>
               )}
               {planData.length === 0 && (
-                <tr><td colSpan={7} className="p-12 text-center text-sm text-muted">
+                <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted">
                   <div className="flex flex-col items-center gap-2">
-                    <Target size={40} className="opacity-20" />
+                    <Target size={32} className="text-muted opacity-20" />
                     <p className="font-medium">Chưa có dữ liệu kế hoạch</p>
-                    <p className="text-sm">Vào team và nhập KPI để thấy dữ liệu</p>
+                    <p className="text-xs text-muted">Vào team và nhập KPI để thấy dữ liệu</p>
                   </div>
                 </td></tr>
               )}
@@ -831,7 +857,7 @@ export default function Teams() {
                     <Users size={12} /> {t.memberCount || 0} thành viên
                   </p>
                 </div>
-                <ChevronRightIcon size={18} className="text-muted opacity-50" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted opacity-50"><path d="m9 18 6-6-6-6" /></svg>
               </div>
             </div>
           </div>
@@ -841,10 +867,3 @@ export default function Teams() {
   );
 }
 
-function ChevronRightIcon({size, className}: {size: number, className?: string}) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}

@@ -11,7 +11,7 @@ export default async function (app: FastifyInstance) {
     let sql, params: any[] = [];
 
     if (groupBy === 'day') {
-      sql = "SELECT a.id, a.user_id, a.date, DATE_FORMAT(a.date, '%Y-%m-%d') as periodLabel, a.platform, SUM(a.cost_with_tax) as cost_with_tax, SUM(a.revenue) as revenue, SUM(a.orders) as orders, SUM(a.sims) as sims, SUM(a.impressions) as impressions, SUM(a.clicks) as clicks, a.month, u.name as userName FROM ads a LEFT JOIN users u ON u.id COLLATE utf8mb4_unicode_ci = a.user_id WHERE a.month = ?";
+      sql = "SELECT a.id, a.user_id, a.date, DATE_FORMAT(a.date, '%Y-%m-%d') as periodLabel, a.platform, a.cost_with_tax, a.revenue, a.orders, a.sims, a.impressions, a.clicks, a.month, u.name as userName FROM ads a LEFT JOIN users u ON u.id COLLATE utf8mb4_unicode_ci = a.user_id WHERE a.month = ?";
       params = [month];
     } else if (groupBy === 'week') {
       sql = "SELECT a.user_id, CONCAT('Tuần ', WEEK(a.date, 1)) as periodLabel, a.platform, SUM(a.cost_with_tax) as cost_with_tax, SUM(a.revenue) as revenue, SUM(a.orders) as orders, SUM(a.sims) as sims, SUM(a.impressions) as impressions, SUM(a.clicks) as clicks, a.month, u.name as userName FROM ads a LEFT JOIN users u ON u.id COLLATE utf8mb4_unicode_ci = a.user_id WHERE a.month = ?";
@@ -24,7 +24,7 @@ export default async function (app: FastifyInstance) {
     if (query.platform) { sql += " AND a.platform = ?"; params.push(query.platform); }
     if (query.userId) { sql += " AND a.user_id = ?"; params.push(query.userId); }
 
-    if (groupBy === 'day') sql += " GROUP BY a.user_id, a.platform, a.date ORDER BY a.date DESC";
+    if (groupBy === 'day') sql += " ORDER BY a.date DESC";
     else if (groupBy === 'week') sql += " GROUP BY WEEK(a.date, 1), a.user_id, a.platform ORDER BY periodLabel DESC";
     else sql += " GROUP BY a.user_id, a.platform ORDER BY a.platform";
 
@@ -50,7 +50,7 @@ export default async function (app: FastifyInstance) {
     const { id } = req.params as any;
     const body = req.body as any;
     const fields: string[] = []; const params: any[] = [];
-    for (const [key, col] of Object.entries({ date:'date', platform:'platform', costWithTax:'cost_with_tax', revenue:'revenue', orders:'orders', sims:'sims', impressions:'impressions', clicks:'clicks' } as any)) {
+    for (const [key, col] of Object.entries({ date:'date', platform:'platform', cost_with_tax:'cost_with_tax', costWithTax:'cost_with_tax', revenue:'revenue', orders:'orders', sims:'sims', impressions:'impressions', clicks:'clicks' } as any)) {
       if (body[key] !== undefined) { fields.push(col + ' = ?'); params.push(body[key]); }
     }
     if (fields.length === 0) return reply.send({ success: true });
