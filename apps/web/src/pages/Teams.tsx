@@ -100,7 +100,7 @@ export default function Teams() {
       const url = '/daily-perf/' + selectedTeam.id + '/' + userId + '?month=' + actualMonth + (product ? '&product=' + product : '');
       const saved = await api(url);
       if (saved && saved.length > 0) {
-        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date?.split('T')[0] || '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
+        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date?.toLocaleDateString('fr-CA').slice(0,10) || '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
       } else {
         setDailyRows([{date: dailyDate, product: product || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
       }
@@ -115,7 +115,7 @@ export default function Teams() {
       const url = '/daily-perf/' + selectedTeam.id + '/' + userId + '?month=' + actualMonth + (dailyProduct ? '&product=' + dailyProduct : '');
       const saved = await api(url);
       if (saved && saved.length > 0) {
-        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date?.split('T')[0] || '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
+        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date?.toLocaleDateString('fr-CA').slice(0,10) || '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
       } else {
         // Init with one empty row for today
         setDailyRows([{date: dailyDate, product: dailyProduct || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
