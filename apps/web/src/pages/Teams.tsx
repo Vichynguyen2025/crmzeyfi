@@ -29,6 +29,8 @@ export default function Teams() {
   const [b6Data, setB6Data] = useState<any[]>([]);
   const [b6GroupBy, setB6GroupBy] = useState('day');
   const [b6Month, setB6Month] = useState(() => new Date().toISOString().slice(0, 7));
+  const [b6DateFrom, setB6DateFrom] = useState('');
+  const [b6DateTo, setB6DateTo] = useState('');
   const [planMonth, setPlanMonth] = useState(new Date().toISOString().slice(0, 7));
   const [slugMap, setSlugMap] = useState<Record<string,any>>({});
   const { teamSlug } = useParams();
@@ -200,10 +202,15 @@ export default function Teams() {
 
   const loadB6 = useCallback(async () => {
     try {
-      const r = await api('/actuals-summary?month=' + b6Month + '&groupBy=' + b6GroupBy);
+      let url = '/actuals-summary?month=' + b6Month + '&groupBy=product&viewMode=' + b6GroupBy;
+      if (b6GroupBy === 'day' || b6GroupBy === 'week') {
+        if (b6DateFrom) url += '&dateFrom=' + b6DateFrom;
+        if (b6DateTo) url += '&dateTo=' + b6DateTo;
+      }
+      const r = await api(url);
       setB6Data(r || []);
     } catch { setB6Data([]); }
-  }, [b6Month, b6GroupBy]);
+  }, [b6Month, b6GroupBy, b6DateFrom, b6DateTo]);
   useEffect(() => { loadB6(); }, [loadB6]);
 
   const loadPlan = async (month: string) => {
@@ -899,6 +906,19 @@ export default function Teams() {
           </div>
           <div className="flex items-center gap-2">
             <input type="month" value={b6Month} onChange={e => setB6Month(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
+            {b6GroupBy === 'day' && <>
+              <input type="date" value={b6DateFrom} onChange={e => setB6DateFrom(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
+              <span className="text-xs text-muted">→</span>
+              <input type="date" value={b6DateTo} onChange={e => setB6DateTo(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
+            </>}
+            <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
+              {['day','week','month'].map(v => (
+                <button key={v} onClick={() => setB6GroupBy(v)}
+                  className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (b6GroupBy===v ? 'bg-[#4f46e5] text-white' : 'text-muted hover:text-ink')}>
+                  {v==='day' ? 'Ngày' : v==='week' ? 'Tuần' : 'Tháng'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">

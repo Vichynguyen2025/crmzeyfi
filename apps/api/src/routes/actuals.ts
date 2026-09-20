@@ -67,16 +67,35 @@ export default async function (app: FastifyInstance) {
     reply.send(rows);
   });
 
-  // B6: Cross-team actuals summary — pivot format
+  // B6: Cross-team actuals summary — pivot format with date filter
   app.get('/actuals-summary', async (req, reply) => {
     const q = req.query as any;
     const month = q.month || new Date().toISOString().slice(0, 7);
     const groupBy = (q.groupBy || 'month') as string;
+    const dateFrom = q.dateFrom || '';
+    const dateTo = q.dateTo || '';
+    const viewMode = q.viewMode || 'month';
 
     try {
       // Get all teams
       const [allTeams] = await pool.execute("SELECT id, name FROM teams ORDER BY name");
-      // Get actual data for this month
+      
+      // Build WHERE clause based on view mode
+      let where = "WHERE d.month = ?";
+      const params: any[] = [month];
+      
+      if (viewMode === 'day' || viewMode === 'week') {
+        where = "WHERE 1=1";
+        if (dateFrom) { where += " AND d.date >= ?"; params.push(dateFrom); }
+        if (dateTo) { where += " AND d.date <= ?"; params.push(dateTo); }
+      }
+      if (groupBy === 'month') {
+        // month mode doesn't need date filter beyond month
+        where = "WHERE d.month = ?";
+        params.length = 1;  // reset to just month
+        params[0] = month;
+      }
+
       const [rows] = await pool.execute(
         `SELECT t.id as teamId, t.name as teamName, d.product,
           SUM(d.orders) as totalOrders, SUM(d.total_cost) as totalCost,
@@ -84,10 +103,10 @@ export default async function (app: FastifyInstance) {
           SUM(d.messages) as messages, SUM(d.reach) as reach
         FROM team_daily_perf d
         JOIN teams t ON t.id = d.team_id
-        WHERE d.month = ?
+        ${where}
         GROUP BY d.team_id, d.product
         ORDER BY teamName, d.product`,
-        [month]
+        params
       );
       // Get all distinct products across teams
       let allProducts: string[] = [];
