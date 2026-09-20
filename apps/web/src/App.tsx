@@ -45,7 +45,7 @@ export default function App() {
         <Route path="/crm/teams" element={<ProtectedRoute><AppLayout><Teams /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/teams/:teamSlug" element={<ProtectedRoute><AppLayout><Teams /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/reports" element={<ProtectedRoute><AppLayout><Reports /></AppLayout></ProtectedRoute>} />
-      <Route path="/crm/reports/:tab" element={<ProtectedRoute><AppLayout><Reports /></AppLayout></ProtectedRoute>} />
+        <Route path="/crm/reports/:tab" element={<ProtectedRoute><AppLayout><Reports /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/seo" element={<ProtectedRoute><AppLayout><SeoPage /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/seo/:tab" element={<ProtectedRoute><AppLayout><SeoPage /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/customers" element={<ProtectedRoute><AppLayout><Customers /></AppLayout></ProtectedRoute>} />
