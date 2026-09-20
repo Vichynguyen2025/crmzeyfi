@@ -52,45 +52,86 @@ export default function Reports() {
     setAllUsers(users || []);
     // First, find which team the user belongs to
       let userTeamId = u.teamId || '';
+      let userTeamName = '';
       if (!userTeamId && u.id) {
         const allTeams = await api('/teams').catch(() => []);
         for (const team of (allTeams || [])) {
           const members = await api('/teams/' + team.id + '/members').catch(() => []);
           if (Array.isArray(members) && members.some((m:any) => m.id === u.id)) {
             userTeamId = team.id;
+            userTeamName = (team.name || team.slug || '').toLowerCase();
             break;
           }
         }
       }
-      const [b2Data, adsData, seoData, socialData, teamsData] = await Promise.all([
-        // B2: Lấy actuals của team user
-        userTeamId ? api('/actuals/' + userTeamId + '?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate).catch(() => []) : Promise.resolve([]),
-        // Ads: Lọc theo userId
-        api('/ads?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate + (u.id ? '&userId=' + u.id : '')).catch(() => []),
-        // SEO: Lọc theo user ID
+      // Check team type: Kinh doanh 3M uses B3 (daily-perf); eSim uses SEO + Marketing
+      const is3M = userTeamName.includes('3m') || userTeamName.includes('kinh doanh');
+      const isESim = userTeamName.includes('esim') || userTeamName.includes('techno') || userTeamName.includes('marketing');
+      
+      const [b3Data, seoData, marketingData] = await Promise.all([
+        // Nếu là Kinh doanh 3M: lấy B3 (daily-perf)
+        is3M && userTeamId && u.id ? api('/daily-perf/' + userTeamId + '/' + u.id + '?month=' + reportDate.slice(0,7)).catch(() => []) : Promise.resolve([]),
+        // SEO: Luôn lấy
         api('/seo-revenue/' + (u.id || 'all') + '?dateFrom=' + from + '&dateTo=' + to).catch(() => []),
-        // Social: Lọc theo assignee
-        api('/social-content?month=' + reportDate.slice(0,7) + (u.id ? '&assignee=' + u.id : '')).catch(() => []),
-        // Teams
-        api('/teams').catch(() => []),
+        // Marketing eSim: Ads + Social
+        isESim ? Promise.all([
+          api('/ads?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate + (u.id ? '&userId=' + u.id : '')).catch(() => []),
+          api('/social-content?month=' + reportDate.slice(0,7) + (u.id ? '&assignee=' + u.id : '')).catch(() => []),
+        ]).then(([a, s]) => ({ads: a||[], social: s||[]})).catch(() => ({ads:[], social:[]})) : Promise.resolve({ads:[], social:[]}),
       ]);
-
-      const todayOrders = Array.isArray(b2Data) ? b2Data.reduce((s:number, r:any) => s + Number(r.actualOrders||0), 0) : 0;
-      const todayCost = Array.isArray(b2Data) ? b2Data.reduce((s:number, r:any) => s + Number(r.fixedCost||0), 0) : 0;
-      const adsTotal = Array.isArray(adsData) ? adsData.reduce((s:number, r:any) => s + Number(r.cost_with_tax||0), 0) : 0;
-      const adsRevenue = Array.isArray(adsData) ? adsData.reduce((s:number, r:any) => s + Number(r.revenue||0), 0) : 0;
-      const adsOrders = Array.isArray(adsData) ? adsData.reduce((s:number, r:any) => s + Number(r.orders||0), 0) : 0;
+      
+      // Parse data based on team type
+      let b2Data:any[] = [], adsData:any[] = [], socialData:any[] = [];
+      
+      if (is3M) {
+        // From B3 (daily-perf)
+        b2Data = b3Data || [];
+        // For 3M teams, ads/social come from daily-perf
+      } else {
+        // From actuals (B2) + Marketing
+        b2Data = userTeamId ? (await api('/actuals/' + userTeamId + '?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate).catch(() => [])) : [];
+        adsData = marketingData.ads || [];
+        socialData = marketingData.social || [];
+      }
+      
+      // Calculate metrics
+      const todayOrders = is3M 
+        ? b3Data.reduce((s:number, r:any) => s + Number(r.orders||0), 0)
+        : b2Data.reduce((s:number, r:any) => s + Number(r.actualOrders||0), 0);
+      const todayCost = is3M
+        ? b3Data.reduce((s:number, r:any) => s + Number(r.total_cost||0), 0)
+        : b2Data.reduce((s:number, r:any) => s + Number(r.fixedCost||0), 0);
+      const adsTotal = adsData.reduce((s:number, r:any) => s + Number(r.cost_with_tax||0), 0);
+      const adsRevenue = adsData.reduce((s:number, r:any) => s + Number(r.revenue||0), 0);
+      const adsOrders = adsData.reduce((s:number, r:any) => s + Number(r.orders||0), 0);
       const seoOrders = Array.isArray(seoData) ? seoData.reduce((s:number, r:any) => s + Number(r.orders||0), 0) : 0;
       const seoRevenue = Array.isArray(seoData) ? seoData.reduce((s:number, r:any) => s + Number(r.revenue||0), 0) : 0;
-      const socialPosts = Array.isArray(socialData) ? socialData.length : 0;
-      const publishedPosts = Array.isArray(socialData) ? socialData.filter((r:any) => r.status === 'published').length : 0;
+      const socialPosts = socialData.length;
+      const publishedPosts = socialData.filter((r:any) => r.status === 'published').length;
+      
+      // B3 additional metrics (reach, clicks, messages)
+      const b3Reach = is3M ? b3Data.reduce((s:number, r:any) => s + Number(r.reach||0), 0) : 0;
+      const b3Clicks = is3M ? b3Data.reduce((s:number, r:any) => s + Number(r.clicks||0), 0) : 0;
+      const b3Messages = is3M ? b3Data.reduce((s:number, r:any) => s + Number(r.messages||0), 0) : 0;
+      
+      setMetrics({
+        todayOrders, todayCost,
+        adsTotal, adsRevenue, adsOrders,
+        seoOrders, seoRevenue,
+        socialPosts, publishedPosts,
+        b3Reach, b3Clicks, b3Messages,
+        is3M, isESim,
+        totalTeams: 0,
+        roas: adsTotal > 0 ? (adsRevenue / adsTotal).toFixed(1) : '—',
+        cpOrder: adsOrders > 0 ? Math.round(adsTotal / adsOrders).toLocaleString('vi-VN') : '—',
+      });
 
       setMetrics({
         todayOrders, todayCost,
         adsTotal, adsRevenue, adsOrders,
         seoOrders, seoRevenue,
         socialPosts, publishedPosts,
-        totalTeams: Array.isArray(teamsData) ? teamsData.length : 0,
+        totalTeams: 0,
         roas: adsTotal > 0 ? (adsRevenue / adsTotal).toFixed(1) : '—',
         cpOrder: adsOrders > 0 ? Math.round(adsTotal / adsOrders).toLocaleString('vi-VN') : '—',
       });
