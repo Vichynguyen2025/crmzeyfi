@@ -887,14 +887,14 @@ export default function Teams() {
         </div>
       </div>
 
-      {/* B6 - Tong tinh hinh kinh doanh pivot */}
+      {/* B6 - Tổng tinh hinh kinh doanh pivot */}
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-border bg-gray-50/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 grid place-items-center text-white text-xs font-bold">B6</div>
             <div>
-              <h2 className="text-sm font-bold text-[#171717]">Tong tinh hinh kinh doanh thuc te</h2>
-              <p className="text-xs text-muted">Du lieu B2 — Tong hop theo team & san pham</p>
+              <h2 className="text-sm font-bold text-[#171717]">Tổng tình hình kinh doanh thực tế</h2>
+              <p className="text-xs text-muted">Dữ liệu B2 — Tổng hợp theo team & sản phẩm</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -909,13 +909,13 @@ export default function Teams() {
                 {((b6Data as any)?.products || []).map((p: string) => (
                   <th key={p} className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:140}} colSpan={2}>{p}</th>
                 ))}
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tong Don</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tong CP</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tổng Đơn</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tổng CP</th>
               </tr>
             </thead>
             <tbody>
               {!b6Data || ((b6Data as any)?.teams || []).length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Chua co du lieu</td></tr>
+                <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Chưa có dữ liệu</td></tr>
               ) : ((b6Data as any).teams).map((team: any) => {
                   const data = ((b6Data as any).data || {})[team.id] || {};
                   const products = (b6Data as any).products || [];
@@ -949,7 +949,7 @@ export default function Teams() {
               {/* Tổng cộng */}
               {((b6Data as any)?.teams || []).length > 0 && (
                 <tr className="bg-gray-50/70 border-t-2 border-border font-medium">
-                  <td className="px-4 py-3 text-xs font-bold text-[#171717]">Tong cong</td>
+                  <td className="px-4 py-3 text-xs font-bold text-[#171717]">Tổng cộng</td>
                   {(b6Data as any).products.map((p: string) => {
                     const totalO = ((b6Data as any).teams || []).reduce((s: number, t: any) => s + ((((b6Data as any).data||{})[t.id]||{})[p]?.orders || 0), 0);
                     const totalC = ((b6Data as any).teams || []).reduce((s: number, t: any) => s + ((((b6Data as any).data||{})[t.id]||{})[p]?.cost || 0), 0);
