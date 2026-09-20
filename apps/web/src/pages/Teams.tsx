@@ -11,6 +11,7 @@ const ROLE_LABELS: Record<string,string> = {admin:'Quản trị',manager:'Quản
 export default function Teams() {
   const [teams, setTeams] = useState<any[]>([]);
   const [tablePerms, setTablePerms] = useState<string[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [add, setAdd] = useState(false);
   const [name, setName] = useState('');
@@ -100,7 +101,7 @@ export default function Teams() {
       const url = '/daily-perf/' + selectedTeam.id + '/' + userId + '?month=' + actualMonth + (product ? '&product=' + product : '');
       const saved = await api(url);
       if (saved && saved.length > 0) {
-        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date?.toLocaleDateString('fr-CA').slice(0,10) || '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
+        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date ? new Date(s.date).toLocaleDateString('fr-CA').slice(0,10) : '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
       } else {
         setDailyRows([{date: dailyDate, product: product || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
       }
@@ -115,7 +116,7 @@ export default function Teams() {
       const url = '/daily-perf/' + selectedTeam.id + '/' + userId + '?month=' + actualMonth + (dailyProduct ? '&product=' + dailyProduct : '');
       const saved = await api(url);
       if (saved && saved.length > 0) {
-        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date?.toLocaleDateString('fr-CA').slice(0,10) || '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
+        setDailyRows(saved.map((s: any) => ({id: s.id, date: s.date ? new Date(s.date).toLocaleDateString('fr-CA').slice(0,10) : '', product: s.product || '', totalCost: s.total_cost || 0, reach: s.reach || 0, clicks: s.clicks || 0, messages: s.messages || 0, orders: s.orders || 0, cancelledOrders: s.cancelled_orders || 0})));
       } else {
         // Init with one empty row for today
         setDailyRows([{date: dailyDate, product: dailyProduct || '', totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
@@ -138,11 +139,19 @@ export default function Teams() {
     return () => clearTimeout(timer);
   }, [dailyRows, dailyUser?.userId, actualMonth]);
 
-  const addDailyRow = () => { if (!canEdit('b3')) return;
+  const addDailyRow = () => { if (!canEditDaily()) return;
     setDailyRows([...dailyRows, {date: new Date().toISOString().slice(0, 10), product: dailyProduct, totalCost: 0, reach: 0, clicks: 0, messages: 0, orders: 0, cancelledOrders: 0}]);
   };
 
-  const updateDaily = (idx: number, field: string, val: any) => { if (!canEdit('b3')) return;
+  const canEditDaily = (idx?: number) => {
+    if (!currentUser) return false;
+    if (currentUser.role === 'admin' || currentUser.role === 'manager') return true;
+    if (!canEdit('b3')) return false;
+    // Member: chỉ sửa được B3 của chính mình (dailyUser = chủ modal)
+    if (dailyUser && dailyUser.userId && dailyUser.userId !== currentUser.id) return false;
+    return true;
+  };
+  const updateDaily = (idx: number, field: string, val: any) => { if (!canEditDaily(idx)) return;
     const rows = [...dailyRows];
     if (idx < rows.length) { rows[idx] = {...rows[idx], [field]: val}; setDailyRows(rows); }
   };
@@ -217,7 +226,7 @@ export default function Teams() {
     try { const d = await api('/kpis-summary/' + month); setPlanData(d || []); } catch { setPlanData([]); }
   };
 
-  const load = () => { api('/teams').then(setTeams); api('/users').then(setUsers).catch(() => {});
+  const load = () => { setCurrentUser(JSON.parse(localStorage.getItem('zeyfi_user') || '{}')); api('/teams').then(setTeams); api('/users').then(setUsers).catch(() => {});
     const u = JSON.parse(localStorage.getItem('zeyfi_user') || '{}');
     if (u.role !== 'admin') api('/my-table-perms').then(setTablePerms).catch(() => {});
     else setTablePerms(['b1','b2','b3','b4']);
@@ -649,7 +658,7 @@ export default function Teams() {
                   {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
                 </select>
                 
-                <button onClick={addDailyRow} className="px-4 py-1.5 bg-[#4f46e5] text-white rounded-xl text-xs font-medium hover:shadow-md transition-all">+ Thêm</button>
+                <button onClick={addDailyRow} disabled={!canEditDaily()} className="px-4 py-1.5 bg-[#4f46e5] text-white rounded-xl text-xs font-medium hover:shadow-md transition-all disabled:opacity-40">+ Thêm</button>
                 <button onClick={() => setDailyUser(null)} className="p-2 rounded-lg hover:bg-gray-100"><X size={18} /></button>
               </div>
             </div>
@@ -688,18 +697,18 @@ export default function Teams() {
                               {products.map((p: any) => <option key={p.id} value={p.name}>{p.name}</option>)}
                             </select>
                           </td>
-                          <td className="p-2.5 w-24"><input type="number" value={r.totalCost || ''} onChange={e => updateDaily(i, 'totalCost', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
-                          <td className="p-2.5 w-20"><input type="number" value={r.reach || ''} onChange={e => updateDaily(i, 'reach', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
-                          <td className="p-2.5 w-16"><input type="number" value={r.clicks || ''} onChange={e => updateDaily(i, 'clicks', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 w-24"><input type="number" value={r.totalCost || ''} disabled={!canEditDaily(i)} onChange={e => updateDaily(i, 'totalCost', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 w-20"><input type="number" value={r.reach || ''} disabled={!canEditDaily(i)} onChange={e => updateDaily(i, 'reach', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 w-16"><input type="number" value={r.clicks || ''} disabled={!canEditDaily(i)} onChange={e => updateDaily(i, 'clicks', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
                           <td className="p-2.5 text-xs text-right font-medium w-20">{clickPrice > 0 ? clickPrice.toLocaleString('vi-VN', {maximumFractionDigits: 0}) + 'đ' : ''}</td>
                           <td className="p-2.5 text-xs text-right w-14">{ctr > 0 ? ctr.toFixed(2) + '%' : ''}</td>
-                          <td className="p-2.5 w-16"><input type="number" value={r.messages || ''} onChange={e => updateDaily(i, 'messages', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 w-16"><input type="number" value={r.messages || ''} disabled={!canEditDaily(i)} onChange={e => updateDaily(i, 'messages', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
                           <td className="p-2.5 text-xs text-right font-medium w-20">{msgPrice > 0 ? msgPrice.toLocaleString('vi-VN', {maximumFractionDigits: 0}) + 'đ' : ''}</td>
-                          <td className="p-2.5 w-20"><input type="number" value={r.orders || ''} onChange={e => updateDaily(i, 'orders', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 w-20"><input type="number" value={r.orders || ''} disabled={!canEditDaily(i)} onChange={e => updateDaily(i, 'orders', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
                           <td className="p-2.5 text-xs text-right font-bold w-20">{closeRate > 0 ? closeRate.toFixed(1) + '%' : ''}</td>
-                          <td className="p-2.5 w-20"><input type="number" value={r.cancelledOrders || ''} onChange={e => updateDaily(i, 'cancelledOrders', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
+                          <td className="p-2.5 w-20"><input type="number" value={r.cancelledOrders || ''} disabled={!canEditDaily(i)} onChange={e => updateDaily(i, 'cancelledOrders', Number(e.target.value))} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/25" placeholder="0" /></td>
                           <td className="p-2.5 text-center">
-                            <button onClick={() => { const rows = [...dailyRows]; rows.splice(i, 1); setDailyRows(rows); }} className="p-1 rounded hover:bg-red-50 text-red-400 transition-all" title="Xoá">
+                            <button disabled={!canEditDaily(i)} onClick={() => { const rows = [...dailyRows]; rows.splice(i, 1); setDailyRows(rows); }} className="p-1 rounded hover:bg-red-50 text-red-400 transition-all" title="Xoá">
                               <X size={12} />
                             </button>
                           </td>
@@ -727,7 +736,7 @@ export default function Teams() {
                 </table>
               </div>
               <div className="flex justify-end gap-3 mt-4">
-                <button onClick={async () => {
+                <button disabled={!canEditDaily()} onClick={async () => {
                   await api('/daily-perf/' + selectedTeam.id + '/' + dailyUser.userId, { method:'POST', body:JSON.stringify({rows: dailyRows, month: actualMonth}) });
                   loadActuals(selectedTeam.id, actualMonth, members);
                   showToast('success', 'Đã lưu dữ liệu chi tiết hiệu suất');
