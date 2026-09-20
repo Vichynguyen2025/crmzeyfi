@@ -12,6 +12,8 @@ export default function Reports() {
   const [suggestions, setSuggestions] = useState('');
   const [extraTasks, setExtraTasks] = useState<string[]>(['']);
   const [attachments, setAttachments] = useState<string[]>([]);
+  const [recipients, setRecipients] = useState<string[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [sending, setSending] = useState(false);
   const [user, setUser] = useState<any>({});
   const [teamId, setTeamId] = useState('');
@@ -45,7 +47,10 @@ export default function Reports() {
       const { from, to } = calcDate(dateRangeKey);
 
       // Fetch metrics from all modules
-      // First, find which team the user belongs to
+      // Load users list for recipient selection
+    const users = await api("/users").catch(() => []);
+    setAllUsers(users || []);
+    // First, find which team the user belongs to
       let userTeamId = u.teamId || '';
       if (!userTeamId && u.id) {
         const allTeams = await api('/teams').catch(() => []);
@@ -136,6 +141,7 @@ export default function Reports() {
         date: reportDate,
         data: JSON.stringify({
           content: content.trim(),
+          recipients: recipients,
           reason: reason.trim(),
           difficulties: difficulties.trim(),
           suggestions: suggestions.trim(),
@@ -249,6 +255,26 @@ export default function Reports() {
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted hover:text-[#4f46e5] transition-all">
                       <span className="w-4 h-4 rounded-full border-2 border-dashed border-current grid place-items-center text-[8px]">+</span>
                       Thêm công việc</button>
+                  </div>
+                </div>
+
+                {/* Recipient selection */}
+                <div className="mt-4">
+                  <label className="block text-xs font-medium text-muted mb-2">Gửi báo cáo đến</label>
+                  <div className="flex flex-wrap gap-2">
+                    {allUsers.filter((u:any) => u.id !== user.id).map((u:any) => {
+                      const selected = recipients.includes(u.id);
+                      return (
+                        <button key={u.id} onClick={() => {
+                          if (selected) setRecipients(prev => prev.filter(id => id !== u.id));
+                          else setRecipients(prev => [...prev, u.id]);
+                        }}
+                          className={"px-3 py-1.5 rounded-lg text-xs font-medium border transition-all " + (selected ? "bg-[#4f46e5] text-white border-[#4f46e5]" : "bg-white text-muted border-border hover:border-[#4f46e5]/40")}>
+                          {selected && "✓ "}{u.name || u.email}
+                        </button>
+                      );
+                    })}
+                    {allUsers.filter((u:any) => u.id !== user.id).length === 0 && <span className="text-xs text-muted">Không có nhân sự khác</span>}
                   </div>
                 </div>
 
@@ -376,6 +402,14 @@ export default function Reports() {
                         <span className="text-xs text-muted">{r.user_name || user.name || 'Nhân sự'}</span>
                       </div>
                       <p className="text-sm text-[#171717]">{d.content || '—'}</p>
+                      {d.recipients && d.recipients.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          {d.recipients.map((rid: string, ri: number) => {
+                            const ru = allUsers.find((u:any) => u.id === rid);
+                            return <span key={ri} className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[10px] font-medium">📨 {ru ? ru.name : rid.slice(0,8)}</span>;
+                          })}
+                        </div>
+                      )}
                       {d.metrics && (
                         <div className="flex flex-wrap gap-2 mt-2">
                           {d.metrics.todayOrders > 0 && <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[10px] font-medium">📦 {d.metrics.todayOrders} đơn</span>}
