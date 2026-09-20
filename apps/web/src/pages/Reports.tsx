@@ -26,6 +26,8 @@ export default function Reports() {
   const userRole = user.role;
 //  const allUsersList = allUsers; // for recipient name lookup
   const getUserName = (id:string) => { const u = allUsers.find(u2 => u2.id === id); return u ? (u.name || u.email) : id.slice(0,8); };
+  const formatDate = (d: string) => d ? (d.includes('T') ? new Date(d).toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'}) : d.includes('-') ? d.split('-').reverse().join('/') : d) : '';
+  const formatTime = (d: string) => d ? new Date(d).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'}) : '';
   const nav = useNavigate();
   const { tab: urlTab } = useParams();
   const [tab, setTab] = useState<string>(urlTab || 'create');
@@ -40,6 +42,11 @@ export default function Reports() {
     { key: 'month', label: '30 ngày' },
   ];
   const [dateRangeKey, setDateRangeKey] = useState('week');
+  const [reportDateFrom, setReportDateFrom] = useState(() => { const d = new Date(); d.setDate(d.getDate()-7); return d.toISOString().slice(0,10); });
+  const [reportDateTo, setReportDateTo] = useState(() => new Date().toISOString().slice(0,10));
+  const [recvDateFrom, setRecvDateFrom] = useState(() => { const d = new Date(); d.setDate(d.getDate()-7); return d.toISOString().slice(0,10); });
+  const [recvDateTo, setRecvDateTo] = useState(() => new Date().toISOString().slice(0,10));
+  const [receivedDateRangeKey, setReceivedDateRangeKey] = useState('week');
 
   const calcDate = (dr: string) => {
     const d = new Date();
@@ -83,7 +90,7 @@ export default function Reports() {
       // Fetch all data sources in parallel
       const [b3Data, seoData, b2Data, adsData, socialData] = await Promise.all([
         // B3: dành cho team 3M (daily-perf)
-        userTeamId && u.id ? api('/daily-perf/' + userTeamId + '/' + u.id + '?month=' + reportDate.slice(0,7)).catch(() => []) : Promise.resolve([]),
+        userTeamId && u.id ? api('/daily-perf/' + userTeamId + '/' + u.id + '?month=' + reportDate.slice(0,7) + '&dateFrom=' + from + '&dateTo=' + to).catch(() => []) : Promise.resolve([]),
         // SEO: tất cả team
         api('/seo-revenue/' + (u.id || 'all') + '?dateFrom=' + from + '&dateTo=' + to).catch(() => []),
         // B2 (actuals): tất cả team
@@ -110,6 +117,7 @@ export default function Reports() {
       const publishedPosts = socialData.filter((r:any) => r.status === 'published').length;
       
       // B3 additional metrics (reach, clicks, messages)
+      const b3TotalCost = b3Data.reduce((s:number, r:any) => s + Number(r.total_cost||0), 0);
       const b3Reach = is3M ? b3Data.reduce((s:number, r:any) => s + Number(r.reach||0), 0) : 0;
       const b3Clicks = is3M ? b3Data.reduce((s:number, r:any) => s + Number(r.clicks||0), 0) : 0;
       const b3Messages = is3M ? b3Data.reduce((s:number, r:any) => s + Number(r.messages||0), 0) : 0;
@@ -119,28 +127,21 @@ export default function Reports() {
         adsTotal, adsRevenue, adsOrders,
         seoOrders, seoRevenue,
         socialPosts, publishedPosts,
-        b3Reach, b3Clicks, b3Messages,
+        b3TotalCost, b3Reach, b3Clicks, b3Messages,
         is3M,
         totalTeams: 0,
         roas: adsTotal > 0 ? (adsRevenue / adsTotal).toFixed(1) : '—',
         cpOrder: adsOrders > 0 ? Math.round(adsTotal / adsOrders).toLocaleString('vi-VN') : '—',
       });
 
-      setMetrics({
-        todayOrders, todayCost,
-        adsTotal, adsRevenue, adsOrders,
-        seoOrders, seoRevenue,
-        socialPosts, publishedPosts,
-        totalTeams: 0,
-        roas: adsTotal > 0 ? (adsRevenue / adsTotal).toFixed(1) : '—',
-        cpOrder: adsOrders > 0 ? Math.round(adsTotal / adsOrders).toLocaleString('vi-VN') : '—',
-      });
+
     } catch {}
   }, [reportDate, dateRangeKey]);
 
   const loadReports = useCallback(async () => {
     try {
-      const data = await api('/reports');
+      const { from, to } = dateRangeKey === 'custom' ? { from: reportDateFrom, to: reportDateTo } : calcDate(dateRangeKey);
+      const data = await api('/reports?from=' + from + '&to=' + to);
       setReports(data || []);
     } catch {}
   }, []);
@@ -150,12 +151,13 @@ export default function Reports() {
     if (tab !== 'received' || !user.id) return;
     const loadReceived = async () => {
       try {
-        const r = await api('/reports/received?userId=' + user.id);
+        const { from, to } = receivedDateRangeKey === 'custom' ? { from: recvDateFrom, to: recvDateTo } : calcDate(receivedDateRangeKey);
+        const r = await api('/reports/received?userId=' + user.id + '&from=' + from + '&to=' + to);
         setReceivedReports(r || []);
       } catch { setReceivedReports([]); }
     };
     loadReceived();
-  }, [tab, user.id]);
+  }, [tab, user.id, receivedDateRangeKey]);
 
 
   // Realtime
@@ -313,9 +315,9 @@ export default function Reports() {
 
                 {/* Recipient selection */}
                 <div className="mt-4">
-                  <label className="block text-xs font-medium text-muted mb-2">Gửi báo cáo đến</label>
+                  <label className="block text-xs font-medium text-muted mb-2">Gửi báo cáo đến (Admin/Manager)</label>
                   <div className="flex flex-wrap gap-2">
-                    {allUsers.filter((u:any) => u.id !== user.id).map((u:any) => {
+                    {allUsers.filter((u:any) => u.role === 'admin' || u.role === 'manager').map((u:any) => {
                       const selected = recipients.includes(u.id);
                       return (
                         <button key={u.id} onClick={() => {
@@ -327,7 +329,7 @@ export default function Reports() {
                         </button>
                       );
                     })}
-                    {allUsers.filter((u:any) => u.id !== user.id).length === 0 && <span className="text-xs text-muted">Không có nhân sự khác</span>}
+                    {allUsers.filter((u:any) => u.role === 'admin' || u.role === 'manager').length === 0 && <span className="text-xs text-muted">Không có admin/manager</span>}
                   </div>
                 </div>
 
@@ -381,8 +383,12 @@ export default function Reports() {
                   <span className="text-sm font-bold">{metrics.todayOrders || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted">Chi phí thực tế</span>
-                  <span className="text-sm font-bold">{metrics.todayCost ? Number(metrics.todayCost).toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
+                  <span className="text-xs text-muted">CP QC 3M</span>
+                  <span className="text-sm font-bold text-[#4f46e5]">{metrics.b3TotalCost ? Number(metrics.b3TotalCost).toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted">CP QC eSim</span>
+                  <span className="text-sm font-bold text-[#db2777]">{metrics.adsTotal ? Number(metrics.adsTotal).toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
                 </div>
               </div>
             </div>
@@ -429,64 +435,276 @@ export default function Reports() {
       )}
 
       {tab === 'history' && (
-        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-border bg-gray-50/60 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[#171717]">Lịch sử báo cáo ({filteredReports.length})</h2>
-            <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold tracking-tight text-[#171717]">Lịch sử báo cáo <span className="text-sm font-normal text-[#808080]">({filteredReports.length})</span></h2>
+            <div style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}} className="flex items-center gap-1 bg-white rounded-lg p-0.5">
               {dateRange.map(dr => (
-                <button key={dr.key} onClick={() => setDateRangeKey(dr.key)}
-                  className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (dateRangeKey === dr.key ? 'bg-[#4f46e5] text-white' : 'text-muted hover:text-ink')}>
+                <button key={dr.key} onClick={() => setReceivedDateRangeKey(dr.key)}
+                  className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (receivedDateRangeKey === dr.key ? 'bg-[#171717] text-white' : 'text-[#808080] hover:text-[#171717]')}>
                   {dr.label}
                 </button>
               ))}
             </div>
           </div>
-          <div className="divide-y divide-border/50">
-            {filteredReports.length === 0 ? (
-              <div className="px-6 py-12 text-center text-sm text-muted">Chưa có báo cáo</div>
-            ) : filteredReports.map((r: any) => {
-              const d = (() => { try { return JSON.parse(r.data || '{}'); } catch { return {}; } })();
-              return (
-                <div key={r.id} className="px-5 py-4 hover:bg-gray-50/60 transition-all">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium text-muted bg-gray-100 px-2 py-0.5 rounded-md">{r.date}</span>
-                        <span className="text-xs text-muted">{r.user_name || user.name || 'Nhân sự'}</span>
+
+          <div className="overflow-hidden rounded-xl" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 2px, rgba(0,0,0,0.04) 0px 8px 8px -8px, #fafafa 0px 0px 0px 1px'}}>
+            <table className="w-full border-collapse bg-white">
+              <thead>
+                <tr className="text-left">
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Ngày</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Người gửi</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Nội dung</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Chỉ số</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Người nhận</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#ebebeb]">
+                {filteredReports.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-16 text-center">
+                      <p className="text-sm font-medium text-[#666]">Chưa có báo cáo nào trong khoảng thời gian này</p>
+                    </td>
+                  </tr>
+                ) : filteredReports.map((r: any) => {
+                  const d = (() => { try { return JSON.parse(r.data || '{}'); } catch { return {}; } })();
+                  const senderName = getUserName(r.user_id);
+                  const fmtDate = formatDate(r.date);
+                  const fmtTime = formatTime(r.created_at);
+                  const recvs = (d.recipients || []).map((rid: string) => getUserName(rid)).join(', ');
+                  return (
+                    <tr key={r.id}
+                      className="transition-all duration-150 hover:bg-[#fafafa]">
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-medium text-[#171717]">{fmtDate}</p>
+                        <p className="text-[11px] text-[#808080]">{fmtTime}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shrink-0">{senderName[0]}</div>
+                          <p className="text-sm font-semibold text-[#171717]">{senderName}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-[#4d4d4d] leading-relaxed line-clamp-2 max-w-xs">{d.content || '—'}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {d.metrics?.todayOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0f4ff] text-[#0068d6] text-[11px] font-medium rounded-full">{d.metrics.todayOrders}</span>}
+                          {d.metrics?.todayCost > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fffbeb] text-[#b8860b] text-[11px] font-medium rounded-full">{Number(d.metrics.todayCost).toLocaleString('vi-VN')}đ</span>}
+                          {d.metrics?.adsTotal > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fdf2f8] text-[#db2777] text-[11px] font-medium rounded-full">{Number(d.metrics.adsTotal).toLocaleString('vi-VN')}đ</span>}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-[#808080] max-w-[120px] truncate" title={recvs}>{recvs || '—'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}{tab === 'received' && (
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold tracking-tight text-[#171717]">Báo cáo đã nhận <span className="text-sm font-normal text-[#808080]">({receivedReports.length})</span></h2>
+            <div style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}} className="flex items-center gap-1 bg-white rounded-lg p-0.5">
+              {[
+                { key: 'today', label: 'Hôm nay' },
+                { key: 'week', label: '7 ngày' },
+                { key: 'month', label: '30 ngày' },
+              ].map(dr => (
+                <button key={dr.key} onClick={() => setReceivedDateRangeKey(dr.key)}
+                  className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (receivedDateRangeKey === dr.key ? 'bg-[#171717] text-white' : 'text-[#808080] hover:text-[#171717]')}>
+                  {dr.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-xl" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 2px, rgba(0,0,0,0.04) 0px 8px 8px -8px, #fafafa 0px 0px 0px 1px'}}>
+            <table className="w-full border-collapse bg-white">
+              <thead>
+                <tr className="text-left">
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Người gửi</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Ngày</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Nội dung</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Chỉ số</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#ebebeb]">
+                {receivedReports.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-16 text-center">
+                      <div className="w-12 h-12 rounded-full bg-[#f5f5f5] flex items-center justify-center mx-auto mb-3">
+                        <Inbox size={22} className="text-[#808080]" />
                       </div>
-                      <p className="text-sm text-[#171717]">{d.content || '—'}</p>
-                      {d.recipients && d.recipients.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          {d.recipients.map((rid: string, ri: number) => {
-                            const ru = allUsers.find((u:any) => u.id === rid);
-                            return <span key={ri} className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[10px] font-medium">📨 {ru ? ru.name : rid.slice(0,8)}</span>;
-                          })}
+                      <p className="text-sm font-medium text-[#666]">Chưa có báo cáo nào</p>
+                      <p className="text-[11px] text-[#999] mt-1">Khi nhân sự gửi báo cáo, chúng sẽ xuất hiện ở đây</p>
+                    </td>
+                  </tr>
+                ) : receivedReports.map((r: any, i: number) => {
+                  const d = (() => { try { return JSON.parse(r.data || '{}'); } catch { return {}; } })();
+                  const senderName = getUserName(r.user_id);
+                  const fmtDate = formatDate(r.date);
+                  const fmtTime = formatTime(r.created_at);
+                  return (
+                    <tr key={r.id} onClick={() => setDetailReport(r)}
+                      className="cursor-pointer transition-all duration-150 hover:bg-[#fafafa]">
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-semibold text-[#171717]">{senderName}</p>
+                        <p className="text-[11px] text-[#808080] mt-0.5">{fmtTime}</p>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-[#808080]">{fmtDate}</td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-[#4d4d4d] leading-relaxed line-clamp-2 max-w-xs">{d.content || '—'}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {d.metrics?.todayOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0f4ff] text-[#0068d6] text-[11px] font-medium rounded-full">{d.metrics.todayOrders}</span>}
+                          {d.metrics?.todayCost > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fffbeb] text-[#b8860b] text-[11px] font-medium rounded-full">{Number(d.metrics.todayCost).toLocaleString('vi-VN')}đ</span>}
+                          {d.metrics?.adsTotal > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fdf2f8] text-[#db2777] text-[11px] font-medium rounded-full">{Number(d.metrics.adsTotal).toLocaleString('vi-VN')}đ</span>}
+                          {d.metrics?.seoOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0fdf4] text-[#16a34a] text-[11px] font-medium rounded-full">{d.metrics.seoOrders}</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+{detailReport && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDetailReport(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+            style={{boxShadow:'rgba(0,0,0,0.12) 0px 0px 0px 1px, rgba(0,0,0,0.08) 0px 4px 12px, rgba(0,0,0,0.04) 0px 20px 40px -8px'}}
+            onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#ebebeb] bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-sm font-bold">{getUserName(detailReport.user_id)[0]}</div>
+                <div>
+                  <h3 className="text-sm font-semibold text-[#171717]">{getUserName(detailReport.user_id)}</h3>
+                  <p className="text-[11px] text-[#808080]">{formatDate(detailReport.date)} · {formatTime(detailReport.created_at)}</p>
+                </div>
+              </div>
+              <button onClick={() => setDetailReport(null)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#f5f5f5] transition-all"><X size={16} className="text-[#808080]" /></button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+              {(() => {
+                const dd = (() => { try { return JSON.parse(detailReport.data || '{}'); } catch { return {}; } })();
+                return (
+                  <>
+                    {/* Nội dung c\u00f4ng vi\u1ec7c */}
+                    <div>
+                      <h4 className="text-[11px] font-semibold text-[#808080] uppercase tracking-wider mb-2">Nội dung</h4>
+                      <p className="text-sm text-[#171717] leading-relaxed whitespace-pre-wrap">{dd.content || '—'}</p>
+                    </div>
+
+                    {/* Lý do / Khó khăn / Đề xuất */}
+                    <div className="grid grid-cols-3 gap-4">
+                      {dd.reason && (
+                        <div className="bg-[#fafafa] rounded-xl p-4" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                          <p className="text-xs font-semibold text-[#0068d6] mb-1">Lý do</p>
+                          <p className="text-xs text-[#4d4d4d] leading-relaxed">{dd.reason}</p>
                         </div>
                       )}
-                      {d.metrics && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {d.metrics.todayOrders > 0 && <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[10px] font-medium">📦 {d.metrics.todayOrders} đơn</span>}
-                          {d.metrics.adsTotal > 0 && <span className="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-md text-[10px] font-medium">📊 CP QC {Number(d.metrics.adsTotal).toLocaleString('vi-VN')}đ</span>}
-                          {d.metrics.seoOrders > 0 && <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded-md text-[10px] font-medium">🔍 SEO {d.metrics.seoOrders} đơn</span>}
-                          {d.metrics.publishedPosts > 0 && <span className="px-2 py-0.5 bg-purple-50 text-purple-600 rounded-md text-[10px] font-medium">📝 {d.metrics.publishedPosts} bài</span>}
+                      {dd.difficulties && (
+                        <div className="bg-[#fafafa] rounded-xl p-4" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                          <p className="text-xs font-semibold text-[#dc2626] mb-1">Khó khăn</p>
+                          <p className="text-xs text-[#4d4d4d] leading-relaxed">{dd.difficulties}</p>
                         </div>
                       )}
-                      {d.attachments && d.attachments.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {d.attachments.map((url: string, i: number) => (
-                            <a key={i} href={url} target="_blank" rel="noreferrer"
-                              className="flex items-center gap-1 px-2 py-0.5 bg-gray-50 border border-border rounded-md text-[10px] text-muted hover:text-[#4f46e5] transition-all">
-                              <Download size={10} /> File {i+1}
-                            </a>
-                          ))}
+                      {dd.suggestions && (
+                        <div className="bg-[#fafafa] rounded-xl p-4" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                          <p className="text-xs font-semibold text-[#b8860b] mb-1">Đề xuất</p>
+                          <p className="text-xs text-[#4d4d4d] leading-relaxed">{dd.suggestions}</p>
                         </div>
                       )}
                     </div>
-                    <span className="text-[10px] text-muted shrink-0">{new Date(r.created_at).toLocaleString('vi-VN', {hour:'2-digit',minute:'2-digit'})}</span>
-                  </div>
-                </div>
-              );
-            })}
+
+                    {/* Công việc liên quan */}
+                    {dd.extraTasks && dd.extraTasks.length > 0 && (
+                      <div>
+                        <h4 className="text-[11px] font-semibold text-[#808080] uppercase tracking-wider mb-3">Công việc liên quan</h4>
+                        <div className="space-y-2">
+                          {dd.extraTasks.filter((t:string) => t.trim()).map((t:string, i:number) => (
+                            <div key={i} className="flex items-center gap-3 px-4 py-3 bg-[#fafafa] rounded-xl" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <span className="w-2 h-2 rounded-full bg-[#4f46e5] shrink-0" />
+                              <span className="text-sm text-[#171717]">{t}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Chỉ số */}
+                    {dd.metrics && (
+                      <div>
+                        <h4 className="text-[11px] font-semibold text-[#808080] uppercase tracking-wider mb-3">Chỉ số kinh doanh</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {dd.metrics.todayOrders > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#171717]">{dd.metrics.todayOrders}</p>
+                              <p className="text-[11px] text-[#808080] mt-1 font-medium">Đơn hàng</p>
+                            </div>
+                          )}
+                          {dd.metrics.todayCost > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#171717]">{Number(dd.metrics.todayCost).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[11px] text-[#808080] mt-1 font-medium">Chi phí</p>
+                            </div>
+                          )}
+                          {dd.metrics.adsTotal > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#0068d6]">{Number(dd.metrics.adsTotal).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[11px] text-[#808080] mt-1 font-medium">CP QC</p>
+                            </div>
+                          )}
+                          {dd.metrics.roas !== '—' && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#7c3aed]">{dd.metrics.roas}x</p>
+                              <p className="text-[11px] text-[#808080] mt-1 font-medium">ROAS</p>
+                            </div>
+                          )}
+                          {dd.metrics.seoOrders > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#16a34a]">{dd.metrics.seoOrders}</p>
+                              <p className="text-[11px] text-[#808080] mt-1 font-medium">Đơn SEO</p>
+                            </div>
+                          )}
+                          {dd.metrics.publishedPosts > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#171717]">{dd.metrics.publishedPosts}</p>
+                              <p className="text-[11px] text-[#808080] mt-1 font-medium">Bài đã đăng</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* File đính kèm */}
+                    {dd.attachments && dd.attachments.length > 0 && (
+                      <div>
+                        <h4 className="text-[11px] font-semibold text-[#808080] uppercase tracking-wider mb-3">File đính kèm</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {dd.attachments.map((url:string, i:number) => (
+                            <a key={i} href={url} target="_blank" rel="noreferrer"
+                              className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] rounded-xl text-xs text-[#4d4d4d] hover:text-[#4f46e5] transition-all"
+                              style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1={12} y1={15} x2={12} y2={3}/></svg>
+                              {url.split('/').pop() || ('File ' + (i+1))}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
           </div>
         </div>
       )}

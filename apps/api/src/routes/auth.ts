@@ -70,7 +70,6 @@ export default async function(app: FastifyInstance) {
   });
 
   app.get('/users', async (req, reply) => {
-    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const [rows] = await pool.execute(
       "SELECT u.id, u.name, u.email, u.phone, u.role, u.position, u.hometown, u.join_date as joinDate, u.avatar, u.is_blocked, u.last_seen, u.created_at as createdAt, " +
       "(SELECT GROUP_CONCAT(t.name SEPARATOR ', ') FROM team_members tm JOIN teams t ON t.id = tm.team_id WHERE tm.user_id = u.id) as team_names " +

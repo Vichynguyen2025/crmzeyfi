@@ -11,8 +11,13 @@ export default async function (app: FastifyInstance) {
     const dateFrom = q.dateFrom || '';
     const dateTo = q.dateTo || '';
 
-    let sql = "SELECT * FROM seo_revenue WHERE user_id = ? AND month = ?";
-    const params: any[] = [userId, month];
+    let sql = "SELECT * FROM seo_revenue WHERE user_id = ?";
+    const params: any[] = [userId];
+    // Use month filter only when no specific date range is provided
+    if (!dateFrom && !dateTo) {
+      sql += " AND month = ?";
+      params.push(month);
+    }
     if (channel) { sql += " AND channel = ?"; params.push(channel); }
     if (dateFrom) { sql += " AND date >= ?"; params.push(dateFrom); }
     if (dateTo) { sql += " AND date <= ?"; params.push(dateTo); }

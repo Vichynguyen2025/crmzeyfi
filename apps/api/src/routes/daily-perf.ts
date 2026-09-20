@@ -8,8 +8,12 @@ export default async function (app: FastifyInstance) {
     const q = req.query as any;
     const month = q.month || new Date().toISOString().slice(0, 7);
     const product = q.product || '';
+    const dateFrom = q.dateFrom || '';
+    const dateTo = q.dateTo || '';
     let sql = "SELECT * FROM team_daily_perf WHERE team_id = ? AND user_id = ? AND month = ?";
     const params: any[] = [teamId, userId, month];
+    if (dateFrom) { sql += " AND date >= ?"; params.push(dateFrom); }
+    if (dateTo) { sql += " AND date <= ?"; params.push(dateTo); }
     if (product) { sql += " AND product = ?"; params.push(product); }
     sql += " ORDER BY date ASC";
     const [rows] = await pool.execute(sql, params);

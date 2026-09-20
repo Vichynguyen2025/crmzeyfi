@@ -48,9 +48,12 @@ export default async function (app: FastifyInstance) {
     const isAdmin = req.user.role === 'admin' || req.user.role === 'manager';
     const teamId = query.teamId || '';
     
-    let whereClause = isAdmin ? "WHERE 1=1" : "WHERE dr.user_id = ?";
-    const params: any[] = isAdmin ? [] : [req.user.id];
+    let whereClause = "WHERE dr.user_id = ?";
+    const params: any[] = [req.user.id];
     if (teamId) { whereClause += " AND dr.team_id = ?"; params.push(teamId); }
+    const { from, to } = query;
+    if (from) { whereClause += " AND dr.date >= ?"; params.push(from); }
+    if (to) { whereClause += " AND dr.date <= ?"; params.push(to); }
     
     const [rows] = await pool.execute(
       "SELECT dr.id, dr.user_id, dr.team_id, DATE_FORMAT(dr.date, '%Y-%m-%d') as date, dr.data, dr.created_at, u.name as user_name, u.avatar as user_avatar FROM daily_reports dr JOIN users u ON u.id = dr.user_id " +
@@ -83,9 +86,16 @@ export default async function (app: FastifyInstance) {
   });
 
   app.get('/reports/received', async (req, reply) => {
-    const { userId } = req.query as any;
+    const { userId, from, to } = req.query as any;
     if (!userId) return reply.send([]);
-    const [allRows] = await pool.execute("SELECT * FROM daily_reports ORDER BY created_at DESC");
+    let sql = "SELECT * FROM daily_reports";
+    const params: any[] = [];
+    const conditions: string[] = [];
+    if (from) { conditions.push("date >= ?"); params.push(from); }
+    if (to) { conditions.push("date <= ?"); params.push(to); }
+    if (conditions.length > 0) sql += " WHERE " + conditions.join(" AND ");
+    sql += " ORDER BY created_at DESC";
+    const [allRows] = await pool.execute(sql, params);
     const filtered = (allRows as any[]).filter(r => {
       try {
         const d = JSON.parse(r.data || '{}');
