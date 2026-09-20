@@ -203,31 +203,31 @@ export default function Reports() {
                 {/* Additional fields */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
                   <div>
-                    <label className="block text-xs font-medium text-muted mb-1">L\u00fd do</label>
-                    <textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="L\u00fd do th\u1ef1c hi\u1ec7n c\u00f4ng vi\u1ec7c..."
+                    <label className="block text-xs font-medium text-muted mb-1">Lý do</label>
+                    <textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Lý do th\u1ef1c hi\u1ec7n c\u00f4ng vi\u1ec7c..."
                       className="w-full h-20 px-3 py-2 bg-[#f8fafc] border border-border rounded-xl text-xs outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-muted mb-1">Kh\u00f3 kh\u0103n</label>
-                    <textarea value={difficulties} onChange={e => setDifficulties(e.target.value)} placeholder="Kh\u00f3 kh\u0103n g\u1eb7p ph\u1ea3i..."
+                    <label className="block text-xs font-medium text-muted mb-1">Khó khăn</label>
+                    <textarea value={difficulties} onChange={e => setDifficulties(e.target.value)} placeholder="Khó khăn g\u1eb7p ph\u1ea3i..."
                       className="w-full h-20 px-3 py-2 bg-[#f8fafc] border border-border rounded-xl text-xs outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-muted mb-1">\u0110\u1ec1 xu\u1ea5t</label>
-                    <textarea value={suggestions} onChange={e => setSuggestions(e.target.value)} placeholder="\u0110\u1ec1 xu\u1ea5t c\u1ea3i thi\u1ec7n..."
+                    <label className="block text-xs font-medium text-muted mb-1">Đề xuất</label>
+                    <textarea value={suggestions} onChange={e => setSuggestions(e.target.value)} placeholder="Đề xuất c\u1ea3i thi\u1ec7n..."
                       className="w-full h-20 px-3 py-2 bg-[#f8fafc] border border-border rounded-xl text-xs outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
                   </div>
                 </div>
 
                 {/* Extra tasks */}
                 <div className="mt-4">
-                  <label className="block text-xs font-medium text-muted mb-2">C\u00f4ng vi\u1ec7c li\u00ean quan kh\u00e1c</label>
+                  <label className="block text-xs font-medium text-muted mb-2">Công việc liên quan khác</label>
                   <div className="space-y-2">
                     {extraTasks.map((task, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <input type="text" value={task} onChange={e => {
                           const t = [...extraTasks]; t[i] = e.target.value; setExtraTasks(t);
-                        }} placeholder="Nh\u1eadp c\u00f4ng vi\u1ec7c..."
+                        }} placeholder="Nhập công việc..."
                           className="flex-1 px-3 py-2 bg-[#f8fafc] border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
                         <button onClick={() => setExtraTasks(extraTasks.filter((_, j) => j !== i))}
                           className="p-1 rounded hover:bg-red-50 text-red-400 transition-all"><X size={14} /></button>
@@ -236,7 +236,7 @@ export default function Reports() {
                     <button onClick={() => setExtraTasks([...extraTasks, ""])}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted hover:text-[#4f46e5] transition-all">
                       <span className="w-4 h-4 rounded-full border-2 border-dashed border-current grid place-items-center text-[8px]">+</span>
-                      Th\u00eam c\u00f4ng vi\u1ec7c</button>
+                      Thêm công việc</button>
                   </div>
                 </div>
 
