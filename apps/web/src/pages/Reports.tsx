@@ -456,13 +456,14 @@ export default function Reports() {
                   <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Người gửi</th>
                   <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Nội dung</th>
                   <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Chỉ số</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Tình trạng</th>
                   <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Người nhận</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ebebeb]">
                 {filteredReports.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-16 text-center">
+                    <td colSpan={6} className="px-6 py-16 text-center">
                       <p className="text-sm font-medium text-[#666]">Chưa có báo cáo nào trong khoảng thời gian này</p>
                     </td>
                   </tr>
@@ -496,7 +497,8 @@ export default function Reports() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-xs text-[#808080] max-w-[120px] truncate" title={recvs}>{recvs || '—'}</td>
-                    </tr>
+                    
+                      <td className="px-6 py-4"><span className={'inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full '+(r.status==='approved'?'bg-[#f0fdf4] text-[#16a34a]':r.status==='rejected'?'bg-[#fef2f2] text-[#dc2626]':'bg-[#fff7ed] text-[#ea580c]')}>{(r.status==='approved'?'✓ Duyệt':r.status==='rejected'?'✗ Từ chối':'● Chờ')}</span></td></tr>
                   );
                 })}
               </tbody>
@@ -529,12 +531,13 @@ export default function Reports() {
                   <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Ngày</th>
                   <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Nội dung</th>
                   <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Chỉ số</th>
+                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Tình trạng</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ebebeb]">
                 {receivedReports.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-16 text-center">
+                    <td colSpan={5} className="px-6 py-16 text-center">
                       <div className="w-12 h-12 rounded-full bg-[#f5f5f5] flex items-center justify-center mx-auto mb-3">
                         <Inbox size={22} className="text-[#808080]" />
                       </div>
@@ -566,6 +569,7 @@ export default function Reports() {
                           {d.metrics?.seoOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0fdf4] text-[#16a34a] text-[11px] font-medium rounded-full">{d.metrics.seoOrders}</span>}
                         </div>
                       </td>
+                      <td className="px-6 py-4"><select value={r.status||'pending'} onChange={async e=>{const v=e.target.value;if(v==='approved'){await api('/reports/'+r.id+'/status',{method:'PATCH',body:JSON.stringify({status:'approved'})})}else if(v==='rejected'){const fb=prompt('Nhập lý do từ chối:');if(!fb)return;await api('/reports/'+r.id+'/status',{method:'PATCH',body:JSON.stringify({status:'rejected',feedback:fb})})}const u=JSON.parse(localStorage.getItem('zeyfi_user')||'{}');const dt=receivedDateRangeKey==='custom'?{from:recvDateFrom,to:recvDateTo}:calcDate(receivedDateRangeKey);const r2=await api('/reports/received?userId='+u.id+'&from='+dt.from+'&to='+dt.to);setReceivedReports(r2||[]);}} className={'px-2.5 py-1 text-xs font-medium rounded-full border-0 outline-none cursor-pointer '+(r.status==='approved'?'bg-[#f0fdf4] text-[#16a34a]':r.status==='rejected'?'bg-[#fef2f2] text-[#dc2626]':'bg-[#fff7ed] text-[#ea580c]')}><option value='pending'>● Chờ</option><option value='approved'>✓ Duyệt</option><option value='rejected'>✗ Từ chối</option></select></td>
                     </tr>
                   );
                 })}

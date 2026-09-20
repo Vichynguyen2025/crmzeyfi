@@ -56,7 +56,7 @@ export default async function (app: FastifyInstance) {
     if (to) { whereClause += " AND dr.date <= ?"; params.push(to); }
     
     const [rows] = await pool.execute(
-      "SELECT dr.id, dr.user_id, dr.team_id, DATE_FORMAT(dr.date, '%Y-%m-%d') as date, dr.data, dr.created_at, u.name as user_name, u.avatar as user_avatar FROM daily_reports dr JOIN users u ON u.id = dr.user_id " +
+      "SELECT dr.id, dr.user_id, dr.team_id, DATE_FORMAT(dr.date, '%Y-%m-%d') as date, dr.data, dr.created_at, dr.status, dr.feedback, u.name as user_name, u.avatar as user_avatar FROM daily_reports dr JOIN users u ON u.id = dr.user_id " +
       whereClause +
       " ORDER BY dr.date DESC, dr.created_at DESC",
       params
@@ -77,6 +77,33 @@ export default async function (app: FastifyInstance) {
     io.emit('report:new', { id, userId: req.user.id, teamId, date, data, userName: user.name });
     reply.send({ id, success: true });
   });
+  
+  app.patch('/reports/:id/status', async (req, reply) => {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'manager')) return reply.status(403).send({ error: 'Only admin/manager' });
+    const { id } = req.params as any;
+    const { status, feedback } = req.body as any;
+    if (!status || !['approved', 'rejected'].includes(status)) return reply.status(400).send({ error: 'Invalid status' });
+    await pool.execute("UPDATE daily_reports SET status = ?, feedback = ? WHERE id = ?", [status, feedback || null, id]);
+    const [rows] = await pool.execute("SELECT *, DATE_FORMAT(date, '%Y-%m-%d') as date_fmt FROM daily_reports WHERE id = ?", [id]);
+    const report = (rows as any[])[0];
+    if (report) {
+      io.emit('report:status', { id, status, feedback, userId: report.user_id });
+    }
+    reply.send({ success: true, id, status, feedback });
+  });
+
+  app.put('/reports/:id', async (req, reply) => {
+    if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
+    const { id } = req.params as any;
+    const { date, data } = req.body as any;
+    await pool.execute("UPDATE daily_reports SET status = 'pending', feedback = NULL, date = ?, data = ? WHERE id = ? AND user_id = ?",
+      [date, data, id, req.user.id]);
+    const [rows] = await pool.execute("SELECT *, DATE_FORMAT(date, '%Y-%m-%d') as date_fmt FROM daily_reports WHERE id = ?", [id]);
+    const report = (rows as any[])[0];
+    if (report) io.emit('report:updated', { ...report, data: JSON.parse(report.data || '{}') });
+    reply.send({ success: true, id });
+  });
+
   app.delete('/reports/:id', async (req, reply) => {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const { id } = req.params as any;
@@ -88,7 +115,7 @@ export default async function (app: FastifyInstance) {
   app.get('/reports/received', async (req, reply) => {
     const { userId, from, to } = req.query as any;
     if (!userId) return reply.send([]);
-    let sql = "SELECT * FROM daily_reports";
+    let sql = "SELECT *, DATE_FORMAT(date, '%Y-%m-%d') as date_fmt FROM daily_reports";
     const params: any[] = [];
     const conditions: string[] = [];
     if (from) { conditions.push("date >= ?"); params.push(from); }
