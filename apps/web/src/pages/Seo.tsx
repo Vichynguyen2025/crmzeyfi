@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, X, Trash2, Search, Check, AlertCircle, TrendingUp, TrendingDown, Minus, BarChart3, FileText, Target, Calendar, Eye, MousePointer, DollarSign, Users, List, RefreshCw, Download, Clock, Activity, Zap, ChevronDown } from 'lucide-react';
 import { api } from '../lib/api';
 
@@ -17,7 +18,10 @@ const STATUS_BADGE: Record<string, string> = {
 const fmtDate = (d: string) => d ? d.split('T')[0] : '';
 
 export default function SeoPage() {
-  const [tab, setTab] = useState<'dashboard' | 'work' | 'results' | 'plans'>('dashboard');
+  const { tab: routeTab } = useParams();
+  const nav = useNavigate();
+  const tab = (routeTab || 'dashboard') as 'dashboard' | 'work' | 'results' | 'plans';
+  const setTab = (key: 'dashboard' | 'work' | 'results' | 'plans') => nav('/crm/seo/' + key);;
   const [toast, setToast] = useState<{type: string, msg: string} | null>(null);
   const [user] = useState(() => { try { return JSON.parse(localStorage.getItem('zeyfi_user') || '{}'); } catch { return {}; } });
 
@@ -316,7 +320,7 @@ export default function SeoPage() {
           {/* Work Data Grid */}
           <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
             <div className="overflow-auto max-h-[60vh]">
-              <table className="w-full table-fixed border-collapse"><colgroup><col className="w-10"/><col className="w-32"/><col className="w-44"/><col className="w-28"/><col className="min-w-[180px]"/><col className="min-w-[120px]"/><col className="w-20"/><col className="w-28"/><col className="w-36"/><col className="min-w-[150px]"/><col className="w-24"/></colgroup>
+              <table className="w-full table-fixed border-collapse"><colgroup><col className="w-10"/><col className="w-32"/><col className="w-44"/><col className="w-28"/><col className="min-w-[180px]"/><col className="min-w-[120px]"/><col className="w-20"/><col className="w-32"/><col className="w-44"/><col className="min-w-[150px]"/><col className="w-24"/></colgroup>
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gray-50/90 border-b-2 border-border">
                     <th className="w-9 px-3 py-3"><input type="checkbox" checked={selectedWorks.size===works.length&&works.length>0} onChange={()=>setSelectedWorks(selectedWorks.size===works.length?new Set():new Set(works.map(w=>w.id)))} className="accent-[#4f46e5] scale-90" /></th>
@@ -326,7 +330,7 @@ export default function SeoPage() {
                     <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left min-w-[180px]">Công việc</th>
                     <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left min-w-[120px]">URL</th>
                     <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-16">SL</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-32">Trạng thái</th>
+                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-36">Trạng thái</th>
                     <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-36">KPI</th>
                     <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-28">Ghi chú</th>
                     <th className="w-9 px-3 py-3"></th>
@@ -404,7 +408,7 @@ export default function SeoPage() {
           {/* Results Table */}
           <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
             <div className="overflow-auto max-h-[60vh]">
-              <table className="w-full table-fixed border-collapse"><colgroup><col className="w-10"/><col className="w-32"/><col className="w-44"/><col className="w-28"/><col className="min-w-[180px]"/><col className="min-w-[120px]"/><col className="w-20"/><col className="w-28"/><col className="w-36"/><col className="min-w-[150px]"/><col className="w-24"/></colgroup>
+              <table className="w-full table-fixed border-collapse"><colgroup><col className="w-10"/><col className="w-32"/><col className="w-44"/><col className="w-28"/><col className="min-w-[180px]"/><col className="min-w-[120px]"/><col className="w-20"/><col className="w-32"/><col className="w-44"/><col className="min-w-[150px]"/><col className="w-24"/></colgroup>
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gray-50/90 border-b-2 border-border">
                     <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-28">Ngày</th>

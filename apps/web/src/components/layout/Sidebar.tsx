@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, KanbanSquare, PhoneCall, DollarSign, Calendar, UserCog, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, PhoneCall, UserCog, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3 } from 'lucide-react';
 
 const NAV = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/crm/dashboard' },
@@ -9,12 +9,10 @@ const NAV = [
   { label: 'Kho dữ liệu', icon: HardDrive, path: '/crm/drive' },
   { label: 'Kênh Marketing', icon: Globe, path: '/crm/channels' },
   { label: 'Sản phẩm', icon: Package, path: '/crm/products' },
+  { label: 'Marketing eSim', icon: BarChart3, path: '/crm/marketing' },
   { label: 'Báo cáo', icon: ClipboardList, path: '/crm/reports' },
-  { label: 'Marketing eSim', icon: KanbanSquare, path: '/crm/marketing' },
   { label: 'Khách hàng', icon: PhoneCall, path: '/crm/customers' },
-  { label: 'Chi phí QC', icon: DollarSign, path: '/crm/ad-costs' },
   { label: 'SEO', icon: BarChart3, path: '/crm/seo' },
-  { label: 'Lịch', icon: Calendar, path: '/crm/calendar' },
 ];
 
 export default function Sidebar() {

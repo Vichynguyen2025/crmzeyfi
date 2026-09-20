@@ -4,15 +4,13 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Teams from './pages/Teams';
 import Reports from './pages/Reports';
-import MarketingESim from './pages/Kanban';
 import SeoPage from './pages/Seo';
 import Customers from './pages/Customers';
-import AdCosts from './pages/AdCosts';
-import CalendarPage from './pages/Calendar';
 import UsersPage from './pages/Users';
 import DrivePage from './pages/Drive';
 import ChannelsPage from './pages/Channels';
 import ProductsPage from './pages/Products';
+import MarketingESim from './pages/MarketingESim';
 import AppLayout from './components/layout/AppLayout';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -47,14 +45,14 @@ export default function App() {
         <Route path="/crm/teams/:teamSlug" element={<ProtectedRoute><AppLayout><Teams /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/reports" element={<ProtectedRoute><AppLayout><Reports /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/seo" element={<ProtectedRoute><AppLayout><SeoPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/crm/marketing" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
+        <Route path="/crm/seo/:tab" element={<ProtectedRoute><AppLayout><SeoPage /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/customers" element={<ProtectedRoute><AppLayout><Customers /></AppLayout></ProtectedRoute>} />
-        <Route path="/crm/ad-costs" element={<ProtectedRoute><AppLayout><AdCosts /></AppLayout></ProtectedRoute>} />
-        <Route path="/crm/calendar" element={<ProtectedRoute><AppLayout><CalendarPage /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/users" element={<ProtectedRoute><AppLayout><UsersPage /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/drive" element={<ProtectedRoute><AppLayout><DrivePage /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/channels" element={<ProtectedRoute><AppLayout><ChannelsPage /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/products" element={<ProtectedRoute><AppLayout><ProductsPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/crm/marketing" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
+        <Route path="/crm/marketing/:tab" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
 
         {/* Redirect old routes to new /crm/ equivalents */}
         <Route path="/dashboard" element={<Navigate to="/crm/dashboard" replace />} />
@@ -62,10 +60,7 @@ export default function App() {
         <Route path="/teams/:teamSlug" element={<Navigate to="/crm/teams/:teamSlug" replace />} />
         <Route path="/reports" element={<Navigate to="/crm/reports" replace />} />
         <Route path="/seo" element={<Navigate to="/crm/seo" replace />} />
-        <Route path="/marketing" element={<Navigate to="/crm/kanban" replace />} />
         <Route path="/customers" element={<Navigate to="/crm/customers" replace />} />
-        <Route path="/ad-costs" element={<Navigate to="/crm/ad-costs" replace />} />
-        <Route path="/calendar" element={<Navigate to="/crm/calendar" replace />} />
         <Route path="/users" element={<Navigate to="/crm/users" replace />} />
         <Route path="/drive" element={<Navigate to="/crm/drive" replace />} />
         <Route path="/channels" element={<Navigate to="/crm/channels" replace />} />

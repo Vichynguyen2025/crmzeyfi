@@ -16,6 +16,8 @@ import kpiRoutes from './routes/kpis';
 import actualRoutes from './routes/actuals';
 import dailyPerfRoutes from './routes/daily-perf';
 import seoRoutes from './routes/seo';
+import adRoutes from './routes/ads';
+import socialContentRoutes from './routes/social-content';
 import mysql from 'mysql2/promise';
 
 const pool = mysql.createPool({ socketPath: '/tmp/mysql.sock', user: 'root', password: '8ffcb61af33a11f0', database: 'crmzeyfi', waitForConnections: true, connectionLimit: 5 });
@@ -55,6 +57,9 @@ async function start() {
   await app.register(kpiRoutes, { prefix: '/api' });
   await app.register(actualRoutes, { prefix: '/api' });
   await app.register(dailyPerfRoutes, { prefix: '/api' });
+  await app.register(adRoutes, { prefix: '/api' });
+  await app.register(socialContentRoutes, { prefix: '/api' });
+  await app.register(seoRoutes, { prefix: '/api' });
   await app.listen({ port: PORT, host: '0.0.0.0' });
   console.log('[CRM Zeyfi] API running on port ' + PORT);
 }
