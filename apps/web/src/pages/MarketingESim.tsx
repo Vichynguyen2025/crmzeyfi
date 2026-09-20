@@ -7,6 +7,7 @@ const TABS = [
   { key: 'thongke', label: 'Thống kê', icon: BarChart3 },
   { key: 'social', label: 'Content Social', icon: MessageSquare },
   { key: 'quangcao', label: 'Quảng cáo', icon: Megaphone },
+  { key: 'seo', label: 'Doanh thu SEO', icon: TrendingUp },
 ];
 
 const PLATFORMS = ['Facebook', 'Instagram', 'Tiktok', 'Zalo', 'Youtube', 'Website'];
@@ -38,6 +39,12 @@ export default function MarketingESim() {
   const [adFilterPlatform, setAdFilterPlatform] = useState('');
   const [adFilterUser, setAdFilterUser] = useState('');
   const [adSaving, setAdSaving] = useState<Set<string>>(new Set());
+  const [seoRows, setSeoRows] = useState<any[]>([]);
+  const [seoGroupBy, setSeoGroupBy] = useState('day');
+  const [seoMonth, setSeoMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [seoDateFrom, setSeoDateFrom] = useState('');
+  const [seoDateTo, setSeoDateTo] = useState('');
+  const [seoSaving, setSeoSaving] = useState(false);
   const [tkMonth, setTkMonth] = useState(new Date().toISOString().slice(0, 7));
   const [tkGroupBy, setTkGroupBy] = useState('month');
   const [tkSocialData, setTkSocialData] = useState<any[]>([]);
@@ -120,6 +127,29 @@ const addAdRow = async () => {
   }, [tkMonth, tkGroupBy]);
 
   useEffect(() => { loadTk(); }, [loadTk]);
+  useEffect(() => {
+    if (tab !== 'seo') return;
+    const loadSeo = async () => {
+      try {
+        const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
+        const r = await api('/seo-revenue/'+(u.id||'all')+'?month='+seoMonth);
+        setSeoRows(r||[]);
+      } catch { setSeoRows([]); }
+    };
+    loadSeo();
+  }, [tab, seoMonth]);
+  // Auto-save seo data with debounce
+  useEffect(() => {
+    if (!seoSaving && seoRows.length > 0 && tab === 'seo') {
+      const timer = setTimeout(async () => {
+        try {
+          const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
+          await api('/seo-revenue/'+(u.id||'all'), { method:'POST', body:JSON.stringify({rows: seoRows, month: seoMonth}) });
+        } catch {}
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [seoRows, seoMonth, tab]);
 
   const addMember = async () => {
     if (!newMember.name.trim() || !newMember.email.trim() || !newMember.password.trim()) {
@@ -599,6 +629,94 @@ const addAdRow = async () => {
             </div>
           </div>
         </>
+      )}
+      {tab === 'seo' && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2 bg-white rounded-2xl border border-border p-4 shadow-sm">
+            <input type="month" value={seoMonth} onChange={e=>setSeoMonth(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
+            {seoGroupBy==='day'&&<>
+              <input type="date" value={seoDateFrom} onChange={e=>setSeoDateFrom(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
+              <span className="text-xs text-muted">→</span>
+              <input type="date" value={seoDateTo} onChange={e=>setSeoDateTo(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
+            </>}
+            <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
+              {['day','week','month'].map(v=>(
+                <button key={v} onClick={()=>setSeoGroupBy(v)} className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all '+(seoGroupBy===v?'bg-[#4f46e5] text-white':'text-muted hover:text-ink')}>{v==='day'?'Ngày':v==='week'?'Tuần':'Tháng'}</button>
+              ))}
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead><tr className="bg-gray-50/80 border-b border-border">
+                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-left w-28">Ngày</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-left w-24">Kênh</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-16">Đơn</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-24">Doanh thu</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-20">CP</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-20">Impr</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-16">Click</th>
+                  <th className="px-4 py-3 w-8"></th>
+                </tr></thead>
+                <tbody>
+                  {(!seoRows||seoRows.length===0)?<tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-muted">Chưa có dữ liệu</td></tr>
+                  :seoRows.map((r,i)=>(
+                    <tr key={i} className="border-b border-border/50 hover:bg-gray-50/60 transition-all">
+                      <td className="px-4 py-2.5 text-xs">{r.date?new Date(r.date).toLocaleDateString('fr-CA'):''}</td>
+                      <td className="px-4 py-2.5">
+                        <select value={r.channel||''} onChange={e=>{const x=[...seoRows];x[i]={...x[i],channel:e.target.value};setSeoRows(x);}} className="w-full px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none">
+                          <option value="">Chọn</option>
+                          <option value="google_organic">Google Organic</option>
+                          <option value="google_ads">Google Ads</option>
+                          <option value="facebook">Facebook</option>
+                          <option value="zalo">Zalo</option>
+                          <option value="tiktok">Tiktok</option>
+                        </select>
+                      </td>
+                      <td className="px-4 py-2.5"><input type="number" value={r.orders||''} onChange={e=>{const x=[...seoRows];x[i]={...x[i],orders:Number(e.target.value)};setSeoRows(x);}} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/20" /></td>
+                      <td className="px-4 py-2.5"><input type="number" value={r.revenue||''} onChange={e=>{const x=[...seoRows];x[i]={...x[i],revenue:Number(e.target.value)};setSeoRows(x);}} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/20" /></td>
+                      <td className="px-4 py-2.5"><input type="number" value={r.cost||''} onChange={e=>{const x=[...seoRows];x[i]={...x[i],cost:Number(e.target.value)};setSeoRows(x);}} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none focus:ring-2 focus:ring-[#4f46e5]/20" /></td>
+                      <td className="px-4 py-2.5"><input type="number" value={r.impressions||''} onChange={e=>{const x=[...seoRows];x[i]={...x[i],impressions:Number(e.target.value)};setSeoRows(x);}} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none" /></td>
+                      <td className="px-4 py-2.5"><input type="number" value={r.clicks||''} onChange={e=>{const x=[...seoRows];x[i]={...x[i],clicks:Number(e.target.value)};setSeoRows(x);}} className="w-full px-2 py-1.5 bg-[#f8fafc] border border-border rounded-lg text-xs text-right outline-none" /></td>
+                      <td className="px-4 py-2.5"><button onClick={()=>setSeoRows(seoRows.filter((_,j)=>j!==i))} className="p-1 rounded hover:bg-red-50 text-red-400">✕</button></td>
+                    </tr>
+                  ))}
+                  {/* Total row */}
+                  {seoRows.length>0&&<tr className="bg-gray-50/70 border-t-2 border-border font-medium">
+                    <td className="px-4 py-3 text-xs font-bold" colSpan={2}>Tổng cộng</td>
+                    <td className="px-4 py-3 text-xs font-bold text-[#4f46e5] text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.orders||0),0).toLocaleString('vi-VN')}</td>
+                    <td className="px-4 py-3 text-xs font-bold text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.revenue||0),0).toLocaleString('vi-VN')}đ</td>
+                    <td className="px-4 py-3 text-xs font-bold text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.cost||0),0).toLocaleString('vi-VN')}đ</td>
+                    <td className="px-4 py-3 text-xs font-bold text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.impressions||0),0).toLocaleString('vi-VN')}</td>
+                    <td className="px-4 py-3 text-xs font-bold text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.clicks||0),0).toLocaleString('vi-VN')}</td>
+                    <td></td>
+                  </tr>}
+                  {/* Add row */}
+                  <tr className="border-t-2 border-dashed border-border/50">
+                    <td colSpan={8} className="px-4 py-3">
+                      <button onClick={()=>setSeoRows([...seoRows,{date:seoGroupBy==='day'?(seoDateFrom||new Date().toISOString().slice(0,10)):new Date().toISOString().slice(0,10),channel:'',orders:0,revenue:0,cost:0,impressions:0,clicks:0}])} className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted hover:text-[#4f46e5] transition-all">
+                        <span className="w-5 h-5 rounded-full border-2 border-dashed border-current grid place-items-center text-[10px]">+</span> Thêm dòng</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="px-4 py-3 border-t border-border bg-gray-50/50 flex items-center justify-between">
+              <span className="text-xs text-muted">{seoRows.length} dòng</span>
+              <button onClick={async()=>{
+                if(!seoRows.some(r=>r.channel)){alert('Nhập kênh trước');return;}
+                setSeoSaving(true);
+                try{
+                  const u=JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
+                  await api('/seo-revenue/'+(u.id||'all'),{method:'POST',body:JSON.stringify({rows:seoRows,month:seoMonth})});
+                  showToast('success','Đã lưu');
+                }catch(e:any){showToast('error',e.message);}setSeoSaving(false);
+              }} disabled={seoSaving} className="px-5 py-2 bg-[#4f46e5] text-white text-sm font-medium rounded-xl hover:shadow-md transition-all disabled:opacity-40">
+                {seoSaving?'Đang lưu...':'Lưu dữ liệu'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {tab === 'social' && (
         <>
