@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Send, Calendar, ChevronDown, Paperclip, X, CheckCircle2, Clock, Users, BarChart3, TrendingUp, MessageSquare, Download, Eye } from 'lucide-react';
+import { FileText, Send, Calendar, ChevronDown, Paperclip, X, CheckCircle2, Clock, Users, BarChart3, TrendingUp, MessageSquare, Download, Eye, Inbox, UserCheck, ChevronRight } from 'lucide-react';
 import { api } from '../lib/api';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getSocket } from '../lib/socket';
 
 export default function Reports() {
@@ -20,7 +21,16 @@ export default function Reports() {
   const [metrics, setMetrics] = useState<any>({});
   const [showCalendar, setShowCalendar] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [tab, setTab] = useState<'create' | 'history'>('create');
+  const [receivedReports, setReceivedReports] = useState<any[]>([]);
+  const [detailReport, setDetailReport] = useState<any>(null);
+  const userRole = user.role;
+//  const allUsersList = allUsers; // for recipient name lookup
+  const getUserName = (id:string) => { const u = allUsers.find(u2 => u2.id === id); return u ? (u.name || u.email) : id.slice(0,8); };
+  const nav = useNavigate();
+  const { tab: urlTab } = useParams();
+  const [tab, setTab] = useState<string>(urlTab || 'create');
+  // Sync URL with tab state
+  useEffect(() => { if (urlTab && urlTab !== tab) setTab(urlTab); }, [urlTab]);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -136,6 +146,17 @@ export default function Reports() {
   }, []);
 
   useEffect(() => { loadMetrics(); loadReports(); }, [loadMetrics, loadReports]);
+  useEffect(() => {
+    if (tab !== 'received' || !user.id) return;
+    const loadReceived = async () => {
+      try {
+        const r = await api('/reports/received?userId=' + user.id);
+        setReceivedReports(r || []);
+      } catch { setReceivedReports([]); }
+    };
+    loadReceived();
+  }, [tab, user.id]);
+
 
   // Realtime
   useEffect(() => {
@@ -213,8 +234,9 @@ export default function Reports() {
         {[
           { key: 'create', label: 'Tạo báo cáo', icon: FileText },
           { key: 'history', label: 'Lịch sử', icon: Clock },
+        (user.role === 'admin' || user.role === 'manager') && { key: 'received', label: 'Đã nhận', icon: Inbox },
         ].map(t => (
-          <button key={t.key} onClick={() => setTab(t.key as 'create' | 'history')}
+          <button key={t.key} onClick={() => { setTab(t.key); nav('/crm/reports/' + t.key); }}
             className={'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ' + (tab === t.key as any ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-50')}>
             <t.icon size={15} /> {t.label}
           </button>
