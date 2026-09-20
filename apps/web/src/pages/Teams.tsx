@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, X, Phone, Mail, Shield, Edit3, Trash2, BarChart3, Globe, ExternalLink, User, CheckCircle, AlertCircle, Target , Lock} from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
@@ -887,57 +887,94 @@ export default function Teams() {
         </div>
       </div>
 
-      {/* B6 - Tong tinh hinh kinh doanh thuc te */}
+      {/* B6 - Tong tinh hinh kinh doanh pivot */}
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-border bg-gray-50/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 grid place-items-center text-white text-xs font-bold">B6</div>
             <div>
               <h2 className="text-sm font-bold text-[#171717]">Tong tinh hinh kinh doanh thuc te</h2>
-              <p className="text-xs text-muted">Du lieu B2 - Daily-Perf theo san pham</p>
+              <p className="text-xs text-muted">Du lieu B2 — Tong hop theo team & san pham</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <input type="month" value={b6Month} onChange={e => setB6Month(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
-            <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
-              {['day','week','month'].map(v => (
-                <button key={v} onClick={() => setB6GroupBy(v)} className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (b6GroupBy===v ? 'bg-[#4f46e5] text-white' : 'text-muted hover:text-ink')}>
-                  {v==='day' ? 'Ngay' : v==='week' ? 'Tuan' : 'Thang'}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full" style={{tableLayout:'fixed', borderCollapse:'separate', borderSpacing:0}}>
             <thead>
               <tr className="bg-gray-50/80 border-b border-border">
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left w-40">Team</th><th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left w-28">San pham</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-24">Ky</th><th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-16">Don</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-24">Chi phi</th><th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-20">CP/Don</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-20">Tin nhan</th><th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right w-20">Reach</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left" style={{width:150}}>Team</th>
+                {((b6Data as any)?.products || []).map((p: string) => (
+                  <th key={p} className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:140}} colSpan={2}>{p}</th>
+                ))}
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tong Don</th>
+                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tong CP</th>
               </tr>
             </thead>
             <tbody>
-              {!b6Data || b6Data.length === 0 ? (
-                <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-muted">Chua co du lieu</td></tr>
-              ) : b6Data.map((r, i) => (
-                <tr key={r.teamId+r.product+r.periodLabel+i} className="border-b border-border/50 hover:bg-gray-50/60 transition-all">
-                  <td className="px-4 py-3 text-xs font-medium">{r.teamName}</td>
-                  <td className="px-4 py-3 text-xs text-muted">{r.product}</td>
-                  <td className="px-4 py-3 text-xs text-muted text-right">{r.periodLabel}</td>
-                  <td className="px-4 py-3 text-xs text-right">{Number(r.actualOrders||0).toLocaleString('vi-VN')}</td>
-                  <td className="px-4 py-3 text-xs text-right">{Number(r.actualCost||0) > 0 ? Number(r.actualCost||0).toLocaleString('vi-VN')+'d' : '-'}</td>
-                  <td className="px-4 py-3 text-xs text-muted text-right">{Number(r.costPerOrder||0) > 0 ? Number(r.costPerOrder||0).toLocaleString('vi-VN')+'d' : '-'}</td>
-                  <td className="px-4 py-3 text-xs text-right">{Number(r.messages||0).toLocaleString('vi-VN')}</td>
-                  <td className="px-4 py-3 text-xs text-right">{Number(r.reach||0).toLocaleString('vi-VN')}</td>
+              {!b6Data || ((b6Data as any)?.teams || []).length === 0 ? (
+                <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Chua co du lieu</td></tr>
+              ) : ((b6Data as any).teams).map((team: any) => {
+                  const data = ((b6Data as any).data || {})[team.id] || {};
+                  const products = (b6Data as any).products || [];
+                  let teamTotalOrders = 0, teamTotalCost = 0;
+                  return (
+                    <tr key={team.id} className="border-b border-border/50 hover:bg-gray-50/60 transition-all">
+                      <td className="px-4 py-3 text-xs font-medium">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-md grid place-items-center text-white text-[8px] font-bold" style={{backgroundColor: team.color || '#4f46e5'}}>{team.name.charAt(0)}</div>
+                          <span>{team.name}</span>
+                        </div>
+                      </td>
+                      {products.map(p => {
+                        const d = data[p];
+                        const o = d?.orders || 0;
+                        const c = d?.cost || 0;
+                        teamTotalOrders += o;
+                        teamTotalCost += c;
+                        return (
+                          <React.Fragment key={p}>
+                            <td className="px-3 py-3 text-xs text-right font-medium">{o.toLocaleString('vi-VN')}</td>
+                            <td className="px-3 py-3 text-xs text-right text-muted">{c > 0 ? c.toLocaleString('vi-VN')+'d' : '-'}</td>
+                          </React.Fragment>
+                        );
+                      })}
+                      <td className="px-4 py-3 text-xs text-right font-bold text-[#4f46e5]">{teamTotalOrders}</td>
+                      <td className="px-4 py-3 text-xs text-right font-bold">{teamTotalCost > 0 ? teamTotalCost.toLocaleString('vi-VN')+'d' : '-'}</td>
+                    </tr>
+                  );
+                })}
+              {/* Tổng cộng */}
+              {((b6Data as any)?.teams || []).length > 0 && (
+                <tr className="bg-gray-50/70 border-t-2 border-border font-medium">
+                  <td className="px-4 py-3 text-xs font-bold text-[#171717]">Tong cong</td>
+                  {(b6Data as any).products.map((p: string) => {
+                    const totalO = ((b6Data as any).teams || []).reduce((s: number, t: any) => s + ((((b6Data as any).data||{})[t.id]||{})[p]?.orders || 0), 0);
+                    const totalC = ((b6Data as any).teams || []).reduce((s: number, t: any) => s + ((((b6Data as any).data||{})[t.id]||{})[p]?.cost || 0), 0);
+                    return (
+                      <React.Fragment key={'tot-'+p}>
+                        <td className="px-3 py-3 text-xs text-right font-bold text-[#4f46e5]">{totalO}</td>
+                        <td className="px-3 py-3 text-xs text-right font-bold">{totalC > 0 ? totalC.toLocaleString('vi-VN')+'d' : '-'}</td>
+                      </React.Fragment>
+                    );
+                  })}
+                  <td className="px-4 py-3 text-xs text-right font-bold text-[#4f46e5]">{(b6Data as any).teams.reduce((s: number, t: any) => {
+                    return s + ((b6Data as any).products || []).reduce((s2: number, p: string) => s2 + ((((b6Data as any).data||{})[t.id]||{})[p]?.orders || 0), 0);
+                  }, 0)}</td>
+                  <td className="px-4 py-3 text-xs text-right font-bold">{(b6Data as any).teams.reduce((s: number, t: any) => {
+                    return s + ((b6Data as any).products || []).reduce((s2: number, p: string) => s2 + ((((b6Data as any).data||{})[t.id]||{})[p]?.cost || 0), 0);
+                  }, 0) > 0 ? ((b6Data as any).teams.reduce((s: number, t: any) => {
+                    return s + ((b6Data as any).products || []).reduce((s2: number, p: string) => s2 + ((((b6Data as any).data||{})[t.id]||{})[p]?.cost || 0), 0);
+                  }, 0)).toLocaleString('vi-VN')+'d' : '-'}</td>
                 </tr>
-              ))}
-            </tbody>          </table>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+<div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
         {teams.map(t => (
           <div key={t.id} onClick={() => nav('/crm/teams/' + slugify(t.name))} className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-all cursor-pointer">
             <div className="p-5">
