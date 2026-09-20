@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Teams from './pages/Teams';
-import Reports from './pages/Reports';
+import Reports from './pages/Reports'; /* reports-v2 */
 import SeoPage from './pages/Seo';
 import Customers from './pages/Customers';
 import UsersPage from './pages/Users';
