@@ -45,14 +45,26 @@ export default function Reports() {
       const { from, to } = calcDate(dateRangeKey);
 
       // Fetch metrics from all modules
+      // First, find which team the user belongs to
+      let userTeamId = u.teamId || '';
+      if (!userTeamId && u.id) {
+        const allTeams = await api('/teams').catch(() => []);
+        for (const team of (allTeams || [])) {
+          const members = await api('/teams/' + team.id + '/members').catch(() => []);
+          if (Array.isArray(members) && members.some((m:any) => m.id === u.id)) {
+            userTeamId = team.id;
+            break;
+          }
+        }
+      }
       const [b2Data, adsData, seoData, socialData, teamsData] = await Promise.all([
-        // B2: Get user's team actuals (chính xác của team user)
-        api(u.teamId ? '/actuals/' + u.teamId + '?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate : '/actuals?from=' + from + '&to=' + to).catch(() => []),
-        // Ads: Get user's ads (filter by userId)
+        // B2: Lấy actuals của team user
+        userTeamId ? api('/actuals/' + userTeamId + '?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate).catch(() => []) : Promise.resolve([]),
+        // Ads: Lọc theo userId
         api('/ads?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate + (u.id ? '&userId=' + u.id : '')).catch(() => []),
-        // SEO Revenue (chính xác của user)
+        // SEO: Lọc theo user ID
         api('/seo-revenue/' + (u.id || 'all') + '?dateFrom=' + from + '&dateTo=' + to).catch(() => []),
-        // Social Content (chính xác của user)
+        // Social: Lọc theo assignee
         api('/social-content?month=' + reportDate.slice(0,7) + (u.id ? '&assignee=' + u.id : '')).catch(() => []),
         // Teams
         api('/teams').catch(() => []),
