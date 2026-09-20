@@ -7,6 +7,10 @@ export default function Reports() {
   const [reports, setReports] = useState<any[]>([]);
   const [reportDate, setReportDate] = useState(new Date().toISOString().slice(0, 10));
   const [content, setContent] = useState('');
+  const [reason, setReason] = useState('');
+  const [difficulties, setDifficulties] = useState('');
+  const [suggestions, setSuggestions] = useState('');
+  const [extraTasks, setExtraTasks] = useState<string[]>(['']);
   const [attachments, setAttachments] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [user, setUser] = useState<any>({});
@@ -42,14 +46,14 @@ export default function Reports() {
 
       // Fetch metrics from all modules
       const [b2Data, adsData, seoData, socialData, teamsData] = await Promise.all([
-        // B2: Get all teams' actuals
-        api('/actuals?from=' + from + '&to=' + to).catch(() => []),
-        // Ads: Get today's ads stats
-        api('/ads?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate).catch(() => []),
-        // SEO Revenue
+        // B2: Get user's team actuals (chính xác của team user)
+        api(u.teamId ? '/actuals/' + u.teamId + '?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate : '/actuals?from=' + from + '&to=' + to).catch(() => []),
+        // Ads: Get user's ads (filter by userId)
+        api('/ads?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate + (u.id ? '&userId=' + u.id : '')).catch(() => []),
+        // SEO Revenue (chính xác của user)
         api('/seo-revenue/' + (u.id || 'all') + '?dateFrom=' + from + '&dateTo=' + to).catch(() => []),
-        // Social Content
-        api('/social-content?month=' + reportDate.slice(0,7)).catch(() => []),
+        // Social Content (chính xác của user)
+        api('/social-content?month=' + reportDate.slice(0,7) + (u.id ? '&assignee=' + u.id : '')).catch(() => []),
         // Teams
         api('/teams').catch(() => []),
       ]);
@@ -120,6 +124,10 @@ export default function Reports() {
         date: reportDate,
         data: JSON.stringify({
           content: content.trim(),
+          reason: reason.trim(),
+          difficulties: difficulties.trim(),
+          suggestions: suggestions.trim(),
+          extraTasks: extraTasks.filter(t => t.trim()),
           metrics: metrics,
           attachments: attachments,
           teamId: teamId,
@@ -192,6 +200,46 @@ export default function Reports() {
                   placeholder="Mô tả chi tiết công việc hôm nay của bạn..."
                   className="w-full h-32 px-4 py-3 bg-[#f8fafc] border border-border rounded-xl text-sm outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
                 
+                {/* Additional fields */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                  <div>
+                    <label className="block text-xs font-medium text-muted mb-1">L\u00fd do</label>
+                    <textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="L\u00fd do th\u1ef1c hi\u1ec7n c\u00f4ng vi\u1ec7c..."
+                      className="w-full h-20 px-3 py-2 bg-[#f8fafc] border border-border rounded-xl text-xs outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-muted mb-1">Kh\u00f3 kh\u0103n</label>
+                    <textarea value={difficulties} onChange={e => setDifficulties(e.target.value)} placeholder="Kh\u00f3 kh\u0103n g\u1eb7p ph\u1ea3i..."
+                      className="w-full h-20 px-3 py-2 bg-[#f8fafc] border border-border rounded-xl text-xs outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-muted mb-1">\u0110\u1ec1 xu\u1ea5t</label>
+                    <textarea value={suggestions} onChange={e => setSuggestions(e.target.value)} placeholder="\u0110\u1ec1 xu\u1ea5t c\u1ea3i thi\u1ec7n..."
+                      className="w-full h-20 px-3 py-2 bg-[#f8fafc] border border-border rounded-xl text-xs outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
+                  </div>
+                </div>
+
+                {/* Extra tasks */}
+                <div className="mt-4">
+                  <label className="block text-xs font-medium text-muted mb-2">C\u00f4ng vi\u1ec7c li\u00ean quan kh\u00e1c</label>
+                  <div className="space-y-2">
+                    {extraTasks.map((task, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input type="text" value={task} onChange={e => {
+                          const t = [...extraTasks]; t[i] = e.target.value; setExtraTasks(t);
+                        }} placeholder="Nh\u1eadp c\u00f4ng vi\u1ec7c..."
+                          className="flex-1 px-3 py-2 bg-[#f8fafc] border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
+                        <button onClick={() => setExtraTasks(extraTasks.filter((_, j) => j !== i))}
+                          className="p-1 rounded hover:bg-red-50 text-red-400 transition-all"><X size={14} /></button>
+                      </div>
+                    ))}
+                    <button onClick={() => setExtraTasks([...extraTasks, ""])}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted hover:text-[#4f46e5] transition-all">
+                      <span className="w-4 h-4 rounded-full border-2 border-dashed border-current grid place-items-center text-[8px]">+</span>
+                      Th\u00eam c\u00f4ng vi\u1ec7c</button>
+                  </div>
+                </div>
+
                 {/* Attachments */}
                 <div className="mt-4">
                   <label className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-[#4f46e5]/40 transition-all text-sm text-muted hover:text-ink">
