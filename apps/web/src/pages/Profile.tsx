@@ -26,12 +26,20 @@ export default function Profile() {
   const saveProfile = async () => {
     setSaving(true);
     try {
-      await api('/auth/me', { method:'PUT', body:JSON.stringify(form) });
-      const u = JSON.parse(localStorage.getItem('zeyfi_user') || '{}');
-      u.name = form.name; u.phone = form.phone;
-      localStorage.setItem('zeyfi_user', JSON.stringify(u));
-      showToast('success', 'Đã cập nhật thông tin');
-    } catch { showToast('error', 'Lỗi cập nhật'); }
+      const r = await api('/auth/me', { method:'PUT', body:JSON.stringify(form) });
+      if (r?.success) {
+        // Reload user data from API
+        const me = await api('/auth/me').catch(() => null);
+        if (me) {
+          setForm({ name: me.name || '', phone: me.phone || '', position: me.position || '', bio: me.bio || '' });
+          // Update localStorage
+          const u = JSON.parse(localStorage.getItem('zeyfi_user') || '{}');
+          u.name = me.name; u.phone = me.phone; u.position = me.position; u.bio = me.bio;
+          localStorage.setItem('zeyfi_user', JSON.stringify(u));
+          showToast('success', '\u0110\u00e3 c\u1eadp nh\u1eadt th\u00f4ng tin');
+        }
+      }
+    } catch { showToast('error', 'L\u1ed7i c\u1eadp nh\u1eadt'); }
     setSaving(false);
   };
 

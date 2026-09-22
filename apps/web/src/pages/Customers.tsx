@@ -12,6 +12,15 @@ const STATUSES = [
 ];
 
 const SOURCES = ['Facebook', 'Zalo', 'Website', 'Giới thiệu', 'Quảng cáo', 'TikTok', 'Tự đến'];
+const TAG_COLORS: Record<string, string> = {
+  'VIP': 'bg-purple-50 text-purple-600 ring-1 ring-purple-200',
+  'Nóng': 'bg-red-50 text-red-600 ring-1 ring-red-200',
+  'Tiềm năng': 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200',
+  'Cũ': 'bg-gray-50 text-gray-500 ring-1 ring-gray-200',
+  'Mới': 'bg-blue-50 text-blue-600 ring-1 ring-blue-200',
+  'Hẹn lại': 'bg-amber-50 text-amber-600 ring-1 ring-amber-200',
+};
+
 const TAGS = ['VIP', 'Nóng', 'Tiềm năng', 'Cũ', 'Mới', 'Hẹn lại'];
 
 export default function Customers() {
@@ -111,8 +120,16 @@ export default function Customers() {
   };
 
   const statusBadge = (status: string) => {
-    const s = STATUSES.find(s => s.key === status);
+    const s = STATUSES.find((s: any) => s.key === status);
     return <span className={'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ' + (s?.color || 'bg-gray-100')}>{s?.label || status}</span>;
+  };
+
+  const changeStatus = async (cid: string, status: string) => {
+    try {
+      await api('/customers/' + cid, { method:'PUT', body:JSON.stringify({ status }) });
+      showToast('success', '\u0110\u00e3 c\u1eadp nh\u1eadt tr\u1ea1ng th\u00e1i');
+      load();
+    } catch { showToast('error', 'L\u1ed7i c\u1eadp nh\u1eadt'); }
   };
 
   const fmt = (d: any) => d ? new Date(d).toLocaleDateString('vi-VN') : '';
@@ -173,10 +190,10 @@ export default function Customers() {
                   </div>
                 </td>
                 <td className="px-5 py-3.5 text-sm text-[#808080]">{c.phone || '—'}</td>
-                <td className="px-5 py-3.5">{c.tags ? <div className="flex flex-wrap gap-1">{c.tags.split(',').map((t:string)=><span key={t} className={'px-2 py-0.5 text-[10px] font-medium rounded-md '+(t==='VIP'||t==='Nóng'?'bg-red-50 text-red-600':'bg-blue-50 text-blue-600')}>{t}</span>)}</div> : <span className="text-xs text-muted">—</span>}</td>
+                <td className="px-5 py-3.5">{c.tags ? <div className="flex flex-wrap gap-1">{c.tags.split(',').map((t:string)=><span key={t} className={'px-2 py-0.5 text-[10px] font-medium rounded-md '+(TAG_COLORS[t]||'bg-gray-100 text-muted')}>{t}</span>)}</div> : <span className="text-xs text-muted">—</span>}</td>
                 <td className="px-5 py-3.5"><span className="text-xs text-[#808080]">{c.source || '—'}</span></td>
                 <td className="px-5 py-3.5 text-xs text-[#808080]">{c.assigneeName || '—'}</td>
-                <td className="px-5 py-3.5">{statusBadge(c.status)}</td>
+                <td className="px-5 py-3.5"><select value={c.status||'new'} onChange={e=>{e.stopPropagation();changeStatus(c.id,e.target.value)}} className={'text-xs font-medium rounded-full px-2 py-1 border-0 outline-none cursor-pointer '+(STATUSES.find((s:any)=>s.key===(c.status||'new'))?.color||'bg-gray-100')} onClick={e=>e.stopPropagation()}>{STATUSES.map((s:any)=><option key={s.key} value={s.key}>{s.label}</option>)}</select></td>
                 <td className="px-5 py-3.5 text-right text-xs text-[#808080]">{c.last_contact ? new Date(c.last_contact).toLocaleDateString('vi-VN') : '—'}</td>
                 <td className="px-5 py-3.5 text-right">
                   <span className="text-xs font-medium text-[#808080]">{c.interactionCount || c.contact_count || 0}</span>
@@ -211,7 +228,7 @@ export default function Customers() {
                 <div><label className="text-xs font-medium text-muted mb-1 block">Zalo</label><input value={editForm.zalo||''} onChange={e=>setEditForm({...editForm,zalo:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
                 <div><label className="text-xs font-medium text-muted mb-1 block">TikTok</label><input value={editForm.tiktok||''} onChange={e=>setEditForm({...editForm,tiktok:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
                 <div><label className="text-xs font-medium text-muted mb-1 block">Trạng thái</label><select value={editForm.status||'new'} onChange={e=>setEditForm({...editForm,status:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none cursor-pointer">{STATUSES.map(s=><option key={s.key} value={s.key}>{s.label}</option>)}</select></div>
-                <div className="col-span-2"><label className="text-xs font-medium text-muted mb-1 block">Tags</label><div className="flex flex-wrap gap-1.5">{TAGS.map(t=><button key={t} onClick={()=>{const ts=(editForm.tags||'').split(',').filter(Boolean);const has=ts.includes(t);setEditForm({...editForm,tags:has?ts.filter(x=>x!==t).join(','):[...ts,t].join(',')})}} className={'px-3 py-1 rounded-lg text-xs font-medium transition-all '+(editForm.tags||'').includes(t)?'bg-[#4f46e5] text-white':'bg-gray-100 text-muted hover:bg-gray-200'}>{t}</button>)}</div></div>
+                <div className="col-span-2"><label className="text-xs font-medium text-muted mb-1 block">Tags</label><div className="flex flex-wrap gap-1.5">{TAGS.map(t=>{const active=(editForm.tags||'').includes(t);return <button key={t} onClick={()=>{const ts=(editForm.tags||'').split(',').filter(Boolean);const has=ts.includes(t);setEditForm({...editForm,tags:has?ts.filter(x=>x!==t).join(','):[...ts,t].join(',')})}} className={'px-3 py-1 rounded-lg text-xs font-medium transition-all '+(active?'bg-[#4f46e5] text-white':(TAG_COLORS[t]||'bg-gray-100 text-muted hover:bg-gray-200'))}>{t}</button>})}</div></div>
                 <div className="col-span-2"><label className="text-xs font-medium text-muted mb-1 block">Ghi chú</label><textarea value={editForm.notes||''} onChange={e=>setEditForm({...editForm,notes:e.target.value})} rows={3} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 resize-none" /></div>
               </div>
               <div className="flex justify-end gap-3 pt-2">
@@ -274,7 +291,7 @@ export default function Customers() {
                   <div className="flex flex-wrap gap-1.5">
                     {TAGS.map(t => {
                       const active = (editForm.tags||'').includes(t);
-                      return <button key={t} onClick={()=>{const ts=(editForm.tags||'').split(',').filter(Boolean);const has=ts.includes(t);setEditForm({...editForm,tags:has?ts.filter(x=>x!==t).join(','):[...ts,t].join(',')})}} className={'px-3 py-1 rounded-lg text-xs font-medium transition-all '+(active?'bg-[#4f46e5] text-white':'bg-gray-100 text-muted hover:bg-gray-200')}>{t}</button>;
+                      return <button key={t} onClick={()=>{const ts=(editForm.tags||'').split(',').filter(Boolean);const has=ts.includes(t);setEditForm({...editForm,tags:has?ts.filter(x=>x!==t).join(','):[...ts,t].join(',')})}} className={'px-3 py-1 rounded-lg text-xs font-medium transition-all '+(active?'bg-[#4f46e5] text-white':(TAG_COLORS[t]||'bg-gray-100 text-muted hover:bg-gray-200'))}>{t}</button>;
                     })}
                   </div>
                 </div>

@@ -60,12 +60,22 @@ export default async function (app: FastifyInstance) {
   app.put('/customers/:id', async (req, reply) => {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
     const { id } = req.params as any;
-    const { name, phone, email, birthday, address, source, social, facebook, zalo, tiktok, notes, teamId, assigneeId, tags, status } = req.body as any;
-    await pool.execute(
-      `UPDATE customers SET name=?, phone=?, email=?, birthday=?, address=?, source=?, social=?, facebook=?, zalo=?, tiktok=?, notes=?, team_id=?, assignee_id=?, tags=?, status=? WHERE id=?`,
-      [name, phone || '', email || '', birthday || null, address || '', source || '', social || '', facebook || '', zalo || '', tiktok || '', notes || '', teamId || null, assigneeId || null, tags || '', status || 'new', id]
-    );
-    io.emit('customer:updated', { id, name });
+    const body = req.body as any;
+    // Build dynamic update - only set fields that are provided
+    const sets: string[] = [];
+    const params: any[] = [];
+    const fields = ['name', 'phone', 'email', 'birthday', 'address', 'source', 'social', 'facebook', 'zalo', 'tiktok', 'notes', 'tags', 'status'];
+    const dbFields: Record<string, string> = { name:'name', phone:'phone', email:'email', birthday:'birthday', address:'address', source:'source', social:'social', facebook:'facebook', zalo:'zalo', tiktok:'tiktok', notes:'notes', teamId:'team_id', assigneeId:'assignee_id', tags:'tags', status:'status' };
+    for (const [k, db] of Object.entries(dbFields)) {
+      if (body[k] !== undefined && body[k] !== null) {
+        sets.push(db + '=?');
+        params.push(body[k]);
+      }
+    }
+    if (sets.length === 0) return reply.status(400).send({ error: 'No fields to update' });
+    params.push(id);
+    await pool.execute('UPDATE customers SET ' + sets.join(', ') + ' WHERE id=?', params);
+    io.emit('customer:updated', { id });
     reply.send({ success: true });
   });
 

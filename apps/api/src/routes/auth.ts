@@ -61,11 +61,19 @@ export default async function(app: FastifyInstance) {
 
   app.put('/auth/me', async (req, reply) => {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
-    const { name, phone, position, bio, avatar } = req.body as any;
-    await pool.execute(
-      "UPDATE users SET name=COALESCE(?,name), phone=COALESCE(?,phone), position=COALESCE(?,position), bio=COALESCE(?,bio), avatar=COALESCE(?,avatar) WHERE id=?",
-      [name, phone, position, bio, avatar, req.user.id]
-    );
+    const body = req.body as any;
+    // Build dynamic query - only set provided fields
+    const sets: string[] = [];
+    const params: any[] = [];
+    for (const [k, db] of Object.entries({ name:'name', phone:'phone', position:'position', bio:'bio', avatar:'avatar' })) {
+      if (body[k] !== undefined && body[k] !== null) {
+        sets.push(db + '=?');
+        params.push(body[k]);
+      }
+    }
+    if (sets.length === 0) return reply.status(400).send({ error: 'No fields to update' });
+    params.push(req.user.id);
+    await pool.execute('UPDATE users SET ' + sets.join(', ') + ' WHERE id=?', params);
     reply.send({ success: true });
   });
 

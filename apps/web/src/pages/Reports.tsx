@@ -72,9 +72,9 @@ export default function Reports() {
       // Load users list for recipient selection
     const users = await api("/users").catch(() => []);
     setAllUsers(users || []);
-    // Auto-select admin/manager as default recipients
+    // Không tự tích chọn — nhân sự tự chọn người nhận
     const adminIds = (users || []).filter((u:any) => u.role === 'admin' || u.role === 'manager').map((u:any) => u.id);
-    setRecipients(prev => prev.length > 0 ? prev : adminIds);
+    setRecipients([]);
     // First, find which team the user belongs to
       let userTeamId = u.teamId || '';
       let userTeamName = '';
@@ -126,6 +126,8 @@ export default function Reports() {
       const b3Reach = is3M ? b3Data.reduce((s:number, r:any) => s + Number(r.reach||0), 0) : 0;
       const b3Clicks = is3M ? b3Data.reduce((s:number, r:any) => s + Number(r.clicks||0), 0) : 0;
       const b3Messages = is3M ? b3Data.reduce((s:number, r:any) => s + Number(r.messages||0), 0) : 0;
+      const todayMessages = is3M ? b3Messages : b2Data.reduce((s:number, r:any) => s + Number(r.totalMessages||0), 0);
+      const avgMessCost = todayMessages > 0 ? Math.round(todayCost / todayMessages) : 0;
       
       setMetrics({
         todayOrders, todayCost,
@@ -133,6 +135,7 @@ export default function Reports() {
         seoOrders, seoRevenue,
         socialPosts, publishedPosts,
         b3TotalCost, b3Reach, b3Clicks, b3Messages,
+        todayMessages, avgMessCost,
         is3M,
         totalTeams: 0,
         roas: adsTotal > 0 ? (adsRevenue / adsTotal).toFixed(1) : '—',
@@ -401,6 +404,15 @@ export default function Reports() {
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted">CP QC eSim</span>
                   <span className="text-sm font-bold text-[#db2777]">{metrics.adsTotal ? Number(metrics.adsTotal).toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
+                </div>
+                <div className="border-t border-border/50 pt-2 mt-1"></div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted">Tổng Mess</span>
+                  <span className="text-sm font-bold">{metrics.todayMessages || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted">Giá Mess T.bình</span>
+                  <span className="text-sm font-bold text-[#4f46e5]">{metrics.avgMessCost ? Number(metrics.avgMessCost).toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
                 </div>
               </div>
             </div>
