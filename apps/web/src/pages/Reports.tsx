@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Send, Calendar, ChevronDown, Paperclip, X, CheckCircle2, Clock, Users, BarChart3, TrendingUp, MessageSquare, Download, Eye, Inbox, UserCheck, ChevronRight } from 'lucide-react';
+import { FileText, Send, Calendar, ChevronDown, Paperclip, X, CheckCircle2, Clock, Users, BarChart3, TrendingUp, MessageSquare, Download, Eye, Inbox, UserCheck, ChevronRight, Folder } from 'lucide-react';
 import { api } from '../lib/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getSocket } from '../lib/socket';
@@ -13,6 +13,10 @@ export default function Reports() {
   const [suggestions, setSuggestions] = useState('');
   const [extraTasks, setExtraTasks] = useState<string[]>(['']);
   const [attachments, setAttachments] = useState<string[]>([]);
+  const [showDrivePicker, setShowDrivePicker] = useState(false);
+  const [driveFiles, setDriveFiles] = useState<any[]>([]);
+  const [driveSearch, setDriveSearch] = useState('');
+  const [driveFolderId, setDriveFolderId] = useState<string|null>(null);
   const [recipients, setRecipients] = useState<string[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [sending, setSending] = useState(false);
@@ -335,11 +339,18 @@ export default function Reports() {
 
                 {/* Attachments */}
                 <div className="mt-4">
+                  <div className="flex items-center gap-2">
                   <label className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-[#4f46e5]/40 transition-all text-sm text-muted hover:text-ink">
                     <Paperclip size={15} />
-                    <span>Đính kèm file (hình ảnh, tài liệu...)</span>
+                    <span>Đính kèm file</span>
                     <input type="file" className="hidden" onChange={handleFileUpload} />
                   </label>
+                  <button onClick={async () => { try { const files = await api('/drive'); setDriveFiles(files || []); setDriveFolderId(null); setDriveSearch(''); setShowDrivePicker(true); } catch { } }}
+                    className="flex items-center gap-2 px-4 py-2.5 border border-border rounded-xl text-sm text-muted hover:text-[#171717] hover:bg-[#fafafa] transition-all">
+                    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    <span>Chọn từ Kho dữ liệu</span>
+                  </button>
+                </div>
                   {attachments.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {attachments.map((url, i) => (
@@ -712,6 +723,49 @@ export default function Reports() {
           </div>
         </div>
       )}
+      {/* Drive picker modal */}
+      {showDrivePicker && (
+        <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDrivePicker(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[70vh] flex flex-col overflow-hidden" style={{boxShadow:'rgba(0,0,0,0.12) 0px 0px 0px 1px, rgba(0,0,0,0.08) 0px 4px 12px'}} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#ebebeb]">
+              <h3 className="text-sm font-semibold text-[#171717]">Chọn file từ Kho dữ liệu</h3>
+              <button onClick={() => setShowDrivePicker(false)} className="p-1.5 rounded-lg hover:bg-[#f5f5f5] transition-all"><X size={16} className="text-[#808080]" /></button>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-[#ebebeb] bg-[#fafafa]">
+              {driveFolderId && <button onClick={async()=>{const r=await api('/drive');setDriveFiles(r||[]);setDriveFolderId(null);setDriveSearch('');}} className="flex items-center gap-1 text-[11px] text-[#808080] hover:text-[#171717] transition-all"><svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="15 18 9 12 15 6"/></svg>Kho dữ liệu</button>}
+              <input value={driveSearch} onChange={e => setDriveSearch(e.target.value)} placeholder="Tìm kiếm..." autoFocus
+                className="flex-1 px-3 py-1.5 bg-white border border-[#ebebeb] rounded-lg text-xs text-[#171717] outline-none focus:border-[#4f46e5]/40 transition-all" />
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {driveFiles.length === 0 ? (
+                <div className="text-center py-12">
+                  <Folder size={36} className="mx-auto mb-3 text-[#d4d4d4]" />
+                  <p className="text-sm text-[#808080]">Chưa có file nào</p>
+                </div>
+              ) : (
+                <div>
+                  {driveFiles.filter((f:any) => !driveSearch || f.name.toLowerCase().includes(driveSearch.toLowerCase())).map((f:any) => { const isF = f.type === 'folder'; return (
+                    <div key={f.id} onClick={async () => { if (isF) { const r2 = await api('/drive?parentId=' + f.id); setDriveFiles(r2 || []); setDriveFolderId(f.id); setDriveSearch(''); return; } setAttachments(prev => [...prev, f.url]); setShowDrivePicker(false); }}
+                      className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#fafafa] cursor-pointer transition-all border-b border-[#ebebeb]/50 last:border-0">
+                      {isF ? <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center"><svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-amber-500"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div> : f.mime_type?.startsWith('image/') ? (
+                        <img src={f.url} alt={f.name} className="w-10 h-10 rounded-lg object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-[#f5f5f5] flex items-center justify-center"><FileText size={18} className="text-[#808080]" /></div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[#171717] truncate">{f.name}</p>
+                        <p className="text-[11px] text-[#808080]">{isF ? 'Thư mục' : (f.uploadedByName || 'File')}</p>
+                      </div>
+                      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-[#d4d4d4] shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>
+                  )})}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

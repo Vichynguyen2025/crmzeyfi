@@ -42,6 +42,7 @@ export default function Drive() {
   const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [preview, setPreview] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({type, message});
@@ -122,6 +123,16 @@ export default function Drive() {
           <span className="w-px h-3 bg-border/60" />
           <span>Tối đa 500 MB/file</span>
         </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setViewMode('list')}
+            className={'p-2 rounded-lg transition-all ' + (viewMode === 'list' ? 'bg-[#4f46e5] text-white' : 'text-[#808080] hover:text-[#171717] hover:bg-[#f5f5f5]')}>
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1={8} y1={6} x2={21} y2={6}/><line x1={8} y1={12} x2={21} y2={12}/><line x1={8} y1={18} x2={21} y2={18}/><line x1={3} y1={6} x2={3.01} y2={6}/><line x1={3} y1={12} x2={3.01} y2={12}/><line x1={3} y1={18} x2={3.01} y2={18}/></svg>
+          </button>
+          <button onClick={() => setViewMode('grid')}
+            className={'p-2 rounded-lg transition-all ' + (viewMode === 'grid' ? 'bg-[#4f46e5] text-white' : 'text-[#808080] hover:text-[#171717] hover:bg-[#f5f5f5]')}>
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x={3} y={3} width={7} height={7}/><rect x={14} y={3} width={7} height={7}/><rect x={3} y={14} width={7} height={7}/><rect x={14} y={14} width={7} height={7}/></svg>
+          </button>
+        </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setShowNewFolder(true)} className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium hover:bg-gray-50 transition-all">
             <Folder size={16} />Thư mục mới
@@ -173,7 +184,7 @@ export default function Drive() {
 
       {/* File grid */}
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-        {files.length > 0 ? (
+        {viewMode === 'list' && files.length > 0 && (
           <div className="divide-y divide-border">
             {files.map((item: any) => {
               const Icon = getFileIcon(item.mime_type);
@@ -209,7 +220,58 @@ export default function Drive() {
               );
             })}
           </div>
-        ) : (
+        )}
+
+        {viewMode === 'grid' && files.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {files.map((item: any) => {
+              const isFolder = item.type === 'folder';
+              const isImage = item.mime_type?.startsWith('image/');
+              const Icon = getFileIcon(item.mime_type);
+              return (
+                <div key={item.id} className="bg-white rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer group border border-[#ebebeb] p-3"
+                  onClick={async () => {
+                    if (isFolder) { openFolder(item.id, item.name); return; }
+                    setPreview(item);
+                    if (['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'].includes(item.mime_type)) {
+                      try { const res = await api('/drive/preview/'+item.id, {method:'POST'}); if (res?.previewUrl) setPreviewUrl(res.previewUrl); else setPreviewUrl(item.url); } catch { setPreviewUrl(item.url); }
+                    } else { setPreviewUrl(item.url); }
+                  }}>
+                  <div className="aspect-[4/3] bg-gradient-to-br from-[#fafafa] to-[#f5f5f5] relative flex items-center justify-center rounded-lg overflow-hidden overflow-hidden">
+                    {isFolder ? (
+                      <div className="w-16 h-12 relative">
+                        <div className="absolute top-0 left-0 w-full h-3 bg-amber-300 rounded-t-md" />
+                        <div className="absolute bottom-0 left-0 w-full h-10 bg-amber-400 rounded-md rounded-t-none shadow-sm flex items-center justify-center">
+                          <Folder size={20} className="text-white" />
+                        </div>
+                      </div>
+                    ) : isImage ? (
+                      <img src={item.url} alt={item.name} className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105" onError={(e:any)=>{e.target.style.display='none';}} />
+                    ) : (
+                      <Icon size={40} className="text-[#4f46e5]/30" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-all" />
+                    <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                      <button onClick={e=>{e.stopPropagation();rename(item.id, item.name)}} className="w-7 h-7 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all" title="Đổi tên">
+                        <Edit3 size={12} className="text-[#171717]" />
+                      </button>
+                      {!isFolder && <button onClick={e=>{e.stopPropagation();deleteItem(item.id, item.name)}} className="w-7 h-7 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all" title="Xóa">
+                        <Trash2 size={12} className="text-red-500" />
+                      </button>}
+                    </div>
+                  </div>
+                  <div className="px-3 py-2.5">
+                    <p className="text-xs font-medium text-[#171717] truncate leading-tight">{item.name}</p>
+                    <p className="text-[10px] text-[#999] mt-1">{isFolder ? 'Thư mục' : formatSize(item.size)}</p>
+                    {item.uploadedByName && <p className="text-[10px] text-[#999] mt-0.5 truncate">{item.uploadedByName}</p>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {files.length === 0 && (
           <div className="text-center py-16 text-muted">
             <Folder size={56} className="mx-auto mb-4 opacity-20" />
             <p className="font-medium">Thư mục trống</p>

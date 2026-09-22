@@ -187,11 +187,20 @@ export default function Teams() {
     return false;
   };
 
-  const loadKpi = async (teamId: string, month: string) => {
+  const loadKpi = async (teamId: string, month: string, memberList?: any[]) => {
     try {
       const saved = await api('/kpis/' + teamId + '?month=' + month);
       if (saved && saved.length > 0) {
-        setKpiRows([...saved.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0})), {type: 'total'}]);
+        // Filter: chỉ giữ KPI của nhân sự đang có trong team
+        const memberList2 = memberList || members || [];
+        const memberIds = new Set(memberList2.map((m: any) => m.id));
+        const filtered = saved.filter((s: any) => s.user_id && memberIds.has(s.user_id));
+        if (filtered.length === 0) { /* member exists but no data */ }
+        const existingIds = new Set(filtered.map((s: any) => s.user_id));
+        const missing = memberList2.filter((m: any) => m.id && !existingIds.has(m.id));
+        const baseRows = filtered.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0}));
+        const extraRows = missing.map((m: any) => ({name: m.name, userId: m.id, product: '', budget: 0, messages: 0, orders: 0}));
+        setKpiRows([...baseRows, ...extraRows, {type: 'total'}]);
         return true;
       }
       // Fallback: try without month filter (old data)
@@ -276,7 +285,7 @@ export default function Teams() {
     setProducts(p || []);
     // Initialize KPI rows with one row per member + total row
     // Load saved KPI data or initialize
-    const saved = await loadKpi(t.id, kpiMonth);
+    const saved = await loadKpi(t.id, kpiMonth, m);
     loadActuals(t.id, actualMonth, m);
     if (!saved || saved.length === 0) {
       const initial = [];
@@ -302,6 +311,8 @@ export default function Teams() {
       });
     }
     showToast('success', 'Đã thêm thành viên');
+    loadKpi(selectedTeam.id, kpiMonth, m);
+    loadPlan(planMonth);
     load();
   };
 
@@ -311,6 +322,8 @@ export default function Teams() {
     await api('/teams/' + selectedTeam.id + '/members/' + userId, { method:'DELETE' });
     const m = await api('/teams/' + selectedTeam.id + '/members');
     setMembers(m);
+    setActualRows(prev => prev.filter((r: any) => r.type === 'total' || r.userId !== userId));
+    loadPlan(planMonth);
     showToast('success', 'Đã xoá thành viên');
     load();
   };
@@ -387,13 +400,15 @@ export default function Teams() {
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border bg-gray-50/50 flex items-center justify-between">
             <h2 className="text-sm font-bold text-[#171717]">Thành viên ({members.length})</h2>
-            <select onChange={e => { e.target.value && addMember(e.target.value); e.target.value = ''; }}
-              className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer">
-              <option value="">+ Thêm thành viên</option>
-              {users.filter((u: any) => !members.find((m: any) => m.id === u.id)).map((u: any) => (
-                <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
-              ))}
-            </select>
+            {(currentUser?.role === 'admin' || currentUser?.role === 'manager') && (
+              <select onChange={e => { e.target.value && addMember(e.target.value); e.target.value = ''; }}
+                className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer">
+                <option value="">+ Thêm thành viên</option>
+                {users.filter((u: any) => !members.find((m: any) => m.id === u.id)).map((u: any) => (
+                  <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="divide-y divide-border">
             {members.map(m => (
@@ -408,7 +423,7 @@ export default function Teams() {
                 <span className={'text-xs px-2.5 py-1 rounded-full font-medium ' + (m.role === 'admin' ? 'bg-purple-50 text-purple-600' : m.role === 'manager' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-muted')}>
                   {ROLE_LABELS[m.role] || m.role}
                 </span>
-                <button onClick={() => removeMember(m.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><X size={14} /></button>
+                {(currentUser?.role === 'admin' || currentUser?.role === 'manager') && <button onClick={() => removeMember(m.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><X size={14} /></button>}
               </div>
             ))}
             {members.length === 0 && <div className="px-5 py-8 text-center text-muted text-sm">Chưa có thành viên</div>}

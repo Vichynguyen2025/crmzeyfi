@@ -13,7 +13,7 @@ export default async function (app: FastifyInstance) {
   });
 
   app.post('/teams', async (req, reply) => {
-    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    if (req.user?.role !== 'admin' && req.user?.role !== 'manager') return reply.status(403).send({ error: 'Only admin or manager' });
     const { name, color } = req.body as any;
     const id = uuid();
     await db.insert(teams).values({ id, name, color: color || '#4f46e5' });
@@ -21,7 +21,7 @@ export default async function (app: FastifyInstance) {
   });
 
   app.put('/teams/:id', async (req, reply) => {
-    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    if (req.user?.role !== 'admin' && req.user?.role !== 'manager') return reply.status(403).send({ error: 'Only admin or manager' });
     const { id } = req.params as any;
     const { name, color } = req.body as any;
     if (name) await db.update(teams).set({ name }).where(eq(teams.id, id));
@@ -30,7 +30,7 @@ export default async function (app: FastifyInstance) {
   });
 
   app.delete('/teams/:id', async (req, reply) => {
-    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    if (req.user?.role !== 'admin' && req.user?.role !== 'manager') return reply.status(403).send({ error: 'Only admin or manager' });
     const { id } = req.params as any;
     await db.delete(teams).where(eq(teams.id, id));
     reply.send({ success: true });
@@ -46,7 +46,7 @@ export default async function (app: FastifyInstance) {
   });
 
   app.post('/teams/:id/members', async (req, reply) => {
-    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    if (req.user?.role !== 'admin' && req.user?.role !== 'manager') return reply.status(403).send({ error: 'Only admin or manager' });
     const { id } = req.params as any;
     const { userId } = req.body as any;
     await db.insert(teamMembers).values({ teamId: id, userId });
@@ -54,9 +54,9 @@ export default async function (app: FastifyInstance) {
   });
 
   app.delete('/teams/:id/members/:userId', async (req, reply) => {
-    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    if (req.user?.role !== 'admin' && req.user?.role !== 'manager') return reply.status(403).send({ error: 'Only admin or manager' });
     const { id, userId } = req.params as any;
-    await db.execute("DELETE FROM team_members WHERE team_id = ? AND user_id = ?", [id, userId]);
+    await pool.execute("DELETE FROM team_members WHERE team_id = ? AND user_id = ?", [id, userId]);
     reply.send({ success: true });
   });
   app.get('/teams/:id/channels', async (req, reply) => {

@@ -46,6 +46,12 @@ export default function UsersPage() {
   const changeRole = async (id: string, role: string) => {
     await api('/users/' + id + '/role', { method:'PUT', body:JSON.stringify({role}) });
     load();
+    // Update localStorage if current user's role changed
+    const u = JSON.parse(localStorage.getItem('zeyfi_user') || '{}');
+    if (u.id === id) {
+      u.role = role;
+      localStorage.setItem('zeyfi_user', JSON.stringify(u));
+    }
   };
 
   const toggleBlock = async (id: string, blocked: boolean) => {
