@@ -39,9 +39,12 @@ export default function Drive() {
   const [folderPath, setFolderPath] = useState<{id: string | null, name: string}[]>([{id: null, name: 'Kho dữ liệu'}]);
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [folderName, setFolderName] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{name:string,progress:number,status:string}[]>([]);
   const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [preview, setPreview] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   const showToast = (type: 'success' | 'error', message: string) => {
@@ -57,6 +60,8 @@ export default function Drive() {
   useEffect(load, [load]);
 
   // Realtime
+  useEffect(() => { load(); }, []);
+
   useEffect(() => {
     const sock = getSocket();
     const handler = () => load();
@@ -104,6 +109,30 @@ export default function Drive() {
     } catch { showToast('error', 'Lỗi xoá'); }
   };
 
+  const handleMultiUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    const progress: {name:string,progress:number,status:string}[] = [];
+    for (let i = 0; i < files.length; i++) progress.push({name:files[i].name,progress:0,status:'pending'});
+    setUploadProgress([...progress]);
+    let ok=0, fail=0;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size > 500*1024*1024) { progress[i].status='too big'; setUploadProgress([...progress]); fail++; continue; }
+      try {
+        progress[i].status='uploading'; progress[i].progress=10; setUploadProgress([...progress]);
+        const base64 = await new Promise<string>(r=>{const fr=new FileReader();fr.onload=()=>r((fr.result as string).split(',')[1]);fr.readAsDataURL(file);});
+        progress[i].progress=60; setUploadProgress([...progress]);
+        await api('/drive/upload',{method:'POST',body:JSON.stringify({name:file.name,mimeType:file.type,size:file.size,data:base64})});
+        progress[i].progress=100; progress[i].status='done'; setUploadProgress([...progress]); ok++;
+      } catch { progress[i].status='error'; setUploadProgress([...progress]); fail++; }
+    }
+    if(ok>0)showToast('success','Đã tải '+ok+' file'+(fail>0?', '+fail+' lỗi':''));
+    setTimeout(()=>{setUploading(false);setUploadProgress([]);},2000);
+    load();
+  };
+
   return (
     <div className="space-y-6">
       {/* Toast notification */}
@@ -139,27 +168,32 @@ export default function Drive() {
           </button>
           <label className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all cursor-pointer">
             <Upload size={16} />Tải lên
-            <input type="file" className="hidden" onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = async (ev) => {
-                try {
-                  const base64 = (ev.target?.result as string)?.split(',')[1] || '';
-                  await api('/drive/upload', { method:'POST', body:JSON.stringify({
-                    name: file.name, mimeType: file.type, size: file.size, data: base64, parentId: currentFolder
-                  })});
-                  showToast('success', 'Đã tải lên "' + file.name + '"');
-                  load();
-                } catch(e: any) { showToast('error', 'Lỗi tải lên: ' + (e.message||'')); }
-              };
-              reader.readAsDataURL(file);
-            }} />
+            <input type="file" multiple className="hidden" onChange={handleMultiUpload} />
           </label>
         </div>
       </div>
 
-      {showNewFolder && (
+      
+      {/* Upload progress */}
+      {uploading && (
+        <div className="bg-white rounded-xl border border-border shadow-sm p-4 space-y-2 mb-4">
+          <p className="text-xs font-medium text-muted">Đang tải lên ({uploadProgress.filter(p=>p.status==='done'||p.status==='uploading').length}/{uploadProgress.length})</p>
+          {uploadProgress.map((p,i) => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-[#171717] truncate max-w-[200px]">{p.name}</span>
+                  <span className="text-[10px] text-muted">{p.status==='done' ? '✓' : p.status==='error' ? '!' : p.progress+'%'}</span>
+                </div>
+                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] rounded-full transition-all duration-300" style={{width:p.progress+'%'}}></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+{showNewFolder && (
         <div className="bg-white rounded-2xl border border-border p-4 flex gap-3 shadow-sm">
           <input value={folderName} onChange={e => setFolderName(e.target.value)} placeholder="Tên thư mục" autoFocus
             onKeyDown={e => e.key === 'Enter' && createFolder()}
@@ -212,9 +246,9 @@ export default function Drive() {
                     <button onClick={() => rename(item.id, item.name)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-500 transition-all" title="Đổi tên">
                       <Edit3 size={14} />
                     </button>
-                    <button onClick={() => deleteItem(item.id, item.name)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-all" title="Xoá">
-                      <Trash2 size={14} />
-                    </button>
+                    {(currentUser?.role === 'admin' || currentUser?.id === item.uploaded_by) && <button onClick={() => deleteItem(item.id, item.name)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-all" title="Xoá">
+                      <Trash2 size={14} /></button>}
+
                   </div>
                 </div>
               );

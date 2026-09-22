@@ -63,7 +63,15 @@ export default async function (app: FastifyInstance) {
   });
 
   app.delete('/drive/:id', async (req, reply) => {
+    if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
     const { id } = req.params as any;
+    // Check permission: only admin or uploader can delete
+    const [rows] = await pool.execute("SELECT uploaded_by FROM drive_files WHERE id = ?", [id]);
+    const file = (rows as any[])[0];
+    if (!file) return reply.status(404).send({ error: 'File not found' });
+    if (req.user.role !== 'admin' && req.user.id !== file.uploaded_by) {
+      return reply.status(403).send({ error: 'Only admin or uploader can delete' });
+    }
     await pool.execute("DELETE FROM drive_files WHERE id = ?", [id]);
     await pool.execute("DELETE FROM drive_files WHERE parent_id = ?", [id]);
     io.emit('drive:update', { id, action: 'delete' });
