@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BarChart3, MessageSquare, Megaphone, Plus, X, Save, Check, AlertCircle, List, DollarSign, Eye, MousePointerClick, TrendingUp, Percent, Receipt } from 'lucide-react';
 import { api } from '../lib/api';
@@ -51,16 +52,21 @@ export default function MarketingESim() {
   const [tkAdsData, setTkAdsData] = useState<any[]>([]);
   const [showAddMember, setShowAddMember] = useState(false);
   const [newMember, setNewMember] = useState({name:'', email:'', phone:'', password:'', role:'member'});
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState('');
 
   const showToast = (type:string, msg:string) => { setToast({type,msg}); setTimeout(()=>setToast(null),2000); };
 
   const load = useCallback(async (m?:string) => {
     try {
-      const [data, mems] = await Promise.all([
+      const [data, modUsers, allU] = await Promise.all([
         api('/social-content?month='+(m||month)),
+        api('/user-modules?moduleKey=marketing'),
         api('/users')
       ]);
-      setRows(data||[]); setMembers(mems||[]);
+      setRows(data||[]);
+      setMembers(modUsers||[]);
+      setAllUsers(allU||[]);
     } catch { setRows([]); }
   }, [month]);
 
@@ -151,17 +157,28 @@ const addAdRow = async () => {
     }
   }, [seoRows, seoMonth, tab]);
 
-  const addMember = async () => {
-    if (!newMember.name.trim() || !newMember.email.trim() || !newMember.password.trim()) {
-      showToast('error', '✗ Nhập tên, email và mật khẩu'); return;
-    }
+  const addMember = async (userId: string) => {
+    if (!userId) return;
     try {
-      await api('/auth/register', {method:'POST', body:JSON.stringify(newMember)});
+      await api('/user-modules/toggle', {method:'POST', body:JSON.stringify({userId, moduleKey:'marketing', add:true})});
       setShowAddMember(false);
-      setNewMember({name:'', email:'', phone:'', password:'', role:'member'});
-      load();
-      loadTk();
-      showToast('success', '✓ Đã thêm thành viên');
+      setSelectedUserId('');
+      setMembers(prev => {
+        const u = allUsers.find(u => u.id === userId);
+        if (!u) return prev;
+        if (prev.some(m => m.id === userId || m.user_id === userId)) return prev;
+        return [...prev, {user_id: userId, userName: u.name, userIdRef: u.id}];
+      });
+      showToast('success', '✓ Đã thêm vào Marketing');
+    } catch(e:any) { showToast('error', '✗ ' + e.message); }
+  };
+  
+  const removeMarketingMember = async (userId: string) => {
+    if (!confirm('Xoá thành viên này khỏi Marketing?')) return;
+    try {
+      await api('/user-modules/toggle', {method:'POST', body:JSON.stringify({userId, moduleKey:'marketing', add:false})});
+      setMembers(prev => prev.filter((m:any) => (m.user_id || m.id) !== userId));
+      showToast('success', '✓ Đã xoá khỏi Marketing');
     } catch(e:any) { showToast('error', '✗ ' + e.message); }
   };
 
@@ -350,9 +367,9 @@ const addAdRow = async () => {
           </div>
           <div className="divide-y divide-border/50">
             {members.length === 0 && <div className="px-5 py-8 text-center text-sm text-muted">Chưa có thành viên</div>}
-            {members.map((m:any) => {
-              const mySocial = tkSocialData.filter((r:any) => r.assignee === m.id);
-              const myAds = tkAdsData.filter((r:any) => r.user_id === m.id);
+            {members.map((m:any) => { const mId = m.user_id || m.id;
+              const mySocial = tkSocialData.filter((r:any) => r.assignee === mId);
+              const myAds = tkAdsData.filter((r:any) => r.user_id === mId);
               const myPublished = mySocial.filter((r:any) => r.status === 'published').length;
               const myCPSum = myAds.reduce((a:number,r:any) => a + Number(r.cost_with_tax||0), 0);
               const myRev = myAds.reduce((a:number,r:any) => a + Number(r.revenue||0), 0);
@@ -360,17 +377,18 @@ const addAdRow = async () => {
               return (
                 <div key={m.id} className="px-4 py-2.5 flex items-center gap-3 hover:bg-gray-50/60 transition-all">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shrink-0">
-                    {(m.name||'?').charAt(0).toUpperCase()}
+                    {(m.userName||m.name||'?').charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#171717] truncate">{m.name}</p>
+                    <p className="text-sm font-medium text-[#171717] truncate">{m.userName||m.name}</p>
                     <p className="text-[11px] text-muted">{mySocial.length} bài · {myPublished} đã đăng</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xs font-bold text-[#171717]">{myCPSum>0 ? fmt(myCPSum)+'đ' : '0đ'}</p>
                     <p className="text-[10px] text-muted">CP · {myRev>0 ? fmt(myRev)+'đ' : '0đ'} DT</p>
                   </div>
-                </div>
+                
+                  <button onClick={() => removeMarketingMember(mId)} className="p-1.5 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-all" title="Xoá khỏi Marketing"><Trash2 size={14} /></button></div>
               );
             })}
           </div>
@@ -396,7 +414,7 @@ const addAdRow = async () => {
                 </div>
                 <input type="password" value={newMember.password} onChange={e => setNewMember({...newMember, password:e.target.value})} placeholder="Mật khẩu *" className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={addMember} className="flex-1 px-5 py-2.5 bg-[#4f46e5] text-white font-semibold rounded-xl text-sm hover:bg-[#4338ca] transition-all"><Plus size={15} className="inline mr-1" />Thêm</button>
+                  <button onClick={() => addMember(selectedUserId)} disabled={!selectedUserId} className="flex-1 px-5 py-2.5 bg-[#4f46e5] text-white font-semibold rounded-xl text-sm hover:bg-[#4338ca] transition-all disabled:opacity-50"><Plus size={15} className="inline mr-1" />Thêm</button>
                   <button onClick={() => setShowAddMember(false)} className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-muted rounded-xl text-sm font-medium transition-all">Huỷ</button>
                 </div>
               </div>
@@ -418,7 +436,7 @@ const addAdRow = async () => {
             </select>
             <select value={adFilterUser} onChange={e => setAdFilterUser(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none">
               <option value="">Tất cả nhân sự</option>
-              {members.map((m:any) => <option key={m.id} value={m.id}>{m.name}</option>)}
+              {members.map((m:any) => <option key={m.id} value={m.id}>{m.userName||m.name}</option>)}
             </select>
             <button onClick={addAdRow} className="flex items-center gap-2 px-4 py-2 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all"><Plus size={16} />Thêm</button>
           </div>
@@ -724,7 +742,7 @@ const addAdRow = async () => {
             <input type="month" value={month} onChange={e => { setMonth(e.target.value); load(e.target.value); }} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
             <select value={filterAssignee} onChange={e => setFilterAssignee(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none">
               <option value="">Nhân sự</option>
-              {members.map((m:any)=><option key={m.id} value={m.id}>{m.name}</option>)}
+              {members.map((m:any)=><option key={m.id} value={m.id}>{m.userName||m.name}</option>)}
             </select>
             <select value={filterPlatform} onChange={e => setFilterPlatform(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none">
               <option value="">Nền tảng</option>
@@ -767,7 +785,7 @@ const addAdRow = async () => {
                       <td className="px-2 py-1 text-xs">
                         <select value={r.assignee||''} onChange={e => saveField(r.id,'assignee',e.target.value)} className="w-full bg-transparent text-xs outline-none border-0 cursor-pointer">
                           <option value="">—</option>
-                          {members.map((m:any)=><option key={m.id} value={m.id}>{m.name}</option>)}
+                          {members.map((m:any)=><option key={m.id} value={m.id}>{m.userName||m.name}</option>)}
                         </select>
                       </td>
                       <td className="px-2 py-1 text-xs">

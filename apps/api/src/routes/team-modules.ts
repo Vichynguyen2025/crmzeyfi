@@ -48,9 +48,13 @@ export default async function (app: FastifyInstance) {
   // ========== USER MODULES (per-person) ==========
   app.get('/user-modules', async (req, reply) => {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
-    const [rows] = await pool.execute(
-      "SELECT um.*, u.name as userName FROM user_modules um JOIN users u ON u.id = um.user_id ORDER BY u.name, um.module_key"
-    );
+    const q = req.query as any;
+    const moduleKey = q.moduleKey || '';
+    let sql = "SELECT um.*, u.name as userName FROM user_modules um JOIN users u ON u.id = um.user_id";
+    const params: any[] = [];
+    if (moduleKey) { sql += " WHERE um.module_key = ?"; params.push(moduleKey); }
+    sql += " ORDER BY u.name, um.module_key";
+    const [rows] = await pool.execute(sql, params);
     reply.send(rows);
   });
 
