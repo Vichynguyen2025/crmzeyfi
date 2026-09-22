@@ -106,6 +106,25 @@ export default async function(app: FastifyInstance) {
     reply.send({ success: true });
   });
 
+  app.put('/auth/password', async (req, reply) => {
+    if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
+    const { currentPassword, newPassword } = req.body as any;
+    if (!currentPassword || !newPassword) return reply.status(400).send({ error: 'Missing password' });
+    if (newPassword.length < 6) return reply.status(400).send({ error: 'Password too short' });
+    try {
+      const [users] = await pool.execute("SELECT * FROM users WHERE id = ?", [req.user.id]);
+      const user = (users as any[])[0];
+      if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
+        return reply.status(403).send({ error: 'Wrong current password' });
+      }
+      const hash = await bcrypt.hash(newPassword, 10);
+      await pool.execute("UPDATE users SET password = ? WHERE id = ?", [hash, req.user.id]);
+      reply.send({ success: true });
+    } catch (e: any) {
+      reply.status(500).send({ error: e.message });
+    }
+  });
+
   app.delete('/users/:id', async (req, reply) => {
     if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const { id } = req.params as any;

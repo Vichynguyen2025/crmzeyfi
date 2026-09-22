@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { LayoutDashboard, Users, ClipboardList, PhoneCall, UserCog, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3, Shield, Lock } from 'lucide-react';
+import { LayoutDashboard, UserCog, Users, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3, ClipboardList, PhoneCall, Shield, Lock, User } from 'lucide-react';
 
 const NAV = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/crm/dashboard', module: 'dashboard' },
@@ -12,6 +12,7 @@ const NAV = [
   { label: 'Sản phẩm', icon: Package, path: '/crm/products', module: 'products' },
   { label: 'Marketing eSim', icon: BarChart3, path: '/crm/marketing', module: 'marketing' },
   { label: 'Báo cáo', icon: ClipboardList, path: '/crm/reports', module: 'reports' },
+  { label: 'Hồ sơ', icon: User, path: '/crm/profile', module: 'profile' },
   { label: 'Khách hàng', icon: PhoneCall, path: '/crm/customers', module: 'customers' },
   { label: 'SEO', icon: BarChart3, path: '/crm/seo', module: 'seo' },
 ];
@@ -35,7 +36,7 @@ export default function Sidebar() {
   const canAccess = (module: string) => isAdmin || userModules.includes(module);
 
   const handleNav = (item: any) => {
-    if (canAccess(item.module)) {
+    if (item.module === 'profile' || canAccess(item.module)) {
       nav(item.path);
     } else {
       setLockedPath(item.path);
@@ -53,7 +54,7 @@ export default function Sidebar() {
         {NAV.map(item => {
           const Icon = item.icon;
           const active = loc.pathname.startsWith(item.path);
-          const locked = !canAccess(item.module);
+          const locked = item.module !== 'profile' && !canAccess(item.module);
           return (
             <button key={item.path} onClick={() => handleNav(item)}
               title={locked ? 'Bạn không có quyền truy cập' : item.label}

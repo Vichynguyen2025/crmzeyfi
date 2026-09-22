@@ -10,6 +10,7 @@ export default async function (app: FastifyInstance) {
     const groupBy = (q.groupBy || 'month') as string;
     const dateFrom = q.dateFrom || '';
     const dateTo = q.dateTo || '';
+    const userId = q.userId || '';
 
     let teamFilter = '';
     const params: any[] = [];
@@ -19,6 +20,7 @@ export default async function (app: FastifyInstance) {
       params.push(teamId, month);
       if (dateFrom) { teamFilter += ` AND d.date >= ?`; params.push(dateFrom); }
       if (dateTo) { teamFilter += ` AND d.date <= ?`; params.push(dateTo); }
+      if (userId) { teamFilter += ` AND d.user_id = ?`; params.push(userId); }
       const [rows] = await pool.execute(
         `SELECT u.name, u.name as userName, d.user_id, d.product, DATE_FORMAT(d.date, '%Y-%m-%d') as periodLabel,
           SUM(d.orders) as actualOrders, SUM(d.total_cost) as fixedCost,
@@ -39,6 +41,7 @@ export default async function (app: FastifyInstance) {
       params.push(teamId, month);
       if (dateFrom) { teamFilter += ` AND d.date >= ?`; params.push(dateFrom); }
       if (dateTo) { teamFilter += ` AND d.date <= ?`; params.push(dateTo); }
+      if (userId) { teamFilter += ` AND d.user_id = ?`; params.push(userId); }
       const [rows] = await pool.execute(
         `SELECT u.name, u.name as userName, d.user_id, d.product,
           CONCAT('Tuần ', WEEK(d.date, 1)) as periodLabel,
@@ -60,9 +63,9 @@ export default async function (app: FastifyInstance) {
       `SELECT ta.*, u.name, u.name as userName, ta.actual_orders as actualOrders, ta.fixed_cost as fixedCost, ta.cost_per_order as costPerOrder,
         ta.month as periodLabel FROM team_actuals ta
       JOIN users u ON u.id = ta.user_id
-      WHERE ta.team_id = ? AND ta.month = ?
+      WHERE ta.team_id = ? AND ta.month = ?${userId ? ' AND ta.user_id = ?' : ''}
       ORDER BY u.name, ta.product`,
-      [teamId, month]
+      userId ? [teamId, month, userId] : [teamId, month]
     );
     reply.send(rows);
   });
@@ -74,6 +77,7 @@ export default async function (app: FastifyInstance) {
     const groupBy = (q.groupBy || 'month') as string;
     const dateFrom = q.dateFrom || '';
     const dateTo = q.dateTo || '';
+    const userId = q.userId || '';
     const viewMode = q.viewMode || 'month';
 
     try {

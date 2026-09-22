@@ -98,7 +98,7 @@ export default function Reports() {
         // SEO: tất cả team
         api('/seo-revenue/' + (u.id || 'all') + '?dateFrom=' + from + '&dateTo=' + to).catch(() => []),
         // B2 (actuals): tất cả team
-        userTeamId ? api('/actuals/' + userTeamId + '?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate).catch(() => []) : Promise.resolve([]),
+        userTeamId ? api('/actuals/' + userTeamId + '?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate + '&userId=' + (u.id || '')).catch(() => []) : Promise.resolve([]),
         // Ads: tất cả team
         api('/ads?month=' + reportDate.slice(0,7) + '&groupBy=day&dateFrom=' + reportDate + '&dateTo=' + reportDate + (u.id ? '&userId=' + u.id : '')).catch(() => []),
         // Social: tất cả team
