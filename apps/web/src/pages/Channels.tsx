@@ -19,6 +19,10 @@ export default function Channels() {
   const [edit, setEdit] = useState<any>(null);
   const [form, setForm] = useState({ name:'', platform:'Facebook', url:'', teamId:'', assignedTo:'', notes:'' });
   const [toast, setToast] = useState<{type:'success'|'error', message:string} | null>(null);
+  const [filterName, setFilterName] = useState('');
+  const [filterPlatform, setFilterPlatform] = useState('');
+  const [filterUser, setFilterUser] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({type, message});
@@ -136,56 +140,65 @@ export default function Channels() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {channels.map(c => (
-          <div key={c.id} className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all group">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className={'w-10 h-10 rounded-xl grid place-items-center text-xs font-bold ' + (PLATFORM_COLORS[c.platform] || 'bg-gray-100')}>
-                  {c.platform?.charAt(0) || '?'}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#171717]">{c.name}</h3>
-                  <span className={'px-2.5 py-0.5 rounded-full text-xs font-medium ' + (PLATFORM_COLORS[c.platform] || 'bg-gray-100')}>
-                    {c.platform}
-                  </span>
-                </div>
-              </div>
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-all" title="Sửa"><Edit3 size={14} /></button>
-                <button onClick={() => deleteChannel(c)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-all" title="Xoá"><Trash2 size={14} /></button>
-              </div>
-            </div>
-
-            {c.url && (
-              <a href={c.url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-[#4f46e5] hover:underline mb-3">
-                <ExternalLink size={12} />{c.url.replace('https://', '').replace('http://', '').slice(0, 45)}
-              </a>
+      <div className="rounded-xl overflow-hidden border border-border bg-white" style={{boxShadow:'rgba(0,0,0,0.04) 0px 1px 2px'}}>
+        <div className="px-4 py-3 border-b border-border bg-[#fafafa] flex items-center gap-3 flex-wrap">
+          <input value={filterName} onChange={e => setFilterName(e.target.value)} placeholder="Tìm tên kênh..." className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs text-ink outline-none w-48 transition-all focus:border-[#4f46e5]/40" />
+          <select value={filterPlatform} onChange={e => setFilterPlatform(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs text-ink outline-none cursor-pointer">
+            <option value="">Tất cả nền tảng</option>
+            {PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          <select value={filterUser} onChange={e => setFilterUser(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs text-ink outline-none cursor-pointer">
+            <option value="">Tất cả nhân sự</option>
+            {users.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
+          <span className="text-[11px] text-muted ml-auto">{(channels.filter(c => (!filterName || c.name.toLowerCase().includes(filterName.toLowerCase())) && (!filterPlatform || c.platform === filterPlatform) && (!filterUser || c.assigned_to === filterUser))).length} kênh</span>
+        </div>
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Kênh</th>
+              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Nền tảng</th>
+              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Team</th>
+              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Người phụ trách</th>
+              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/50">
+            {(channels.filter(c => (!filterName || c.name.toLowerCase().includes(filterName.toLowerCase())) && (!filterPlatform || c.platform === filterPlatform) && (!filterUser || c.assigned_to === filterUser))).map(c => (
+              <tr key={c.id} className="hover:bg-[#f8f9fc] transition-all">
+                <td className="px-4 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className={'w-8 h-8 rounded-lg grid place-items-center text-xs font-bold shrink-0 ' + (PLATFORM_COLORS[c.platform] || 'bg-gray-100')}>
+                      {c.platform?.charAt(0) || '?'}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[#171717]">{c.name}</p>
+                      {c.url && <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-muted hover:text-[#4f46e5] flex items-center gap-1 mt-0.5"><ExternalLink size={10} />{c.url}</a>}
+                      {c.notes && <p className="text-[10px] text-muted mt-0.5 max-w-[200px] truncate">{c.notes}</p>}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3.5">
+                  <span className={'inline-flex px-2.5 py-1 rounded-full text-[11px] font-medium ' + (PLATFORM_COLORS[c.platform] || 'bg-gray-100 text-gray-600')}>{c.platform}</span>
+                </td>
+                <td className="px-4 py-3.5 text-sm text-[#808080]">{c.teamName || '—'}</td>
+                <td className="px-4 py-3.5">
+                  {c.assignedToName ? <span className="text-sm text-[#171717]">{c.assignedToName}</span> : <span className="text-sm text-[#d4d4d4]">—</span>}
+                </td>
+                <td className="px-4 py-3.5 text-right">
+                  <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg hover:bg-blue-50 text-muted hover:text-blue-500 transition-all" title="Sửa"><Edit3 size={14} /></button>
+                  {(currentUser?.role === 'admin' || currentUser?.role === 'manager') && <button onClick={() => deleteChannel(c)} className="p-1.5 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-all" title="Xoá"><Trash2 size={14} /></button>}
+                </td>
+              </tr>
+            ))}
+            {(channels.filter(c => (!filterName || c.name.toLowerCase().includes(filterName.toLowerCase())) && (!filterPlatform || c.platform === filterPlatform) && (!filterUser || c.assigned_to === filterUser))).length === 0 && (
+              <tr><td colSpan={5} className="px-4 py-16 text-center">
+                <Globe size={40} className="mx-auto mb-2 text-[#d4d4d4]" />
+                <p className="text-sm text-muted">Không tìm thấy kênh nào</p>
+              </td></tr>
             )}
-
-            <div className="flex flex-wrap gap-3 text-xs text-muted pt-3 border-t border-border">
-              {c.teamName ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 text-[#4f46e5] rounded-lg"><Users size={12} />{c.teamName}</span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 text-muted rounded-lg"><Users size={12} />Chưa phân team</span>
-              )}
-              {c.assignedToName ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-600 rounded-lg"><User size={12} />{c.assignedToName}</span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 text-muted rounded-lg"><User size={12} />Chưa phân người</span>
-              )}
-            </div>
-            {c.notes && <p className="text-xs text-muted mt-2 italic">{c.notes}</p>}
-          </div>
-        ))}
-        {channels.length === 0 && (
-          <div className="col-span-full text-center py-16 text-muted">
-            <Globe size={56} className="mx-auto mb-4 opacity-20" />
-            <p className="font-medium">Chưa có kênh Marketing</p>
-            <p className="text-sm mt-1">Thêm kênh Facebook, TikTok, Zalo,... để quản lý</p>
-          </div>
-        )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

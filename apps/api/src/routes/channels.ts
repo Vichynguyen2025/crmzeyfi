@@ -23,6 +23,7 @@ export default async function (app: FastifyInstance) {
   });
 
   app.put('/channels/:id', async (req, reply) => {
+    if (req.user?.role !== 'admin' && req.user?.role !== 'manager') return reply.status(403).send({ error: 'Only admin or manager' });
     const { id } = req.params as any;
     const { name, platform, url, teamId, assignedTo, notes } = req.body as any;
     await pool.execute(
@@ -34,6 +35,7 @@ export default async function (app: FastifyInstance) {
   });
 
   app.delete('/channels/:id', async (req, reply) => {
+    if (req.user?.role !== 'admin' && req.user?.role !== 'manager') return reply.status(403).send({ error: 'Only admin or manager' });
     const { id } = req.params as any;
     await pool.execute("DELETE FROM media_channels WHERE id = ?", [id]);
     io.emit('channel:update', { action: 'delete', id });
