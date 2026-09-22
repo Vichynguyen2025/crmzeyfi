@@ -14,6 +14,7 @@ export default function Reports() {
   const [extraTasks, setExtraTasks] = useState<string[]>(['']);
   const [attachments, setAttachments] = useState<string[]>([]);
   const [showDrivePicker, setShowDrivePicker] = useState(false);
+  const [historyDetail, setHistoryDetail] = useState<any>(null);
   const [driveFiles, setDriveFiles] = useState<any[]>([]);
   const [driveSearch, setDriveSearch] = useState('');
   const [driveFolderId, setDriveFolderId] = useState<string|null>(null);
@@ -485,8 +486,8 @@ export default function Reports() {
                   const fmtTime = formatTime(r.created_at);
                   const recvs = (d.recipients || []).map((rid: string) => getUserName(rid)).join(', ');
                   return (
-                    <tr key={r.id}
-                      className="transition-all duration-150 hover:bg-[#fafafa]">
+                    <tr key={r.id} onClick={() => setHistoryDetail(r)}
+                      className="cursor-pointer transition-all duration-150 hover:bg-[#fafafa]">
                       <td className="px-6 py-4">
                         <p className="text-sm font-medium text-[#171717]">{fmtDate}</p>
                         <p className="text-[11px] text-[#808080]">{fmtTime}</p>
@@ -766,6 +767,26 @@ export default function Reports() {
         </div>
       )}
 
-    </div>
+    
+      {/* History detail modal */}
+      {historyDetail && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setHistoryDetail(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-border overflow-hidden max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="px-5 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between sticky top-0 z-10">
+              <h3 className="font-bold text-sm text-[#171717]">Chi tiết báo cáo</h3>
+              <button onClick={() => setHistoryDetail(null)} className="p-1 rounded hover:bg-gray-200 text-muted"><X size={16} /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div><p className="text-[10px] font-medium text-muted uppercase mb-0.5">Ngày gửi</p><p className="font-medium text-[#171717]">{formatDate(historyDetail.date)} {formatTime(historyDetail.created_at)}</p></div>
+                <div><p className="text-[10px] font-medium text-muted uppercase mb-0.5">Người gửi</p><p className="font-medium text-[#171717]">{getUserName(historyDetail.user_id)}</p></div>
+              </div>
+              <div className="p-3 bg-[#fafafa] border border-border rounded-xl text-sm text-[#4d4d4d] whitespace-pre-wrap">{(JSON.parse(historyDetail.data||'{}')).content||'—'}</div>
+              {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div><p className="text-[10px] font-medium text-muted uppercase mb-1.5">Chỉ số</p><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-1 bg-[#f0f4ff] text-[#4f46e5] rounded-lg text-xs font-medium">Đơn: {(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</span></div></div>}
+            </div>
+          </div>
+        </div>
+      )}
+</div>
   );
 }

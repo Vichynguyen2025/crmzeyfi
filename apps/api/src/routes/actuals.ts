@@ -23,7 +23,7 @@ export default async function (app: FastifyInstance) {
       if (userId) { teamFilter += ` AND d.user_id = ?`; params.push(userId); }
       const [rows] = await pool.execute(
         `SELECT u.name, u.name as userName, d.user_id, d.product, DATE_FORMAT(d.date, '%Y-%m-%d') as periodLabel,
-          SUM(d.orders) as actualOrders, SUM(d.total_cost) as fixedCost,
+          SUM(d.orders) as actualOrders, SUM(d.total_cost) as fixedCost, SUM(d.messages) as totalMessages,
           CASE WHEN SUM(d.orders) > 0 THEN ROUND(SUM(d.total_cost) / SUM(d.orders)) ELSE 0 END as costPerOrder
         FROM team_daily_perf d
         JOIN users u ON u.id = d.user_id
@@ -45,7 +45,7 @@ export default async function (app: FastifyInstance) {
       const [rows] = await pool.execute(
         `SELECT u.name, u.name as userName, d.user_id, d.product,
           CONCAT('Tuần ', WEEK(d.date, 1)) as periodLabel,
-          SUM(d.orders) as actualOrders, SUM(d.total_cost) as fixedCost,
+          SUM(d.orders) as actualOrders, SUM(d.total_cost) as fixedCost, SUM(d.messages) as totalMessages,
           CASE WHEN SUM(d.orders) > 0 THEN ROUND(SUM(d.total_cost) / SUM(d.orders)) ELSE 0 END as costPerOrder
         FROM team_daily_perf d
         JOIN users u ON u.id = d.user_id
@@ -61,7 +61,7 @@ export default async function (app: FastifyInstance) {
     // Default: month view — from team_actuals table (pre-calculated by recalcActuals)
     const [rows] = await pool.execute(
       `SELECT ta.*, u.name, u.name as userName, ta.actual_orders as actualOrders, ta.fixed_cost as fixedCost, ta.cost_per_order as costPerOrder,
-        ta.month as periodLabel FROM team_actuals ta
+        ta.month as periodLabel, ta.total_messages as totalMessages FROM team_actuals ta
       JOIN users u ON u.id = ta.user_id
       WHERE ta.team_id = ? AND ta.month = ?${userId ? ' AND ta.user_id = ?' : ''}
       ORDER BY u.name, ta.product`,
@@ -109,6 +109,7 @@ export default async function (app: FastifyInstance) {
         JOIN teams t ON t.id = d.team_id
         ${where}
         GROUP BY d.team_id, d.product
+        HAVING d.product IS NOT NULL AND d.product != ''
         ORDER BY teamName, d.product`,
         params
       );

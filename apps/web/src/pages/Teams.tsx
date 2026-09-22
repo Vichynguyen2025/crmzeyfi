@@ -161,14 +161,14 @@ export default function Teams() {
       const p = new URLSearchParams({month, groupBy: actualView}); if (actualDateFrom) p.set('dateFrom', actualDateFrom); const saved = await api('/actuals/' + teamId + '?' + p.toString());
       if (saved && saved.length > 0) {
         const filtered = saved.filter((s: any) => s.product && s.product.trim() !== '');
-        const merged = [...filtered.map((s: any) => ({name: s.userName || s.name, userId: s.user_id || s.userId, product: s.product || '', period: s.periodLabel || '', actualOrders: Number(s.actualOrders || s.actual_orders || 0), fixedCost: Number(s.fixedCost || s.fixed_cost || 0), costPerOrder: Number(s.costPerOrder || s.cost_per_order || 0)}))];
+        const merged = [...filtered.map((s: any) => ({name: s.userName || s.name, userId: s.user_id || s.userId, product: s.product || '', period: s.periodLabel || '', actualOrders: Number(s.actualOrders || s.actual_orders || 0), fixedCost: Number(s.fixedCost || s.fixed_cost || 0), totalMessages: Number(s.totalMessages || 0), messCost: Number(s.totalMessages || 0) > 0 ? Math.round((Number(s.fixedCost || s.fixed_cost || 0)) / Number(s.totalMessages || 1)) : 0, costPerOrder: Number(s.costPerOrder || s.cost_per_order || 0)}))];
         // Auto-add members chưa có dòng trong B2
         const list = memberList || members;
         if (list && list.length > 0) {
           const existing = new Set(merged.map((r: any) => r.userId));
           list.forEach((m: any) => {
             if (!existing.has(m.id)) {
-              merged.push({ name: m.name, userId: m.id, product: '', period: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0 });
+              merged.push({ name: m.name, userId: m.id, product: '', period: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0, totalMessages: 0, messCost: 0 });
               existing.add(m.id);
             }
           });
@@ -584,6 +584,8 @@ export default function Teams() {
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Tổng đơn</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Chi phí QC</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">CP/đơn</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Tổng Mess</th>
+                  <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">CP/Mess</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-28">Tổng chi phí</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-20">%KPI SP</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">%KPI Tổng</th>
@@ -630,6 +632,8 @@ export default function Teams() {
                       <td className="p-3 w-24">
                         {isTotal ? <span className="block text-right font-semibold">{(() => { const totalFixed = actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0); const totalOrders = actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0); return totalOrders > 0 ? Math.round(totalFixed / totalOrders).toLocaleString('vi-VN') : 0; })()}đ</span> : <span className="block px-2 py-1.5 text-xs font-medium text-right">{Number(r.costPerOrder || 0).toLocaleString('vi-VN')}đ</span>}
                       </td>
+                      <td className="p-3 text-xs text-right w-24">{isTotal ? actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.totalMessages || 0), 0).toLocaleString('vi-VN') : (r.totalMessages || 0).toLocaleString('vi-VN')}</td>
+                      <td className="p-3 text-xs text-right w-24">{(isTotal ? (actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0) > 0 ? Math.round((actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0)) / Math.max(actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.totalMessages || 0), 0), 1)).toLocaleString('vi-VN')+'đ' : '-') : (Number(r.totalMessages || 0) > 0 ? Math.round((r.fixedCost || 0) / (r.totalMessages || 1)).toLocaleString('vi-VN')+'đ' : '-'))}</td>
                       <td className="p-3 text-xs text-right font-medium w-28">{isTotal ? (actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.fixedCost || 0), 0) * 1.1).toLocaleString('vi-VN') + 'đ' : totalCost.toLocaleString('vi-VN') + 'đ'}</td>
                       <td className="p-3 text-xs text-right w-20">{isTotal ? (actualRows.filter((r2:any)=>r2.type!=='total').reduce((s:number,r2:any)=>s+(r2.actualOrders||0),0) / Math.max(1, kpiRows.filter((k:any)=>k.type!=='total').reduce((s:number,k:any)=>s+(k.orders||0),0)) * 100).toFixed(1) + '%' : kpiPct.toFixed(1) + '%'}</td>
                       <td className="p-3 text-xs text-right w-24">{isTotal ? (actualRows.filter((r2:any)=>r2.type!=='total').reduce((s:number,r2:any)=>s+(r2.actualOrders||0),0) / Math.max(1, kpiRows.filter((k:any)=>k.type!=='total').reduce((s:number,k:any)=>s+(k.orders||0),0)) * 100).toFixed(1) + '%' : totalKpiPct.toFixed(1) + '%'}</td>
@@ -855,6 +859,17 @@ export default function Teams() {
                 <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-center" style={{width:80}}>TV</th>
                 <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>%KPI</th>
               </tr>
+              <tr className="bg-gray-50/40 border-b border-border">
+                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-left" style={{width:150}}></th>
+                {((b6Data as any)?.products || []).map((p: string) => (
+                  <React.Fragment key={p+'-sub'}>
+                    <th className="px-3 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:70}}>Đơn</th>
+                    <th className="px-3 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:70}}>CP</th>
+                  </React.Fragment>
+                ))}
+                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:80}}>Đơn</th>
+                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:80}}>CP</th>
+              </tr>
             </thead>
             <tbody>
               {planData.map((team: any, ti: number) => {
@@ -900,7 +915,7 @@ export default function Teams() {
                   <td className="px-4 py-3.5 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
                   <td className="px-4 py-3.5 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
                   <td className="px-4 py-3.5 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
-                  <td className="px-4 py-3.5 text-xs text-center font-semibold">{planData.reduce((s: number, t: any) => s + (t.memberCount || 0), 0)}</td>
+                  <td className="px-4 py-3.5 text-xs text-center font-semibold">{planData.reduce((s: number, t: any) => s + (t.member_count || 0), 0)}</td>
                   <td className="px-4 py-3.5 text-xs text-right font-bold text-[#4f46e5]">{(()=>{const a=planData.reduce((s:number,t:any)=>s+(t.totalActual||0),0);const b=planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0);return a>0&&b>0?Math.round(a/b*100)+'%':'—';})()}</td>
                 </tr>
               )}
@@ -956,10 +971,21 @@ export default function Teams() {
                 <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tổng Đơn</th>
                 <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tổng CP</th>
               </tr>
+              <tr className="bg-gray-50/40 border-b border-border">
+                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-left" style={{width:150}}></th>
+                {((b6Data as any)?.products || []).map((p: string) => (
+                  <React.Fragment key={p+'-sub'}>
+                    <th className="px-3 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:70}}>Đơn</th>
+                    <th className="px-3 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:70}}>CP</th>
+                  </React.Fragment>
+                ))}
+                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:80}}>Đơn</th>
+                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:80}}>CP</th>
+              </tr>
             </thead>
             <tbody>
               {!b6Data || ((b6Data as any)?.teams || []).length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Chưa có dữ liệu</td></tr>
+                <tr><td colSpan={20} className="px-6 py-12 text-center text-sm text-muted">Chưa có dữ liệu</td></tr>
               ) : ((b6Data as any).teams).map((team: any) => {
                   const data = ((b6Data as any).data || {})[team.id] || {};
                   const products = (b6Data as any).products || [];
@@ -1028,7 +1054,7 @@ export default function Teams() {
                 <div className="flex-1">
                   <h3 className="font-bold text-[#171717]">{t.name}</h3>
                   <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
-                    <Users size={12} /> {t.memberCount || 0} thành viên
+                    <Users size={12} /> {t.member_count || 0} thành viên
                   </p>
                 </div>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted opacity-50"><path d="m9 18 6-6-6-6" /></svg>
