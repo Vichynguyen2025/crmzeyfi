@@ -9,6 +9,7 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME || 'crmzeyfi',
   waitForConnections: true,
   connectionLimit: 10,
+  timezone: '+07:00',
 });
 
 export const db = drizzle(pool, { schema, mode: 'default' });

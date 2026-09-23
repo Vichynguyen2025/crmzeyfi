@@ -46,8 +46,8 @@ export default function Reports() {
   const userRole = user.role;
 //  const allUsersList = allUsers; // for recipient name lookup
   const getUserName = (id:string) => { const u = allUsers.find(u2 => u2.id === id); return u ? (u.name || u.email) : id.slice(0,8); };
-  const formatDate = (d: string) => d ? (d.includes('T') ? new Date(d).toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'}) : d.includes('-') ? d.split('-').reverse().join('/') : d) : '';
-  const formatTime = (d: string) => d ? new Date(d).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'}) : '';
+  const formatDate = (d: string) => d ? (d.includes('T') ? new Date(d).toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Ho_Chi_Minh'}) : d.includes('-') ? d.split('-').reverse().join('/') : d) : '';
+  const formatTime = (d: string) => d ? new Date(d).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit',timeZone:'Asia/Ho_Chi_Minh'}) : '';
   const nav = useNavigate();
   const { tab: urlTab } = useParams();
   const [tab, setTab] = useState<string>(urlTab || 'create');
