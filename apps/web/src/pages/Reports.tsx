@@ -535,9 +535,11 @@ export default function Reports() {
                           {d.metrics?.adsTotal > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fdf2f8] text-[#db2777] text-[11px] font-medium rounded-full">{Number(d.metrics.adsTotal).toLocaleString('vi-VN')}đ</span>}
                         </div>
                       </td>
+                      <td className="px-6 py-4"><span className={'inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full '+(r.status==='approved'?'bg-[#f0fdf4] text-[#16a34a]':r.status==='rejected'?'bg-[#fef2f2] text-[#dc2626]':'bg-[#fff7ed] text-[#ea580c]')}>{(r.status==='approved'?'✓ Duyệt':r.status==='rejected'?'✗ Từ chối':'● Chờ')}</span></td>
                       <td className="px-6 py-4 text-xs text-[#808080] max-w-[120px] truncate" title={recvs}>{recvs || '—'}</td>
-                    
-                      <td className="px-6 py-4"><span className={'inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full '+(r.status==='approved'?'bg-[#f0fdf4] text-[#16a34a]':r.status==='rejected'?'bg-[#fef2f2] text-[#dc2626]':'bg-[#fff7ed] text-[#ea580c]')}>{(r.status==='approved'?'✓ Duyệt':r.status==='rejected'?'✗ Từ chối':'● Chờ')}</span></td></tr>
+                      <td className="px-6 py-4">
+                        <button onClick={e => { e.stopPropagation(); if (confirm('Xoá báo cáo này?')) api('/reports/' + r.id, { method:'DELETE' }).then(() => loadReports()).catch(() => {}); }} className="p-1.5 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-all" title="Xoá"><Trash2 size={14} /></button>
+                      </td></tr>
                   );
                 })}
               </tbody>
