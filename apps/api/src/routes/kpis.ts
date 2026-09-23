@@ -35,7 +35,7 @@ export default async function (app: FastifyInstance) {
     const { month } = req.params as any;
     const m = month || new Date().toISOString().slice(0, 7);
     // Get all teams + their KPI data
-    const [allTeams] = await pool.execute("SELECT id, name, color FROM teams ORDER BY name");
+    const [allTeams] = await pool.execute("SELECT id, name, color, hide_from_b5 FROM teams ORDER BY name");
     const [kpiRows] = await pool.execute(
       "SELECT tk.*, t.name as teamName, t.color as teamColor FROM team_kpis tk JOIN teams t ON t.id = tk.team_id WHERE tk.month = ? ORDER BY t.name, tk.product",
       [m]
@@ -73,7 +73,7 @@ export default async function (app: FastifyInstance) {
       const totalTarget = Object.values(unique).reduce((s: number, p: any) => s + (p.target || 0), 0);
       const totalBudget = Object.values(unique).reduce((s: number, p: any) => s + (p.budget || 0), 0);
       result.push({
-        id: team.id, name: team.name, color: team.color,
+        id: team.id, name: team.name, color: team.color, hide_from_b5: (team as any).hide_from_b5, hide_from_b5: (team as any).hide_from_b5,
         products: Object.values(unique),
         totalTarget, totalBudget,
         totalActual: actualByTeam[team.id] || 0,

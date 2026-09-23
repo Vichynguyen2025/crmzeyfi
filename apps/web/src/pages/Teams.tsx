@@ -848,35 +848,29 @@ export default function Teams() {
           </div>
         </div>
         <div className="overflow-x-auto border-t border-border">
-          <table className="w-full" style={{tableLayout:'fixed', borderCollapse:'separate', borderSpacing:0}}>
+          <table className="w-full" style={{tableLayout:'fixed', borderCollapse:'collapse'}}>
+            <colgroup>
+              <col style={{width:180}} /><col style={{width:170}} /><col style={{width:85}} /><col style={{width:85}} /><col style={{width:85}} /><col style={{width:50}} /><col style={{width:65}} /><col style={{width:36}} />
+            </colgroup>
             <thead>
               <tr>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left" style={{width:200}}>Team</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left" style={{width:160}}>Sản phẩm</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Mục tiêu</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:120}}>Ngân sách</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>CP/đơn</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-center" style={{width:80}}>TV</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>%KPI</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-left" className="">Team</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-left" className="">Sản phẩm</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">Mục tiêu</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">Ngân sách</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">CP/đơn</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-center" className="">TV</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">%KPI</th>
+                <th className="px-4 py-3 w-[36px]"></th>
               </tr>
-              <tr className="bg-gray-50/40 border-b border-border">
-                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-left" style={{width:150}}></th>
-                {((b6Data as any)?.products || []).map((p: string) => (
-                  <React.Fragment key={p+'-sub'}>
-                    <th className="px-3 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:70}}>Đơn</th>
-                    <th className="px-3 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:70}}>CP</th>
-                  </React.Fragment>
-                ))}
-                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:80}}>Đơn</th>
-                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:80}}>CP</th>
-              </tr>
+              
             </thead>
             <tbody>
-              {planData.map((team: any, ti: number) => {
+              {planData.filter((team: any) => !team.hide_from_b5).map((team: any, ti: number) => {
                 const totalCostPerOrder = team.totalTarget > 0 ? Math.round((team.totalBudget * 30) / team.totalTarget) : 0;
                 return (
                   <tr key={team.id} className="border-b border-border/50 hover:bg-[#f8f9fc] transition-all">
-                    <td className="px-4 py-3.5 text-xs font-medium">
+                    <td className="px-4 py-3 text-xs font-medium">
                       <div className="flex items-center gap-2.5">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[9px] font-bold shadow-sm" style={{backgroundColor: team.color || '#4f46e5'}}>
                           {team.name?.charAt(0)?.toUpperCase() || '?'}
@@ -896,14 +890,17 @@ export default function Teams() {
                         </div>
                       ) : <span className="text-xs italic text-muted/60">Chưa có KPI</span>}
                     </td>
-                    <td className="p-4 text-xs text-right font-medium align-top">{team.totalTarget > 0 ? team.totalTarget.toLocaleString('vi-VN') : ''}</td>
-                    <td className="p-4 text-xs text-right align-top">{team.totalBudget > 0 ? (team.totalBudget * 30).toLocaleString('vi-VN') + 'đ' : ''}</td>
-                    <td className="p-4 text-xs text-right align-top">{totalCostPerOrder > 0 ? totalCostPerOrder.toLocaleString('vi-VN') + 'đ' : ''}</td>
-                    <td className="p-4 text-xs text-center align-top">
+                    <td className="px-4 py-3 text-xs text-right font-medium">{team.totalTarget > 0 ? team.totalTarget.toLocaleString('vi-VN') : ''}</td>
+                    <td className="px-4 py-3 text-xs text-right">{team.totalBudget > 0 ? (team.totalBudget * 30).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    <td className="px-4 py-3 text-xs text-right">{totalCostPerOrder > 0 ? totalCostPerOrder.toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    <td className="px-4 py-3 text-xs text-center">
                       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-muted font-medium text-xs">{team.memberCount || 0}</span>
                     </td>
-                    <td className="p-4 text-xs text-right font-bold align-top">
+                    <td className="px-4 py-3 text-xs text-right font-bold">
                       {(() => { const totalAllTarget = planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0); return team.totalActual > 0 && totalAllTarget > 0 ? <span className="text-[#4f46e5]">{Math.round(team.totalActual / totalAllTarget * 100)}%</span> : <span className="text-muted italic">—</span>; })()}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {currentUser?.role === 'admin' && <button onClick={() => { if (confirm('Xoá team khỏi bảng B5?')) api('/teams/' + team.id + '/visibility', { method:'PATCH', body:JSON.stringify({table:'b5'}) }).then(() => loadPlan(planMonth)); }} className="p-1 rounded hover:bg-red-50 text-muted hover:text-red-500 transition-all" title="Xoá khỏi bảng"><X size={13} /></button>}
                     </td>
                   </tr>
                 );
@@ -911,12 +908,13 @@ export default function Teams() {
               {/* Total row */}
               {planData.length > 0 && (
                 <tr className="bg-[#f8f9fc] font-semibold border-t-2 border-[#e2e4e7]">
-                  <td colSpan={2} className="px-4 py-3.5 text-xs font-bold text-[#4f46e5]">Tổng cộng</td>
-                  <td className="px-4 py-3.5 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
-                  <td className="px-4 py-3.5 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
-                  <td className="px-4 py-3.5 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
-                  <td className="px-4 py-3.5 text-xs text-center font-semibold">{planData.reduce((s: number, t: any) => s + (t.member_count || 0), 0)}</td>
-                  <td className="px-4 py-3.5 text-xs text-right font-bold text-[#4f46e5]">{(()=>{const a=planData.reduce((s:number,t:any)=>s+(t.totalActual||0),0);const b=planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0);return a>0&&b>0?Math.round(a/b*100)+'%':'—';})()}</td>
+                  <td colSpan={2} className="px-4 py-3 text-xs font-bold text-[#4f46e5]">Tổng cộng</td>
+                  <td className="px-4 py-3 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
+                  <td className="px-4 py-3 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
+                  <td className="px-4 py-3 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                  <td className="px-4 py-3 text-xs text-center font-semibold">{planData.reduce((s: number, t: any) => s + (t.member_count || 0), 0)}</td>
+                  <td className="px-4 py-3 text-xs text-right font-bold text-[#4f46e5]">{(()=>{const a=planData.reduce((s:number,t:any)=>s+(t.totalActual||0),0);const b=planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0);return a>0&&b>0?Math.round(a/b*100)+'%':'—';})()}</td>
+                  <td className="px-4 py-3"></td>
                 </tr>
               )}
               {planData.length === 0 && (
@@ -961,32 +959,36 @@ export default function Teams() {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full" style={{tableLayout:'fixed', borderCollapse:'separate', borderSpacing:0}}>
+          <table className="w-full" style={{tableLayout:'fixed', borderCollapse:'collapse'}}>
+            <colgroup>
+              <col style={{width:180}} /><col style={{width:170}} /><col style={{width:85}} /><col style={{width:85}} /><col style={{width:85}} /><col style={{width:50}} /><col style={{width:65}} /><col style={{width:36}} />
+            </colgroup>
             <thead>
               <tr className="bg-gray-50/80 border-b border-border">
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-left" style={{width:150}}>Team</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-left" className="">Team</th>
                 {((b6Data as any)?.products || []).map((p: string) => (
-                  <th key={p} className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:140}} colSpan={2}>{p}</th>
+                  <th key={p} className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" style={{width:140}} colSpan={2}>{p}</th>
                 ))}
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tổng Đơn</th>
-                <th className="px-4 py-3 text-[11px] font-semibold text-muted tracking-wider text-right" style={{width:100}}>Tổng CP</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">Tổng Đơn</th>
+                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">Tổng CP</th>
+                <th className="px-4 py-3 w-[36px]"></th>
               </tr>
               <tr className="bg-gray-50/40 border-b border-border">
-                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-left" style={{width:150}}></th>
+                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-left" className=""></th>
                 {((b6Data as any)?.products || []).map((p: string) => (
                   <React.Fragment key={p+'-sub'}>
-                    <th className="px-3 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:70}}>Đơn</th>
-                    <th className="px-3 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:70}}>CP</th>
+                    <th className="px-3 py-2 text-[11px] font-medium text-muted tracking-wider text-right" style={{width:70}}>Đơn</th>
+                    <th className="px-3 py-2 text-[11px] font-medium text-muted tracking-wider text-right" style={{width:70}}>CP</th>
                   </React.Fragment>
                 ))}
-                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:80}}>Đơn</th>
-                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" style={{width:80}}>CP</th>
+                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" className="">Đơn</th>
+                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" className="">CP</th>
               </tr>
             </thead>
             <tbody>
               {!b6Data || ((b6Data as any)?.teams || []).length === 0 ? (
                 <tr><td colSpan={20} className="px-6 py-12 text-center text-sm text-muted">Chưa có dữ liệu</td></tr>
-              ) : ((b6Data as any).teams).map((team: any) => {
+              ) : ((b6Data as any).teams.filter((t: any) => !t.hide_from_b6)).map((team: any) => {
                   const data = ((b6Data as any).data || {})[team.id] || {};
                   const products = (b6Data as any).products || [];
                   let teamTotalOrders = 0, teamTotalCost = 0;
@@ -1013,6 +1015,9 @@ export default function Teams() {
                       })}
                       <td className="px-4 py-3 text-xs text-right font-bold text-[#4f46e5]">{teamTotalOrders}</td>
                       <td className="px-4 py-3 text-xs text-right font-bold">{teamTotalCost > 0 ? teamTotalCost.toLocaleString('vi-VN')+'d' : '-'}</td>
+                      <td className="px-3 py-3 text-center">
+                        {currentUser?.role === 'admin' && <button onClick={() => { if (confirm('Xoá team khỏi bảng B6?')) api('/teams/' + team.id + '/visibility', { method:'PATCH', body:JSON.stringify({table:'b6'}) }).then(() => loadB6()); }} className="p-1 rounded hover:bg-red-50 text-muted hover:text-red-500 transition-all" title="Xoá khỏi bảng"><X size={13} /></button>}
+                      </td>
                     </tr>
                   );
                 })}

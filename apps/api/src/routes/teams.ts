@@ -14,16 +14,16 @@ export default async function (app: FastifyInstance) {
 
   app.post('/teams', async (req, reply) => {
     if (req.user?.role !== 'admin' && req.user?.role !== 'manager') return reply.status(403).send({ error: 'Only admin or manager' });
-    const { name, color } = req.body as any;
+    const { name, color, channelOnly } = req.body as any;
     const id = uuid();
-    await db.insert(teams).values({ id, name, color: color || '#4f46e5' });
-    reply.send({ id, name, color: color || '#4f46e5' });
+    await pool.execute("INSERT INTO teams (id, name, color, channel_only) VALUES (?, ?, ?, ?)", [id, name, color || null, channelOnly ? 1 : 0]);
+    reply.send({ id, success: true });
   });
 
   app.put('/teams/:id', async (req, reply) => {
     if (req.user?.role !== 'admin' && req.user?.role !== 'manager') return reply.status(403).send({ error: 'Only admin or manager' });
     const { id } = req.params as any;
-    const { name, color } = req.body as any;
+    const { name, color, channelOnly } = req.body as any;
     if (name) await db.update(teams).set({ name }).where(eq(teams.id, id));
     if (color) await db.update(teams).set({ color }).where(eq(teams.id, id));
     reply.send({ success: true });
@@ -66,5 +66,17 @@ export default async function (app: FastifyInstance) {
       [id]
     );
     reply.send(rows);
+  });
+
+  app.patch('/teams/:id/visibility', async (req, reply) => {
+    if (req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    const { id } = req.params as any;
+    const { table } = req.body as any;
+    if (table === 'b5') {
+      await pool.execute("UPDATE teams SET hide_from_b5 = NOT COALESCE(hide_from_b5, 0) WHERE id = ?", [id]);
+    } else if (table === 'b6') {
+      await pool.execute("UPDATE teams SET hide_from_b6 = NOT COALESCE(hide_from_b6, 0) WHERE id = ?", [id]);
+    }
+    reply.send({ success: true });
   });
 }

@@ -82,7 +82,7 @@ export default async function (app: FastifyInstance) {
 
     try {
       // Get all teams
-      const [allTeams] = await pool.execute("SELECT id, name FROM teams ORDER BY name");
+      const [allTeams] = await pool.execute("SELECT id, name, hide_from_b6 FROM teams ORDER BY name");
       
       // Build WHERE clause based on view mode
       let where = "WHERE d.month = ?";
