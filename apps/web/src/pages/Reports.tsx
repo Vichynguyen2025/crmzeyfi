@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Send, Calendar, ChevronDown, Paperclip, X, CheckCircle2, Clock, Users, BarChart3, TrendingUp, MessageSquare, Download, Eye, Inbox, UserCheck, ChevronRight, Folder, Trash2 } from 'lucide-react';
+import { FileText, Send, Calendar, ChevronDown, Paperclip, X, CheckCircle2, Clock, Users, BarChart3, TrendingUp, MessageSquare, Download, Eye, Inbox, UserCheck, ChevronRight, Folder, Trash2, Link } from 'lucide-react';
 import { api } from '../lib/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getSocket } from '../lib/socket';
@@ -13,6 +13,8 @@ export default function Reports() {
   const [suggestions, setSuggestions] = useState('');
   const [extraTasks, setExtraTasks] = useState<string[]>(['']);
   const [attachments, setAttachments] = useState<string[]>([]);
+  const [reportLinks, setReportLinks] = useState<string[]>([]);
+  const [newLink, setNewLink] = useState('');
   const [showDrivePicker, setShowDrivePicker] = useState(false);
   const [historyDetail, setHistoryDetail] = useState<any>(null);
   const [reportComments, setReportComments] = useState<any[]>([]);
@@ -225,6 +227,7 @@ export default function Reports() {
           extraTasks: extraTasks.filter(t => t.trim()),
           metrics: metrics,
           attachments: attachments,
+          links: reportLinks,
           teamId: teamId,
         })
       })});
@@ -382,12 +385,31 @@ export default function Reports() {
                     </div>
                   )}
                 </div>
+
+                {/* Link attachment */}
+                <div className="mt-4">
+                  <label className="block text-xs font-medium text-muted mb-2">Đính kèm link</label>
+                  <div className="flex items-center gap-2">
+                    <input type="url" value={newLink} onChange={e => setNewLink(e.target.value)}
+                      placeholder="https://..."
+                      className="flex-1 px-3 py-2 bg-[#f8fafc] border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
+                    <button onClick={() => { if (newLink.trim()) { setReportLinks([...reportLinks, newLink.trim()]); setNewLink(''); } }}
+                      className="px-3 py-2 bg-primary text-white rounded-lg text-xs font-medium">Thêm</button>
+                  </div>
+                  {reportLinks.length > 0 && reportLinks.map((link, i) => (
+                    <div key={i} className="mt-2 flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-border rounded-lg text-xs">
+                      <Link size={12} className="text-primary shrink-0" />
+                      <span className="text-primary truncate max-w-[200px]">{link}</span>
+                      <button onClick={() => setReportLinks(prev => prev.filter(function(_, j) { return j !== i; }))} className="text-red-400 hover:text-red-600 ml-auto shrink-0"><X size={12} /></button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Submit */}
             <div className="flex justify-end gap-3">
-              <button onClick={() => { setContent(''); setAttachments([]); setConfirming(false); }}
+              <button onClick={() => { setContent(''); setAttachments([]); setReportLinks([]); setConfirming(false); }}
                 className="px-5 py-2.5 bg-gray-100 text-muted rounded-xl text-sm font-medium hover:bg-gray-200 transition-all">Huỷ</button>
               <button onClick={() => {
                 if (!confirming) { setConfirming(true); return; }
