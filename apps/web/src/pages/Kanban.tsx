@@ -155,7 +155,7 @@ export default function Kanban() {
   };
 
   return (
-    <div className="text-sm leading-[1.5] text-[#171717]">
+    <div className="text-sm leading-[1.5] text-ink">
       {toast && (
         <div className={'fixed top-4 right-4 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl shadow-xl border text-sm font-medium animate-slide-in ' +
           (toast.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700')}>
@@ -173,7 +173,7 @@ export default function Kanban() {
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold">&#9998;</div>
                 <div>
-                  <h3 className="font-bold text-sm text-[#171717]">Soạn nội dung công việc</h3>
+                  <h3 className="font-bold text-sm text-ink">Soạn nội dung công việc</h3>
                   <p className="text-xs text-muted mt-0.5">{tasks.find(t => t.id === contentEditor.id)?.title || ''}</p>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function Kanban() {
               <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-border p-8 min-h-[500px]">
                 <textarea value={contentEditor.text} onChange={e => setContentEditor({...contentEditor, text: e.target.value})}
                   placeholder="Viết nội dung chi tiết tại đây...&#10;&#10;Bạn có thể viết nhiều dòng,&#10;dòng đầu tiên sẽ hiển thị tóm tắt trên bảng."
-                  className="w-full min-h-[450px] resize-none bg-transparent border-0 text-sm text-[#171717] leading-7 outline-none placeholder-muted/40"
+                  className="w-full min-h-[450px] resize-none bg-transparent border-0 text-sm text-ink leading-7 outline-none placeholder-muted/40"
                   style={{fontFamily: "'Inter', sans-serif", fontSize: '14px', lineHeight: '1.8'}}
                 />
               </div>
@@ -218,12 +218,12 @@ export default function Kanban() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-[#171717]">Marketing eSim</h1>
+          <h1 className="text-2xl font-bold text-ink">Marketing eSim</h1>
           <div className="flex items-center gap-1 bg-white rounded-xl border border-border shadow-sm p-0.5">
             {(['sheet', 'quangcao'] as const).map(v => (
               <button key={v} onClick={() => setTab(v)}
                 className={'flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all ' +
-                  (tab === v ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>
+                  (tab === v ? 'bg-primary text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>
                 {v === 'sheet' ? <List size={16} /> : <LayoutGrid size={16} />}
                 {v === 'sheet' ? 'Sheet' : 'Quảng cáo'}
               </button>
@@ -271,7 +271,7 @@ export default function Kanban() {
             onKeyDown={e => { if (e.key === 'Enter') addTask(); if (e.key === 'Escape') setShowAdd(false); }}
             placeholder="Tên công việc..." autoFocus
             className="flex-1 px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 transition-all" />
-          <button onClick={addTask} className="px-4 py-2.5 bg-[#4f46e5] text-white font-medium rounded-xl text-sm hover:shadow-md transition-all">Thêm</button>
+          <button onClick={addTask} className="px-4 py-2.5 bg-primary text-white font-medium rounded-xl text-sm hover:shadow-md transition-all">Thêm</button>
           <button onClick={() => setShowAdd(false)} className="p-2.5 rounded-xl hover:bg-gray-100 transition-all"><X size={18} /></button>
         </div>
       )}
@@ -295,10 +295,10 @@ export default function Kanban() {
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-[#171717]">Quảng cáo</h2>
+              <h2 className="text-lg font-bold text-ink">Quảng cáo</h2>
               <p className="text-sm text-muted mt-0.5">Nhập chỉ số quảng cáo theo ngày trên Google Ads & Facebook Ads</p>
             </div>
-            <button onClick={() => addAdRow()} className="flex items-center gap-2 px-4 py-2 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all"><Plus size={16} />Thêm dòng</button>
+            <button onClick={() => addAdRow()} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all"><Plus size={16} />Thêm dòng</button>
           </div>
           <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -308,21 +308,21 @@ export default function Kanban() {
                 </colgroup>
                 <thead>
                   <tr className="bg-gray-50/80 border-b border-border">
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Ngày</th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Nền tảng</th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CP (có thuế) <span className="text-[9px] font-normal">đ</span></th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CP (chưa thuế) <span className="text-[9px] font-normal">đ</span></th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Doanh thu <span className="text-[9px] font-normal">đ</span></th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Đơn</th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">SIM</th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Impr.</th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Click</th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CTR <span className="text-[9px] font-normal">%</span></th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CP/Đơn <span className="text-[9px] font-normal">đ</span></th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">ROAS</th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CP/DT <span className="text-[9px] font-normal">%</span></th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">CPC <span className="text-[9px] font-normal">đ</span></th>
-                    <th className="px-2 py-2 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Thuế 8% <span className="text-[9px] font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-left">Ngày</th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-left">Nền tảng</th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">CP (có thuế) <span className="text-xs font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">CP (chưa thuế) <span className="text-xs font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">Doanh thu <span className="text-xs font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">Đơn</th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">SIM</th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">Impr.</th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">Click</th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">CTR <span className="text-xs font-normal">%</span></th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">CP/Đơn <span className="text-xs font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">ROAS</th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">CP/DT <span className="text-xs font-normal">%</span></th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">CPC <span className="text-xs font-normal">đ</span></th>
+                    <th className="px-2 py-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">Thuế 8% <span className="text-xs font-normal">đ</span></th>
                     <th className="px-2 py-2"></th>
                   </tr>
                 </thead>
@@ -398,9 +398,9 @@ export default function Kanban() {
                       onChange={() => setSelectedIds(allSelected ? new Set() : new Set(filtered.map(t => t.id)))}
                       className="accent-[#4f46e5]" />
                   </th>
-                  <th className="py-1.5 px-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-10">STT</th>
+                  <th className="py-1.5 px-3 text-xs font-semibold text-muted uppercase tracking-wider text-left w-10">STT</th>
                   {COLUMNS.map(c => (
-                    <th key={c.key} className={'py-1.5 px-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left ' + c.w}>
+                    <th key={c.key} className={'py-1.5 px-3 text-xs font-semibold text-muted uppercase tracking-wider text-left ' + c.w}>
                       {c.label}
                     </th>
                   ))}
@@ -452,13 +452,13 @@ export default function Kanban() {
                                   (col.editable ? 'cursor-pointer hover:bg-gray-100/80' : '') +
                                   (saving.has(task.id) ? 'opacity-50' : '')}>
                                 {col.key === 'status' ? (
-                                  <span className={'px-2.5 py-1 rounded-md text-[11px] font-medium ' + ({
+                                  <span className={'px-2.5 py-1 rounded-md text-xs font-medium ' + ({
                                     todo: 'bg-red-100 text-red-700', in_progress: 'bg-amber-100 text-amber-700',
                                     review: 'bg-indigo-100 text-indigo-700', done: 'bg-green-100 text-green-700',
                                   }[val] || 'bg-gray-100 text-muted')}>{STATUSES.find(s => s.key === val)?.label || val}</span>
                                 ) : col.key === 'priority' ? (
                                   <div className="flex items-center px-2.5 py-2">
-                                    <span className={'px-2.5 py-1 rounded-md text-[11px] font-medium text-center ' + ({
+                                    <span className={'px-2.5 py-1 rounded-md text-xs font-medium text-center ' + ({
                                       urgent: 'bg-red-100 text-red-700', high: 'bg-amber-100 text-amber-700',
                                       medium: 'bg-blue-100 text-blue-700', low: 'bg-gray-100 text-gray-600',
                                     }[val] || 'bg-gray-100 text-gray-600')}>{PRIORITY_MAP[val] || val || 'Trung bình'}</span>
@@ -466,7 +466,7 @@ export default function Kanban() {
                                 ) : col.key === 'content' ? (
                                   <div onClick={e => { e.stopPropagation(); if (task) setContentEditor({id: task.id, text: task.description || ''}); }}
                                     className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer hover:bg-gray-100/80 transition-all">
-                                    <span className={'block overflow-hidden text-ellipsis whitespace-nowrap ' + (task.description ? 'text-[#171717]' : 'text-muted italic')}>
+                                    <span className={'block overflow-hidden text-ellipsis whitespace-nowrap ' + (task.description ? 'text-ink' : 'text-muted italic')}>
                                       {task.description ? contentSummary(task.description) : 'Viết nội dung...'}
                                     </span>
                                   </div>
@@ -474,15 +474,15 @@ export default function Kanban() {
                                   <div className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs">
                                     {val ? (
                                       <span onClick={() => window.open(val.startsWith('http') ? val : val, '_blank')}
-                                        className="text-[#4f46e5] hover:underline cursor-pointer block overflow-hidden text-ellipsis whitespace-nowrap" title={(driveFiles.find((f:any)=>val.includes(f.id))?.name || val.split('/').pop() || val)}>
+                                        className="text-primary hover:underline cursor-pointer block overflow-hidden text-ellipsis whitespace-nowrap" title={(driveFiles.find((f:any)=>val.includes(f.id))?.name || val.split('/').pop() || val)}>
                                         {(driveFiles.find((f:any)=>val.includes(f.id))?.name || val.split('/').pop() || val)}
                                       </span>
                                     ) : (
                                       <span className="text-muted italic">—</span>
                                     )}
                                     <button onClick={e => { e.stopPropagation(); setDrivePicker({taskId: task.id, open: true}); setEditing(null); }}
-                                      className="ml-1 p-0.5 rounded hover:bg-indigo-50 text-muted hover:text-[#4f46e5] transition-all shrink-0" title="Chọn từ Kho dữ liệu">
-                                      <span className="text-[11px]">📎</span>
+                                      className="ml-1 p-0.5 rounded hover:bg-indigo-50 text-muted hover:text-primary transition-all shrink-0" title="Chọn từ Kho dữ liệu">
+                                      <span className="text-xs">📎</span>
                                     </button>
                                   </div>
                                 ) : col.key === 'createdAt' ? (
@@ -491,12 +491,12 @@ export default function Kanban() {
                                   <div onClick={() => col.editable && startEdit(task.id, col.key, val)}
                                     className={'flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs transition-all ' +
                                       (col.editable ? 'cursor-pointer hover:bg-gray-100/80' : '')}>
-                                    <span className={val ? 'text-[#171717]' : 'text-muted italic'}>{val ? new Date(val).toLocaleDateString('vi-VN') : '—'}</span>
+                                    <span className={val ? 'text-ink' : 'text-muted italic'}>{val ? new Date(val).toLocaleDateString('vi-VN') : '—'}</span>
                                   </div>
                                 ) : col.key === 'createdByName' ? (
                                   <span className="text-muted">{val || <span className="italic">—</span>}</span>
                                 ) : (
-                                  <span className={val ? 'text-[#171717]' : 'text-muted italic'}>{val || '—'}</span>
+                                  <span className={val ? 'text-ink' : 'text-muted italic'}>{val || '—'}</span>
                                 )}
                               </div>
                             )}
@@ -517,7 +517,7 @@ export default function Kanban() {
                     <div className="flex flex-col items-center gap-2">
                       <List size={36} className="text-muted opacity-30" />
                       <p className="text-sm text-muted">{search ? 'Không tìm thấy công việc phù hợp' : 'Chưa có công việc nào'}</p>
-                      {!search && <button onClick={() => setShowAdd(true)} className="text-sm text-[#4f46e5] font-medium hover:underline">+ Thêm công việc</button>}
+                      {!search && <button onClick={() => setShowAdd(true)} className="text-sm text-primary font-medium hover:underline">+ Thêm công việc</button>}
                     </div>
                   </td></tr>
                 )}
@@ -535,7 +535,7 @@ export default function Kanban() {
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDrivePicker({taskId: '', open: false})}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[60vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <h3 className="font-bold text-sm text-[#171717]">Chọn tài liệu từ Kho dữ liệu</h3>
+              <h3 className="font-bold text-sm text-ink">Chọn tài liệu từ Kho dữ liệu</h3>
               <button onClick={() => setDrivePicker({taskId: '', open: false})} className="p-2 rounded-xl hover:bg-gray-100 transition-all"><X size={18} /></button>
             </div>
             <div className="flex-1 overflow-auto p-4 space-y-2">
@@ -546,12 +546,12 @@ export default function Kanban() {
                   setDrivePicker({taskId: '', open: false});
                 }}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-all border border-border">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-50 grid place-items-center text-[#4f46e5] text-xs font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-50 grid place-items-center text-primary text-xs font-bold">
                     {f.name.split('.').pop()?.toUpperCase() || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-[#171717] truncate">{f.name}</p>
-                    <p className="text-[10px] text-muted">{f.url || 'Chưa tải lên'}</p>
+                    <p className="text-xs font-medium text-ink truncate">{f.name}</p>
+                    <p className="text-xs text-muted">{f.url || 'Chưa tải lên'}</p>
                   </div>
                 </div>
               ))}

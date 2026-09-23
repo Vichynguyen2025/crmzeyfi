@@ -166,8 +166,8 @@ export default function AdminPermissions() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#171717] flex items-center gap-2">
-            <Shield size={22} className="text-[#4f46e5]" /> Phân quyền & Quản trị
+          <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+            <Shield size={22} className="text-primary" /> Phân quyền & Quản trị
           </h1>
           <p className="text-sm text-muted mt-1">Quản lý quyền truy cập module theo team, nhân sự, cài đặt hệ thống</p>
         </div>
@@ -182,7 +182,7 @@ export default function AdminPermissions() {
       <div className="flex items-center gap-1 bg-white rounded-xl border border-border p-1 w-fit">
         {TABS.map(t => (
           <button key={t.key} onClick={() => { setTab(t.key); setSearch(''); }}
-            className={'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ' + (tab === t.key ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-50')}>
+            className={'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ' + (tab === t.key ? 'bg-primary text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-50')}>
             <t.icon size={15} /> {t.label}
           </button>
         ))}
@@ -218,9 +218,9 @@ export default function AdminPermissions() {
                       const isSaving = saving === 't' + team.id + mod.key;
                       return (
                         <button key={mod.key} onClick={() => toggleTeamMod(team.id, mod.key, !has)} disabled={isSaving}
-                          className={'flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all text-left ' + (has ? 'bg-indigo-50 border-indigo-200 text-[#4f46e5]' : 'bg-white border-border text-muted hover:border-indigo-200') + (isSaving ? ' opacity-50' : '')}>
+                          className={'flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all text-left ' + (has ? 'bg-indigo-50 border-indigo-200 text-primary' : 'bg-white border-border text-muted hover:border-indigo-200') + (isSaving ? ' opacity-50' : '')}>
                           <span className="text-sm">{mod.icon}</span><span className="flex-1">{mod.label}</span>
-                          <span className={'w-5 h-5 rounded-full grid place-items-center text-[10px] ' + (has ? 'bg-[#4f46e5] text-white' : 'bg-gray-100 text-muted')}>{has ? '✓' : ''}</span>
+                          <span className={'w-5 h-5 rounded-full grid place-items-center text-xs ' + (has ? 'bg-primary text-white' : 'bg-gray-100 text-muted')}>{has ? '✓' : ''}</span>
                         </button>
                       );
                     })}
@@ -264,7 +264,7 @@ export default function AdminPermissions() {
                         <button key={mod.key} onClick={() => toggleUserMod(user.id, mod.key, !has)} disabled={isSaving}
                           className={'flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all text-left ' + (has ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-white border-border text-muted hover:border-emerald-200') + (isSaving ? ' opacity-50' : '')}>
                           <span className="text-sm">{mod.icon}</span><span className="flex-1">{mod.label}</span>
-                          <span className={'w-5 h-5 rounded-full grid place-items-center text-[10px] ' + (has ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-muted')}>{has ? '+' : ''}</span>
+                          <span className={'w-5 h-5 rounded-full grid place-items-center text-xs ' + (has ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-muted')}>{has ? '+' : ''}</span>
                         </button>
                       );
                     })}
@@ -278,7 +278,7 @@ export default function AdminPermissions() {
                         <button key={tbl.key} onClick={() => toggleUserTablePerm(user.id, tbl.key, !has)} disabled={isSaving}
                           className={'flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all text-left ' + (has ? 'bg-violet-50 border-violet-200 text-violet-600' : 'bg-white border-border text-muted hover:border-violet-200') + (isSaving ? ' opacity-50' : '')}>
                           <span className="flex-1">{tbl.label}</span>
-                          <span className={'w-5 h-5 rounded-full grid place-items-center text-[10px] shrink-0 ' + (has ? 'bg-violet-500 text-white' : 'bg-gray-100 text-muted')}>{has ? '✓' : ''}</span>
+                          <span className={'w-5 h-5 rounded-full grid place-items-center text-xs shrink-0 ' + (has ? 'bg-violet-500 text-white' : 'bg-gray-100 text-muted')}>{has ? '✓' : ''}</span>
                         </button>
                       );
                     })}
@@ -293,7 +293,7 @@ export default function AdminPermissions() {
 
       {tab === 'settings' && (
         <div className="bg-white rounded-2xl border border-border shadow-sm p-5 space-y-4">
-          <h3 className="font-semibold text-sm flex items-center gap-2"><SettingsIcon size={16} className="text-[#4f46e5]" /> Cài đặt hệ thống</h3>
+          <h3 className="font-semibold text-sm flex items-center gap-2"><SettingsIcon size={16} className="text-primary" /> Cài đặt hệ thống</h3>
           {[
             { key: 'upload_limit_mb', label: 'Giới hạn upload (MB)', desc: 'Dung lượng tối đa mỗi file', type: 'number' },
             { key: 'allow_registration', label: 'Mở đăng ký tài khoản', desc: 'Cho phép user tự đăng ký', type: 'bool' },
@@ -314,7 +314,7 @@ export default function AdminPermissions() {
               </div>
               {s.type === 'bool' ? (
                 <button onClick={() => updateSetting(s.key, settings[s.key] === 'true' ? 'false' : 'true')}
-                  className={'relative w-11 h-6 rounded-full transition-all ' + (settings[s.key] === 'true' ? 'bg-[#4f46e5]' : 'bg-gray-200')}>
+                  className={'relative w-11 h-6 rounded-full transition-all ' + (settings[s.key] === 'true' ? 'bg-primary' : 'bg-gray-200')}>
                   <span className={'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ' + (settings[s.key] === 'true' ? 'left-[22px]' : 'left-0.5')} />
                 </button>
               ) : (
@@ -355,7 +355,7 @@ export default function AdminPermissions() {
                       <button key={tbl.key} onClick={() => toggleTablePerm(team.id, tbl.key, !has)} disabled={isSaving}
                         className={'flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all text-left ' + (has ? 'bg-violet-50 border-violet-200 text-violet-600' : 'bg-white border-border text-muted hover:border-violet-200') + (isSaving ? ' opacity-50' : '')}>
                         <span className="flex-1">{tbl.label}</span>
-                        <span className={'w-5 h-5 rounded-full grid place-items-center text-[10px] shrink-0 ' + (has ? 'bg-violet-500 text-white' : 'bg-gray-100 text-muted')}>{has ? '✓' : ''}</span>
+                        <span className={'w-5 h-5 rounded-full grid place-items-center text-xs shrink-0 ' + (has ? 'bg-violet-500 text-white' : 'bg-gray-100 text-muted')}>{has ? '✓' : ''}</span>
                       </button>
                     );
                   })}
@@ -369,21 +369,21 @@ export default function AdminPermissions() {
 {tab === 'logs' && (
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between">
-            <h3 className="font-semibold text-sm flex items-center gap-2"><ScrollText size={16} className="text-[#4f46e5]" /> Nhật ký hoạt động</h3>
+            <h3 className="font-semibold text-sm flex items-center gap-2"><ScrollText size={16} className="text-primary" /> Nhật ký hoạt động</h3>
             <span className="text-xs text-muted">{logs.length} gần nhất · realtime</span>
           </div>
           <div className="divide-y divide-border/50 max-h-[600px] overflow-y-auto">
             {logs.length === 0 && <div className="px-5 py-12 text-center text-sm text-muted">Chưa có hoạt động nào</div>}
             {logs.map((log, i) => (
               <div key={log.id || i} className="px-5 py-2.5 flex items-start gap-3 hover:bg-gray-50/60 transition-all">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[10px] font-bold mt-0.5 shrink-0">{(log.user_name || '?').charAt(0).toUpperCase()}</div>
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold mt-0.5 shrink-0">{(log.user_name || '?').charAt(0).toUpperCase()}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs"><span className="font-medium">{log.user_name || 'Hệ thống'}</span> <span className="mx-1">·</span>
-                    <span className={'inline-block px-1.5 py-0.5 rounded-md text-[10px] font-medium ' + actionColor(log.action)}>{actionLabel(log.action)}</span>
+                    <span className={'inline-block px-1.5 py-0.5 rounded-md text-xs font-medium ' + actionColor(log.action)}>{actionLabel(log.action)}</span>
                     <span className="mx-1">·</span><span className="font-medium">{log.module}</span></p>
                   <p className="text-xs text-muted mt-0.5 truncate">{log.entity}{log.detail ? ' — ' + log.detail : ''}</p>
                 </div>
-                <span className="text-[10px] text-muted shrink-0">{new Date(log.created_at).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="text-xs text-muted shrink-0">{new Date(log.created_at).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             ))}
           </div>

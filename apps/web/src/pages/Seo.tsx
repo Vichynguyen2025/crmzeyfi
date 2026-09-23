@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, X, Trash2, Search, Check, AlertCircle, TrendingUp, TrendingDown, Minus, BarChart3, FileText, Target, Calendar, Eye, MousePointer, DollarSign, Users, List, RefreshCw, Download, Clock, Activity, Zap, ChevronDown } from 'lucide-react';
 import { api } from '../lib/api';
+import DateRangeFilter from '../components/DateRangeFilter';
 
 const WORK_CATEGORIES = ['Content', 'Onpage', 'Offpage', 'Technical SEO', 'Internal Link', 'Nghiên cứu từ khóa', 'Audit SEO', 'Theo dõi thứ hạng', 'Khác'];
 const WORK_STATUSES = ['pending', 'in_progress', 'completed', 'paused', 'overdue'];
@@ -201,12 +202,12 @@ export default function SeoPage() {
         </div>
       )}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-[#171717] tracking-tight">SEO</h1>
+        <h1 className="text-2xl font-bold text-ink tracking-tight">SEO</h1>
         <div className="flex items-center gap-1 bg-white rounded-xl border border-border shadow-sm p-0.5">
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
               className={'flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all ' +
-                (tab === t.key ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>
+                (tab === t.key ? 'bg-primary text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>
               <t.icon size={16} /> {t.label}
             </button>
           ))}
@@ -220,7 +221,7 @@ export default function SeoPage() {
             {['7d','30d','90d'].map(r => (
               <button key={r} onClick={() => setDashRange(r)}
                 className={'px-4 py-2 rounded-xl text-xs font-medium transition-all ' +
-                  (dashRange === r ? 'bg-[#4f46e5] text-white shadow-sm' : 'bg-white border border-border text-muted hover:bg-gray-50')}>
+                  (dashRange === r ? 'bg-primary text-white shadow-sm' : 'bg-white border border-border text-muted hover:bg-gray-50')}>
                 {r === '7d' ? '7 ngày' : r === '30d' ? '30 ngày' : '90 ngày'}
               </button>
             ))}
@@ -233,7 +234,7 @@ export default function SeoPage() {
                   <div className={'h-1.5 bg-gradient-to-r ' + c.color} />
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-3"><c.icon size={22} className="text-muted" /></div>
-                    <p className="text-2xl font-bold text-[#171717]">{c.val}</p>
+                    <p className="text-2xl font-bold text-ink">{c.val}</p>
                     <p className="text-xs text-muted mt-1">{c.label}</p>
                   </div>
                 </div>
@@ -245,8 +246,8 @@ export default function SeoPage() {
             <div className="grid grid-cols-2 sm:grid-cols-6 gap-4">
               {kwGroup.map(c => (
                 <div key={c.label} className="bg-white rounded-2xl border border-border shadow-sm p-5 text-center">
-                  <div className={'text-2xl font-bold '+(c.diff?(Number(c.val)>0?'text-green-600':Number(c.val)<0?'text-red-600':''):'text-[#171717]')}>{c.val}</div>
-                  <p className="text-[11px] text-muted mt-1.5">{c.label}</p>
+                  <div className={'text-2xl font-bold '+(c.diff?(Number(c.val)>0?'text-green-600':Number(c.val)<0?'text-red-600':''):'text-ink')}>{c.val}</div>
+                  <p className="text-xs text-muted mt-1.5">{c.label}</p>
                 </div>
               ))}
             </div>
@@ -257,8 +258,8 @@ export default function SeoPage() {
               {perfGroup.map(c => (
                 <div key={c.label} className="bg-white rounded-2xl border border-border shadow-sm p-5">
                   <div className={'w-9 h-9 rounded-xl grid place-items-center mb-3 bg-gradient-to-br '+c.color+' shadow-sm'}><c.icon size={18} className="text-white" /></div>
-                  <p className="text-lg font-bold text-[#171717]">{c.val}{c.suffix||''}</p>
-                  <p className="text-[11px] text-muted mt-1">{c.label}</p>
+                  <p className="text-lg font-bold text-ink">{c.val}{c.suffix||''}</p>
+                  <p className="text-xs text-muted mt-1">{c.label}</p>
                 </div>
               ))}
             </div>
@@ -301,18 +302,18 @@ export default function SeoPage() {
             <div className="bg-white rounded-2xl border-2 border-[#4f46e5] shadow-md p-5 space-y-3 animate-slide-in">
               <div className="flex items-center justify-between"><h3 className="font-semibold text-sm">Thêm công việc mới</h3><button onClick={()=>setShowNewWork(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={16}/></button></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                <div><label className="text-[11px] text-muted font-medium">Ngày</label><input type="date" value={newDate} onChange={e=>setNewDate(e.target.value)} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Nhóm CV</label><select value={newCategory} onChange={e=>setNewCategory(e.target.value)} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none cursor-pointer"><option value="">—</option>{WORK_CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
-                <div className="col-span-2"><label className="text-[11px] text-muted font-medium">Công việc *</label><input value={newTask} onChange={e=>setNewTask(e.target.value)} placeholder="Nhập công việc..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
-                <div className="col-span-2"><label className="text-[11px] text-muted font-medium">URL</label><input value={newUrl} onChange={e=>setNewUrl(e.target.value)} placeholder="URL..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
-                <div><label className="text-[11px] text-muted font-medium">SL</label><input type="number" value={newQty} onChange={e=>setNewQty(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Trạng thái</label><select value={newStatus} onChange={e=>setNewStatus(e.target.value)} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none cursor-pointer">{WORK_STATUSES.map(s=><option key={s} value={s}>{STATUS_LABELS[s]}</option>)}</select></div>
-                <div><label className="text-[11px] text-muted font-medium">%</label><input type="number" value={newPct} onChange={e=>setNewPct(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
-                <div className="col-span-2"><label className="text-[11px] text-muted font-medium">Ghi chú</label><input value={newNote} onChange={e=>setNewNote(e.target.value)} placeholder="Ghi chú..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                <div><label className="text-xs text-muted font-medium">Ngày</label><input type="date" value={newDate} onChange={e=>setNewDate(e.target.value)} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                <div><label className="text-xs text-muted font-medium">Nhóm CV</label><select value={newCategory} onChange={e=>setNewCategory(e.target.value)} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none cursor-pointer"><option value="">—</option>{WORK_CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+                <div className="col-span-2"><label className="text-xs text-muted font-medium">Công việc *</label><input value={newTask} onChange={e=>setNewTask(e.target.value)} placeholder="Nhập công việc..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                <div className="col-span-2"><label className="text-xs text-muted font-medium">URL</label><input value={newUrl} onChange={e=>setNewUrl(e.target.value)} placeholder="URL..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                <div><label className="text-xs text-muted font-medium">SL</label><input type="number" value={newQty} onChange={e=>setNewQty(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                <div><label className="text-xs text-muted font-medium">Trạng thái</label><select value={newStatus} onChange={e=>setNewStatus(e.target.value)} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none cursor-pointer">{WORK_STATUSES.map(s=><option key={s} value={s}>{STATUS_LABELS[s]}</option>)}</select></div>
+                <div><label className="text-xs text-muted font-medium">%</label><input type="number" value={newPct} onChange={e=>setNewPct(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div className="col-span-2"><label className="text-xs text-muted font-medium">Ghi chú</label><input value={newNote} onChange={e=>setNewNote(e.target.value)} placeholder="Ghi chú..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button onClick={()=>setShowNewWork(false)} className="px-4 py-2 bg-white border border-border rounded-xl text-xs font-medium hover:bg-gray-50">Huỷ</button>
-                <button onClick={addWork} className="flex items-center gap-1.5 px-5 py-2 bg-[#4f46e5] text-white rounded-xl text-xs font-medium hover:shadow-md transition-all"><Check size={14}/> Lưu công việc</button>
+                <button onClick={addWork} className="flex items-center gap-1.5 px-5 py-2 bg-primary text-white rounded-xl text-xs font-medium hover:shadow-md transition-all"><Check size={14}/> Lưu công việc</button>
               </div>
             </div>
           )}
@@ -324,15 +325,15 @@ export default function SeoPage() {
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gray-50/90 border-b-2 border-border">
                     <th className="w-9 px-3 py-3"><input type="checkbox" checked={selectedWorks.size===works.length&&works.length>0} onChange={()=>setSelectedWorks(selectedWorks.size===works.length?new Set():new Set(works.map(w=>w.id)))} className="accent-[#4f46e5] scale-90" /></th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-28">Ngày</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-36">Nhân sự</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-28">Nhóm CV</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left min-w-[180px]">Công việc</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left min-w-[120px]">URL</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-16">SL</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-36">Trạng thái</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-36">KPI</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-28">Ghi chú</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left w-28">Ngày</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left w-36">Nhân sự</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left w-28">Nhóm CV</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left min-w-[180px]">Công việc</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left min-w-[120px]">URL</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-16">SL</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left w-36">Trạng thái</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left w-36">KPI</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left w-28">Ghi chú</th>
                     <th className="w-9 px-3 py-3"></th>
                   </tr>
                 </thead>
@@ -386,21 +387,21 @@ export default function SeoPage() {
             <div className="bg-white rounded-2xl border-2 border-[#4f46e5] shadow-md p-5 space-y-3 animate-slide-in">
               <div className="flex items-center justify-between"><h3 className="font-semibold text-sm">Thêm kết quả SEO mới</h3><button onClick={()=>setShowNewResult(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={16}/></button></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                <div><label className="text-[11px] text-muted font-medium">Ngày</label><input type="date" value={nrDate} onChange={e=>setNrDate(e.target.value)} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
-                <div className="col-span-2"><label className="text-[11px] text-muted font-medium">Từ khóa *</label><input value={nrKeyword} onChange={e=>setNrKeyword(e.target.value)} placeholder="Nhập từ khóa..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
-                <div className="col-span-2"><label className="text-[11px] text-muted font-medium">URL</label><input value={nrUrl} onChange={e=>setNrUrl(e.target.value)} placeholder="URL..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Rank cũ</label><input type="number" value={nrPrev} onChange={e=>setNrPrev(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Rank mới</label><input type="number" value={nrCurr} onChange={e=>setNrCurr(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Click</label><input type="number" value={nrClicks} onChange={e=>setNrClicks(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Impression</label><input type="number" value={nrImpressions} onChange={e=>setNrImpressions(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Traffic</label><input type="number" value={nrTraffic} onChange={e=>setNrTraffic(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Lead</label><input type="number" value={nrLeads} onChange={e=>setNrLeads(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Đơn</label><input type="number" value={nrOrders} onChange={e=>setNrOrders(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
-                <div><label className="text-[11px] text-muted font-medium">Doanh thu</label><input type="number" value={nrRevenue} onChange={e=>setNrRevenue(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div><label className="text-xs text-muted font-medium">Ngày</label><input type="date" value={nrDate} onChange={e=>setNrDate(e.target.value)} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div className="col-span-2"><label className="text-xs text-muted font-medium">Từ khóa *</label><input value={nrKeyword} onChange={e=>setNrKeyword(e.target.value)} placeholder="Nhập từ khóa..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                <div className="col-span-2"><label className="text-xs text-muted font-medium">URL</label><input value={nrUrl} onChange={e=>setNrUrl(e.target.value)} placeholder="URL..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                <div><label className="text-xs text-muted font-medium">Rank cũ</label><input type="number" value={nrPrev} onChange={e=>setNrPrev(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div><label className="text-xs text-muted font-medium">Rank mới</label><input type="number" value={nrCurr} onChange={e=>setNrCurr(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div><label className="text-xs text-muted font-medium">Click</label><input type="number" value={nrClicks} onChange={e=>setNrClicks(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div><label className="text-xs text-muted font-medium">Impression</label><input type="number" value={nrImpressions} onChange={e=>setNrImpressions(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div><label className="text-xs text-muted font-medium">Traffic</label><input type="number" value={nrTraffic} onChange={e=>setNrTraffic(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div><label className="text-xs text-muted font-medium">Lead</label><input type="number" value={nrLeads} onChange={e=>setNrLeads(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div><label className="text-xs text-muted font-medium">Đơn</label><input type="number" value={nrOrders} onChange={e=>setNrOrders(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
+                <div><label className="text-xs text-muted font-medium">Doanh thu</label><input type="number" value={nrRevenue} onChange={e=>setNrRevenue(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-xs outline-none" /></div>
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button onClick={()=>setShowNewResult(false)} className="px-4 py-2 bg-white border border-border rounded-xl text-xs font-medium hover:bg-gray-50">Huỷ</button>
-                <button onClick={addResult} className="flex items-center gap-1.5 px-5 py-2 bg-[#4f46e5] text-white rounded-xl text-xs font-medium hover:shadow-md transition-all"><Check size={14}/> Lưu kết quả</button>
+                <button onClick={addResult} className="flex items-center gap-1.5 px-5 py-2 bg-primary text-white rounded-xl text-xs font-medium hover:shadow-md transition-all"><Check size={14}/> Lưu kết quả</button>
               </div>
             </div>
           )}
@@ -411,19 +412,19 @@ export default function SeoPage() {
               <table className="w-full table-fixed border-collapse"><colgroup><col className="w-10"/><col className="w-32"/><col className="w-44"/><col className="w-28"/><col className="min-w-[180px]"/><col className="min-w-[120px]"/><col className="w-20"/><col className="w-32"/><col className="w-44"/><col className="min-w-[150px]"/><col className="w-24"/></colgroup>
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gray-50/90 border-b-2 border-border">
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left w-28">Ngày</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left min-w-[140px]">Từ khóa</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left min-w-[120px]">URL</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-16">Rank cũ</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-16">Rank mới</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-center w-24">Thay đổi</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-16">Click</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-20">Impression</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-14">CTR</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-16">Traffic</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-12">Lead</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-14">Đơn</th>
-                    <th className="px-3 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right w-28">Doanh thu</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left w-28">Ngày</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left min-w-[140px]">Từ khóa</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left min-w-[120px]">URL</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-16">Rank cũ</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-16">Rank mới</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-center w-24">Thay đổi</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-16">Click</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-20">Impression</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-14">CTR</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-16">Traffic</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-12">Lead</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-14">Đơn</th>
+                    <th className="px-3 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right w-28">Doanh thu</th>
                     <th className="w-9 px-3 py-3"></th>
                   </tr>
                 </thead>
@@ -483,7 +484,7 @@ export default function SeoPage() {
                   </div>
                   <div><label className="text-xs font-medium text-muted mb-1.5 block">Ghi chú</label><textarea value={planForm.note} onChange={e=>setPlanForm({...planForm,note:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none resize-none h-24" /></div>
                 </div>
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border"><button onClick={()=>setPlanForm(null)} className="px-5 py-2.5 bg-white border border-border rounded-xl text-sm font-medium hover:bg-gray-50 transition-all">Huỷ</button><button onClick={savePlan} className="px-5 py-2.5 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:shadow-md transition-all">Lưu kế hoạch</button></div>
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border"><button onClick={()=>setPlanForm(null)} className="px-5 py-2.5 bg-white border border-border rounded-xl text-sm font-medium hover:bg-gray-50 transition-all">Huỷ</button><button onClick={savePlan} className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:shadow-md transition-all">Lưu kế hoạch</button></div>
               </div>
             </div>
           )}
@@ -496,7 +497,7 @@ export default function SeoPage() {
                   <div className={'h-1.5 '+(pct>=100?'bg-green-500':pct>=50?'bg-amber-500':'bg-gray-200')} />
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0"><h3 className="font-semibold text-sm text-[#171717]">{p.task}</h3>
+                      <div className="flex-1 min-w-0"><h3 className="font-semibold text-sm text-ink">{p.task}</h3>
                         <div className="flex items-center gap-2 text-xs text-muted mt-2 flex-wrap">
                           {p.period&&<span>📅 {p.period}</span>}{p.assigneeName&&<span>👤 {p.assigneeName}</span>}{p.deadline&&<span>⏰ {p.deadline}</span>}
                           <span className={'px-2 py-0.5 rounded-md text-xs font-medium border '+(STATUS_BADGE[p.status]||'bg-gray-50 text-gray-500')}>{STATUS_LABELS[p.status]}</span>
@@ -506,14 +507,14 @@ export default function SeoPage() {
                       <div className="text-right shrink-0">
                         <p className="text-xl font-bold">{pct}%</p>
                         <div className="w-28 h-2 bg-gray-100 rounded-full mt-1.5 overflow-hidden">
-                          <div className={'h-full rounded-full transition-all '+(pct>=100?'bg-green-500':pct>=50?'bg-amber-500':'bg-[#4f46e5]')} style={{width:pct+'%'}} />
+                          <div className={'h-full rounded-full transition-all '+(pct>=100?'bg-green-500':pct>=50?'bg-amber-500':'bg-primary')} style={{width:pct+'%'}} />
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                      <div className="flex items-center gap-2 text-xs text-muted"><span>Đã làm: <strong className="text-[#171717]">{p.completed_qty||0}</strong></span><span>/ {p.planned_qty||0}</span>{remaining>0&&<span className="text-amber-600">· Còn {remaining}</span>}</div>
+                      <div className="flex items-center gap-2 text-xs text-muted"><span>Đã làm: <strong className="text-ink">{p.completed_qty||0}</strong></span><span>/ {p.planned_qty||0}</span>{remaining>0&&<span className="text-amber-600">· Còn {remaining}</span>}</div>
                       <div className="flex items-center gap-3">
-                        <button onClick={()=>setPlanForm({id:p.id,period:p.period,objective:p.objective||'',kpi:p.kpi||'',task:p.task,assigneeId:p.assignee_id||'',deadline:p.deadline||'',plannedQty:p.planned_qty||0,completedQty:p.completed_qty||0,status:p.status,note:p.note||''})} className="text-xs text-muted hover:text-[#4f46e5] transition-all font-medium">Sửa</button>
+                        <button onClick={()=>setPlanForm({id:p.id,period:p.period,objective:p.objective||'',kpi:p.kpi||'',task:p.task,assigneeId:p.assignee_id||'',deadline:p.deadline||'',plannedQty:p.planned_qty||0,completedQty:p.completed_qty||0,status:p.status,note:p.note||''})} className="text-xs text-muted hover:text-primary transition-all font-medium">Sửa</button>
                         <button onClick={()=>delPlan(p.id)} className="text-xs text-muted hover:text-red-500 transition-all font-medium">Xoá</button>
                       </div>
                     </div>

@@ -19,6 +19,8 @@ export default function Channels() {
   const [edit, setEdit] = useState<any>(null);
   const [form, setForm] = useState({ name:'', platform:'Facebook', url:'', teamId:'', assignedTo:'', notes:'' });
   const [toast, setToast] = useState<{type:'success'|'error', message:string} | null>(null);
+  const [showNewTeam, setShowNewTeam] = useState(false);
+  const [newTeamName, setNewTeamName] = useState('');
   const [filterName, setFilterName] = useState('');
   const [filterPlatform, setFilterPlatform] = useState('');
   const [filterUser, setFilterUser] = useState('');
@@ -30,6 +32,8 @@ export default function Channels() {
   };
 
   const load = () => {
+    const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
+    if (u?.id) setCurrentUser(u);
     api('/channels').then(setChannels);
     api('/teams').then(setTeams);
     api('/users').then(setUsers).catch(() => {});
@@ -89,7 +93,7 @@ export default function Channels() {
       )}
 
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-[#171717]">Kênh Marketing</h1><p className="text-sm text-muted mt-1">Quản lý kênh truyền thông, phân công team & người phụ trách</p></div>
+        <div><h1 className="text-2xl font-bold text-ink">Kênh Marketing</h1><p className="text-sm text-muted mt-1">Quản lý kênh truyền thông, phân công team & người phụ trách</p></div>
         <button onClick={() => { setEdit(null); setForm({name:'',platform:'Facebook',url:'',teamId:'',assignedTo:'',notes:''}); setShowAdd(true); }}
           className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all">
           <Plus size={18} />Thêm kênh
@@ -116,10 +120,26 @@ export default function Channels() {
             </div>
             <div>
               <label className="text-xs font-medium text-muted mb-1.5 block">Team phụ trách</label>
-              <select value={form.teamId} onChange={e => setForm({...form,teamId:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25">
-                <option value="">Chọn team</option>
-                {teams.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
+              <div>
+                <select value={form.teamId} onChange={e => setForm({...form,teamId:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25">
+                  <option value="">Chọn team</option>
+                  <option value="__none__">— Không thuộc team nào —</option>
+                  {teams.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                <button onClick={() => setShowNewTeam(true)} className="mt-1.5 text-xs text-primary font-medium hover:underline flex items-center gap-1"><Plus size={12} /> Tạo team mới</button>
+                {showNewTeam && (
+                  <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowNewTeam(false)}>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 border border-border" onClick={e => e.stopPropagation()}>
+                      <h3 className="text-sm font-bold text-ink mb-3">Tạo team mới</h3>
+                      <input value={newTeamName} onChange={e=>setNewTeamName(e.target.value)} placeholder="Nhập tên team..." className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 mb-3" onKeyDown={async e => { if (e.key === 'Enter' && newTeamName.trim()) { try { const r = await api('/teams', { method:'POST', body:JSON.stringify({name:newTeamName.trim(), channelOnly: true}) }); if (r?.id) { setNewTeamName(''); setShowNewTeam(false); load(); setForm(p=>({...p, teamId: r.id})); showToast('success', 'Đã tạo team'); } } catch { showToast('error', 'Lỗi tạo team'); } }}} />
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => setShowNewTeam(false)} className="px-4 py-2 text-sm font-medium text-muted hover:text-ink transition-all">Huỷ</button>
+                        <button onClick={async () => { if (!newTeamName.trim()) return; try { const r = await api('/teams', { method:'POST', body:JSON.stringify({name:newTeamName.trim(), channelOnly: true}) }); if (r?.id) { setNewTeamName(''); setShowNewTeam(false); load(); setForm(p=>({...p, teamId: r.id})); showToast('success', 'Đã tạo team'); } } catch { showToast('error', 'Lỗi tạo team'); } }} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all">Tạo</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             <div>
               <label className="text-xs font-medium text-muted mb-1.5 block">Người phụ trách</label>
@@ -151,16 +171,16 @@ export default function Channels() {
             <option value="">Tất cả nhân sự</option>
             {users.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
-          <span className="text-[11px] text-muted ml-auto">{(channels.filter(c => (!filterName || c.name.toLowerCase().includes(filterName.toLowerCase())) && (!filterPlatform || c.platform === filterPlatform) && (!filterUser || c.assigned_to === filterUser))).length} kênh</span>
+          <span className="text-xs text-muted ml-auto">{(channels.filter(c => (!filterName || c.name.toLowerCase().includes(filterName.toLowerCase())) && (!filterPlatform || c.platform === filterPlatform) && (!filterUser || c.assigned_to === filterUser))).length} kênh</span>
         </div>
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-border">
-              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Kênh</th>
-              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Nền tảng</th>
-              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Team</th>
-              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Người phụ trách</th>
-              <th className="px-4 py-3 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Thao tác</th>
+              <th className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left">Kênh</th>
+              <th className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left">Nền tảng</th>
+              <th className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left">Team</th>
+              <th className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-left">Người phụ trách</th>
+              <th className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
@@ -172,18 +192,18 @@ export default function Channels() {
                       {c.platform?.charAt(0) || '?'}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-[#171717]">{c.name}</p>
-                      {c.url && <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-muted hover:text-[#4f46e5] flex items-center gap-1 mt-0.5"><ExternalLink size={10} />{c.url}</a>}
-                      {c.notes && <p className="text-[10px] text-muted mt-0.5 max-w-[200px] truncate">{c.notes}</p>}
+                      <p className="text-sm font-medium text-ink">{c.name}</p>
+                      {c.url && <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted hover:text-primary flex items-center gap-1 mt-0.5"><ExternalLink size={10} />{c.url}</a>}
+                      {c.notes && <p className="text-xs text-muted mt-0.5 max-w-[200px] truncate">{c.notes}</p>}
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3.5">
-                  <span className={'inline-flex px-2.5 py-1 rounded-full text-[11px] font-medium ' + (PLATFORM_COLORS[c.platform] || 'bg-gray-100 text-gray-600')}>{c.platform}</span>
+                  <span className={'inline-flex px-2.5 py-1 rounded-full text-xs font-medium ' + (PLATFORM_COLORS[c.platform] || 'bg-gray-100 text-gray-600')}>{c.platform}</span>
                 </td>
-                <td className="px-4 py-3.5 text-sm text-[#808080]">{c.teamName || '—'}</td>
+                <td className="px-4 py-3.5 text-sm text-muted">{c.teamName || '—'}</td>
                 <td className="px-4 py-3.5">
-                  {c.assignedToName ? <span className="text-sm text-[#171717]">{c.assignedToName}</span> : <span className="text-sm text-[#d4d4d4]">—</span>}
+                  {c.assignedToName ? <span className="text-sm text-ink">{c.assignedToName}</span> : <span className="text-sm text-[#d4d4d4]">—</span>}
                 </td>
                 <td className="px-4 py-3.5 text-right">
                   <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg hover:bg-blue-50 text-muted hover:text-blue-500 transition-all" title="Sửa"><Edit3 size={14} /></button>

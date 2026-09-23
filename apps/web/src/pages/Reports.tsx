@@ -247,8 +247,8 @@ export default function Reports() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#171717] flex items-center gap-2">
-            <FileText size={22} className="text-[#4f46e5]" /> Báo cáo hàng ngày
+          <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+            <FileText size={22} className="text-primary" /> Báo cáo hàng ngày
           </h1>
           <p className="text-sm text-muted mt-1">Nhân sự báo cáo công việc hàng ngày, đính kèm số liệu từ các module</p>
         </div>
@@ -262,7 +262,7 @@ export default function Reports() {
         (user.role === 'admin' || user.role === 'manager') && { key: 'received', label: 'Đã nhận', icon: Inbox },
         ].filter(Boolean).map(t => (
           <button key={t.key} onClick={() => { setTab(t.key); nav('/crm/reports/' + t.key); }}
-            className={'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ' + (tab === t.key as any ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-50')}>
+            className={'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ' + (tab === t.key as any ? 'bg-primary text-white shadow-sm' : 'text-muted hover:text-ink hover:bg-gray-50')}>
             <t.icon size={15} /> {t.label}
           </button>
         ))}
@@ -274,7 +274,7 @@ export default function Reports() {
           <div className="lg:col-span-2 space-y-4">
             <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b border-border bg-gray-50/60 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-[#171717]">Nội dung báo cáo</h2>
+                <h2 className="text-sm font-bold text-ink">Nội dung báo cáo</h2>
                 <div className="relative">
                   <button onClick={() => setShowCalendar(!showCalendar)}
                     className="flex items-center gap-1 px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-medium hover:bg-gray-50 transition-all">
@@ -330,7 +330,7 @@ export default function Reports() {
                       </div>
                     ))}
                     <button onClick={() => setExtraTasks([...extraTasks, ""])}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted hover:text-[#4f46e5] transition-all">
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted hover:text-primary transition-all">
                       <span className="w-4 h-4 rounded-full border-2 border-dashed border-current grid place-items-center text-[8px]">+</span>
                       Thêm công việc</button>
                   </div>
@@ -347,7 +347,7 @@ export default function Reports() {
                           if (selected) setRecipients(prev => prev.filter(id => id !== u.id));
                           else setRecipients(prev => [...prev, u.id]);
                         }}
-                          className={"px-3 py-1.5 rounded-lg text-xs font-medium border transition-all " + (selected ? "bg-[#4f46e5] text-white border-[#4f46e5]" : "bg-white text-muted border-border hover:border-[#4f46e5]/40")}>
+                          className={"px-3 py-1.5 rounded-lg text-xs font-medium border transition-all " + (selected ? "bg-primary text-white border-[#4f46e5]" : "bg-white text-muted border-border hover:border-[#4f46e5]/40")}>
                           {selected && "✓ "}{u.name || u.email}
                         </button>
                       );
@@ -365,7 +365,7 @@ export default function Reports() {
                     <input type="file" className="hidden" onChange={handleFileUpload} />
                   </label>
                   <button onClick={async () => { try { const files = await api('/drive'); setDriveFiles(files || []); setDriveFolderId(null); setDriveSearch(''); setShowDrivePicker(true); } catch { } }}
-                    className="flex items-center gap-2 px-4 py-2.5 border border-border rounded-xl text-sm text-muted hover:text-[#171717] hover:bg-[#fafafa] transition-all">
+                    className="flex items-center gap-2 px-4 py-2.5 border border-border rounded-xl text-sm text-muted hover:text-ink hover:bg-[#fafafa] transition-all">
                     <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                     <span>Chọn từ Kho dữ liệu</span>
                   </button>
@@ -393,7 +393,7 @@ export default function Reports() {
                 if (!confirming) { setConfirming(true); return; }
                 submitReport();
               }} disabled={!content.trim() || sending}
-                className="px-6 py-2.5 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:shadow-md transition-all disabled:opacity-40 flex items-center gap-2">
+                className="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:shadow-md transition-all disabled:opacity-40 flex items-center gap-2">
                 {sending ? 'Đang gửi...' : confirming ? 'Xác nhận gửi?' : <><Send size={14} /> Gửi báo cáo</>}
               </button>
             </div>
@@ -404,8 +404,8 @@ export default function Reports() {
             {/* B2 / Actuals */}
             <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
               <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center gap-2">
-                <BarChart3 size={14} className="text-[#4f46e5]" />
-                <h3 className="text-xs font-semibold text-[#171717]">Kết quả kinh doanh</h3>
+                <BarChart3 size={14} className="text-primary" />
+                <h3 className="text-xs font-semibold text-ink">Kết quả kinh doanh</h3>
               </div>
               <div className="p-4 space-y-3">
                 <div className="flex justify-between items-center">
@@ -414,7 +414,7 @@ export default function Reports() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted">CP QC 3M</span>
-                  <span className="text-sm font-bold text-[#4f46e5]">{metrics.b3TotalCost ? Number(metrics.b3TotalCost).toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
+                  <span className="text-sm font-bold text-primary">{metrics.b3TotalCost ? Number(metrics.b3TotalCost).toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted">CP QC eSim</span>
@@ -427,7 +427,7 @@ export default function Reports() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-muted">Giá Mess T.bình</span>
-                  <span className="text-sm font-bold text-[#4f46e5]">{metrics.avgMessCost ? Number(metrics.avgMessCost).toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
+                  <span className="text-sm font-bold text-primary">{metrics.avgMessCost ? Number(metrics.avgMessCost).toLocaleString('vi-VN') + 'đ' : '0đ'}</span>
                 </div>
               </div>
             </div>
@@ -436,13 +436,13 @@ export default function Reports() {
             <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
               <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center gap-2">
                 <TrendingUp size={14} className="text-amber-600" />
-                <h3 className="text-xs font-semibold text-[#171717]">Quảng cáo</h3>
+                <h3 className="text-xs font-semibold text-ink">Quảng cáo</h3>
               </div>
               <div className="p-4 space-y-3">
                 <div className="flex justify-between items-center"><span className="text-xs text-muted">CP có thuế</span><span className="text-sm font-bold">{metrics.adsTotal ? Number(metrics.adsTotal).toLocaleString('vi-VN') + 'đ' : '0đ'}</span></div>
                 <div className="flex justify-between items-center"><span className="text-xs text-muted">Doanh thu</span><span className="text-sm font-bold">{metrics.adsRevenue ? Number(metrics.adsRevenue).toLocaleString('vi-VN') + 'đ' : '0đ'}</span></div>
                 <div className="flex justify-between items-center"><span className="text-xs text-muted">Đơn</span><span className="text-sm font-bold">{metrics.adsOrders || 0}</span></div>
-                <div className="flex justify-between items-center"><span className="text-xs text-muted">ROAS</span><span className="text-sm font-bold text-[#4f46e5]">{metrics.roas || '—'}x</span></div>
+                <div className="flex justify-between items-center"><span className="text-xs text-muted">ROAS</span><span className="text-sm font-bold text-primary">{metrics.roas || '—'}x</span></div>
               </div>
             </div>
 
@@ -450,7 +450,7 @@ export default function Reports() {
             <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
               <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center gap-2">
                 <TrendingUp size={14} className="text-green-600" />
-                <h3 className="text-xs font-semibold text-[#171717]">Doanh thu SEO</h3>
+                <h3 className="text-xs font-semibold text-ink">Doanh thu SEO</h3>
               </div>
               <div className="p-4 space-y-2">
                 <div className="flex justify-between items-center"><span className="text-xs text-muted">Đơn</span><span className="text-sm font-bold">{metrics.seoOrders || 0}</span></div>
@@ -462,7 +462,7 @@ export default function Reports() {
             <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
               <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center gap-2">
                 <MessageSquare size={14} className="text-purple-600" />
-                <h3 className="text-xs font-semibold text-[#171717]">Content Social</h3>
+                <h3 className="text-xs font-semibold text-ink">Content Social</h3>
               </div>
               <div className="p-4 space-y-2">
                 <div className="flex justify-between items-center"><span className="text-xs text-muted">Bài viết</span><span className="text-sm font-bold">{metrics.socialPosts || 0}</span></div>
@@ -476,11 +476,11 @@ export default function Reports() {
       {tab === 'history' && (
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold tracking-tight text-[#171717]">Lịch sử báo cáo <span className="text-sm font-normal text-[#808080]">({filteredReports.length})</span></h2>
+            <h2 className="text-lg font-semibold tracking-tight text-ink">Lịch sử báo cáo <span className="text-sm font-normal text-muted">({filteredReports.length})</span></h2>
             <div style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}} className="flex items-center gap-1 bg-white rounded-lg p-0.5">
               {dateRange.map(dr => (
                 <button key={dr.key} onClick={() => setReceivedDateRangeKey(dr.key)}
-                  className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (receivedDateRangeKey === dr.key ? 'bg-[#171717] text-white' : 'text-[#808080] hover:text-[#171717]')}>
+                  className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (receivedDateRangeKey === dr.key ? 'bg-[#171717] text-white' : 'text-muted hover:text-ink')}>
                   {dr.label}
                 </button>
               ))}
@@ -491,12 +491,12 @@ export default function Reports() {
             <table className="w-full border-collapse bg-white">
               <thead>
                 <tr className="text-left">
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Ngày</th>
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Người gửi</th>
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Nội dung</th>
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Chỉ số</th>
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Tình trạng</th>
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Người nhận</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Ngày</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Người gửi</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Nội dung</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Chỉ số</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Tình trạng</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Người nhận</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ebebeb]">
@@ -516,13 +516,13 @@ export default function Reports() {
                     <tr key={r.id} onClick={async () => { setHistoryDetail(r); try { const c = await api('/reports/' + r.id + '/comments'); setReportComments(c || []); } catch { setReportComments([]); } }}
                       className="cursor-pointer transition-all duration-150 hover:bg-[#fafafa]">
                       <td className="px-6 py-4">
-                        <p className="text-sm font-medium text-[#171717]">{fmtDate}</p>
-                        <p className="text-[11px] text-[#808080]">{fmtTime}</p>
+                        <p className="text-sm font-medium text-ink">{fmtDate}</p>
+                        <p className="text-xs text-muted">{fmtTime}</p>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shrink-0">{senderName[0]}</div>
-                          <p className="text-sm font-semibold text-[#171717]">{senderName}</p>
+                          <p className="text-sm font-semibold text-ink">{senderName}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -530,13 +530,13 @@ export default function Reports() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1.5">
-                          {d.metrics?.todayOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0f4ff] text-[#0068d6] text-[11px] font-medium rounded-full">{d.metrics.todayOrders}</span>}
-                          {d.metrics?.todayCost > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fffbeb] text-[#b8860b] text-[11px] font-medium rounded-full">{Number(d.metrics.todayCost).toLocaleString('vi-VN')}đ</span>}
-                          {d.metrics?.adsTotal > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fdf2f8] text-[#db2777] text-[11px] font-medium rounded-full">{Number(d.metrics.adsTotal).toLocaleString('vi-VN')}đ</span>}
+                          {d.metrics?.todayOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0f4ff] text-[#0068d6] text-xs font-medium rounded-full">{d.metrics.todayOrders}</span>}
+                          {d.metrics?.todayCost > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fffbeb] text-[#b8860b] text-xs font-medium rounded-full">{Number(d.metrics.todayCost).toLocaleString('vi-VN')}đ</span>}
+                          {d.metrics?.adsTotal > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fdf2f8] text-[#db2777] text-xs font-medium rounded-full">{Number(d.metrics.adsTotal).toLocaleString('vi-VN')}đ</span>}
                         </div>
                       </td>
                       <td className="px-6 py-4"><span className={'inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full '+(r.status==='approved'?'bg-[#f0fdf4] text-[#16a34a]':r.status==='rejected'?'bg-[#fef2f2] text-[#dc2626]':'bg-[#fff7ed] text-[#ea580c]')}>{(r.status==='approved'?'✓ Duyệt':r.status==='rejected'?'✗ Từ chối':'● Chờ')}</span></td>
-                      <td className="px-6 py-4 text-xs text-[#808080] max-w-[120px] truncate" title={recvs}>{recvs || '—'}</td>
+                      <td className="px-6 py-4 text-xs text-muted max-w-[120px] truncate" title={recvs}>{recvs || '—'}</td>
                       <td className="px-6 py-4">
                         <button onClick={e => { e.stopPropagation(); if (confirm('Xoá báo cáo này?')) api('/reports/' + r.id, { method:'DELETE' }).then(() => loadReports()).catch(() => {}); }} className="p-1.5 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-all" title="Xoá"><Trash2 size={14} /></button>
                       </td></tr>
@@ -549,7 +549,7 @@ export default function Reports() {
       )}{tab === 'received' && (
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold tracking-tight text-[#171717]">Báo cáo đã nhận <span className="text-sm font-normal text-[#808080]">({receivedReports.length})</span></h2>
+            <h2 className="text-lg font-semibold tracking-tight text-ink">Báo cáo đã nhận <span className="text-sm font-normal text-muted">({receivedReports.length})</span></h2>
             <div style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}} className="flex items-center gap-1 bg-white rounded-lg p-0.5">
               {[
                 { key: 'today', label: 'Hôm nay' },
@@ -557,7 +557,7 @@ export default function Reports() {
                 { key: 'month', label: '30 ngày' },
               ].map(dr => (
                 <button key={dr.key} onClick={() => setReceivedDateRangeKey(dr.key)}
-                  className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (receivedDateRangeKey === dr.key ? 'bg-[#171717] text-white' : 'text-[#808080] hover:text-[#171717]')}>
+                  className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (receivedDateRangeKey === dr.key ? 'bg-[#171717] text-white' : 'text-muted hover:text-ink')}>
                   {dr.label}
                 </button>
               ))}
@@ -568,11 +568,11 @@ export default function Reports() {
             <table className="w-full border-collapse bg-white">
               <thead>
                 <tr className="text-left">
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Người gửi</th>
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Ngày</th>
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Nội dung</th>
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Chỉ số</th>
-                  <th className="px-6 py-3 text-[11px] font-semibold text-[#808080] uppercase tracking-wider bg-[#fafafa]">Tình trạng</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Người gửi</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Ngày</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Nội dung</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Chỉ số</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Tình trạng</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ebebeb]">
@@ -580,10 +580,10 @@ export default function Reports() {
                   <tr>
                     <td colSpan={5} className="px-6 py-16 text-center">
                       <div className="w-12 h-12 rounded-full bg-[#f5f5f5] flex items-center justify-center mx-auto mb-3">
-                        <Inbox size={22} className="text-[#808080]" />
+                        <Inbox size={22} className="text-muted" />
                       </div>
                       <p className="text-sm font-medium text-[#666]">Chưa có báo cáo nào</p>
-                      <p className="text-[11px] text-[#999] mt-1">Khi nhân sự gửi báo cáo, chúng sẽ xuất hiện ở đây</p>
+                      <p className="text-xs text-[#999] mt-1">Khi nhân sự gửi báo cáo, chúng sẽ xuất hiện ở đây</p>
                     </td>
                   </tr>
                 ) : receivedReports.map((r: any, i: number) => {
@@ -595,19 +595,19 @@ export default function Reports() {
                     <tr key={r.id} onClick={async () => { setHistoryDetail(r); try { const c = await api('/reports/' + r.id + '/comments'); setReportComments(c || []); } catch { setReportComments([]); } }}
                       className="cursor-pointer transition-all duration-150 hover:bg-[#fafafa]">
                       <td className="px-6 py-4">
-                        <p className="text-sm font-semibold text-[#171717]">{senderName}</p>
-                        <p className="text-[11px] text-[#808080] mt-0.5">{fmtTime}</p>
+                        <p className="text-sm font-semibold text-ink">{senderName}</p>
+                        <p className="text-xs text-muted mt-0.5">{fmtTime}</p>
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#808080]">{fmtDate}</td>
+                      <td className="px-6 py-4 text-sm text-muted">{fmtDate}</td>
                       <td className="px-6 py-4">
                         <p className="text-sm text-[#4d4d4d] leading-relaxed line-clamp-2 max-w-xs">{d.content || '—'}</p>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1.5">
-                          {d.metrics?.todayOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0f4ff] text-[#0068d6] text-[11px] font-medium rounded-full">{d.metrics.todayOrders}</span>}
-                          {d.metrics?.todayCost > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fffbeb] text-[#b8860b] text-[11px] font-medium rounded-full">{Number(d.metrics.todayCost).toLocaleString('vi-VN')}đ</span>}
-                          {d.metrics?.adsTotal > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fdf2f8] text-[#db2777] text-[11px] font-medium rounded-full">{Number(d.metrics.adsTotal).toLocaleString('vi-VN')}đ</span>}
-                          {d.metrics?.seoOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0fdf4] text-[#16a34a] text-[11px] font-medium rounded-full">{d.metrics.seoOrders}</span>}
+                          {d.metrics?.todayOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0f4ff] text-[#0068d6] text-xs font-medium rounded-full">{d.metrics.todayOrders}</span>}
+                          {d.metrics?.todayCost > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fffbeb] text-[#b8860b] text-xs font-medium rounded-full">{Number(d.metrics.todayCost).toLocaleString('vi-VN')}đ</span>}
+                          {d.metrics?.adsTotal > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#fdf2f8] text-[#db2777] text-xs font-medium rounded-full">{Number(d.metrics.adsTotal).toLocaleString('vi-VN')}đ</span>}
+                          {d.metrics?.seoOrders > 0 && <span className="inline-flex items-center px-2.5 py-1 bg-[#f0fdf4] text-[#16a34a] text-xs font-medium rounded-full">{d.metrics.seoOrders}</span>}
                         </div>
                       </td>
                       <td className="px-6 py-4"><select value={r.status||'pending'} onChange={async e=>{const v=e.target.value;if(v==='approved'){await api('/reports/'+r.id+'/status',{method:'PATCH',body:JSON.stringify({status:'approved'})})}else if(v==='rejected'){const fb=prompt('Nhập lý do từ chối:');if(!fb)return;await api('/reports/'+r.id+'/status',{method:'PATCH',body:JSON.stringify({status:'rejected',feedback:fb})})}const u=JSON.parse(localStorage.getItem('zeyfi_user')||'{}');const dt=receivedDateRangeKey==='custom'?{from:recvDateFrom,to:recvDateTo}:calcDate(receivedDateRangeKey);const r2=await api('/reports/received?userId='+u.id+'&from='+dt.from+'&to='+dt.to);setReceivedReports(r2||[]);}} className={'px-2.5 py-1 text-xs font-medium rounded-full border-0 outline-none cursor-pointer '+(r.status==='approved'?'bg-[#f0fdf4] text-[#16a34a]':r.status==='rejected'?'bg-[#fef2f2] text-[#dc2626]':'bg-[#fff7ed] text-[#ea580c]')}><option value='pending'>● Chờ</option><option value='approved'>✓ Duyệt</option><option value='rejected'>✗ Từ chối</option></select></td>
@@ -629,11 +629,11 @@ export default function Reports() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-sm font-bold">{getUserName(detailReport.user_id)[0]}</div>
                 <div>
-                  <h3 className="text-sm font-semibold text-[#171717]">{getUserName(detailReport.user_id)}</h3>
-                  <p className="text-[11px] text-[#808080]">{formatDate(detailReport.date)} · {formatTime(detailReport.created_at)}</p>
+                  <h3 className="text-sm font-semibold text-ink">{getUserName(detailReport.user_id)}</h3>
+                  <p className="text-xs text-muted">{formatDate(detailReport.date)} · {formatTime(detailReport.created_at)}</p>
                 </div>
               </div>
-              <button onClick={() => setDetailReport(null)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#f5f5f5] transition-all"><X size={16} className="text-[#808080]" /></button>
+              <button onClick={() => setDetailReport(null)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#f5f5f5] transition-all"><X size={16} className="text-muted" /></button>
             </div>
 
             {/* Body */}
@@ -644,8 +644,8 @@ export default function Reports() {
                   <>
                     {/* Nội dung c\u00f4ng vi\u1ec7c */}
                     <div>
-                      <h4 className="text-[11px] font-semibold text-[#808080] uppercase tracking-wider mb-2">Nội dung</h4>
-                      <p className="text-sm text-[#171717] leading-relaxed whitespace-pre-wrap">{dd.content || '—'}</p>
+                      <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Nội dung</h4>
+                      <p className="text-sm text-ink leading-relaxed whitespace-pre-wrap">{dd.content || '—'}</p>
                     </div>
 
                     {/* Lý do / Khó khăn / Đề xuất */}
@@ -673,12 +673,12 @@ export default function Reports() {
                     {/* Công việc liên quan */}
                     {dd.extraTasks && dd.extraTasks.length > 0 && (
                       <div>
-                        <h4 className="text-[11px] font-semibold text-[#808080] uppercase tracking-wider mb-3">Công việc liên quan</h4>
+                        <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Công việc liên quan</h4>
                         <div className="space-y-2">
                           {dd.extraTasks.filter((t:string) => t.trim()).map((t:string, i:number) => (
                             <div key={i} className="flex items-center gap-3 px-4 py-3 bg-[#fafafa] rounded-xl" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <span className="w-2 h-2 rounded-full bg-[#4f46e5] shrink-0" />
-                              <span className="text-sm text-[#171717]">{t}</span>
+                              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                              <span className="text-sm text-ink">{t}</span>
                             </div>
                           ))}
                         </div>
@@ -688,42 +688,42 @@ export default function Reports() {
                     {/* Chỉ số */}
                     {dd.metrics && (
                       <div>
-                        <h4 className="text-[11px] font-semibold text-[#808080] uppercase tracking-wider mb-3">Chỉ số kinh doanh</h4>
+                        <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Chỉ số kinh doanh</h4>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           {dd.metrics.todayOrders > 0 && (
                             <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-xl font-bold text-[#171717]">{dd.metrics.todayOrders}</p>
-                              <p className="text-[11px] text-[#808080] mt-1 font-medium">Đơn hàng</p>
+                              <p className="text-xl font-bold text-ink">{dd.metrics.todayOrders}</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Đơn hàng</p>
                             </div>
                           )}
                           {dd.metrics.todayCost > 0 && (
                             <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-xl font-bold text-[#171717]">{Number(dd.metrics.todayCost).toLocaleString('vi-VN')}đ</p>
-                              <p className="text-[11px] text-[#808080] mt-1 font-medium">Chi phí</p>
+                              <p className="text-xl font-bold text-ink">{Number(dd.metrics.todayCost).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Chi phí</p>
                             </div>
                           )}
                           {dd.metrics.adsTotal > 0 && (
                             <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
                               <p className="text-xl font-bold text-[#0068d6]">{Number(dd.metrics.adsTotal).toLocaleString('vi-VN')}đ</p>
-                              <p className="text-[11px] text-[#808080] mt-1 font-medium">CP QC</p>
+                              <p className="text-xs text-muted mt-1 font-medium">CP QC</p>
                             </div>
                           )}
                           {dd.metrics.roas !== '—' && (
                             <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
                               <p className="text-xl font-bold text-[#7c3aed]">{dd.metrics.roas}x</p>
-                              <p className="text-[11px] text-[#808080] mt-1 font-medium">ROAS</p>
+                              <p className="text-xs text-muted mt-1 font-medium">ROAS</p>
                             </div>
                           )}
                           {dd.metrics.seoOrders > 0 && (
                             <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
                               <p className="text-xl font-bold text-[#16a34a]">{dd.metrics.seoOrders}</p>
-                              <p className="text-[11px] text-[#808080] mt-1 font-medium">Đơn SEO</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Đơn SEO</p>
                             </div>
                           )}
                           {dd.metrics.publishedPosts > 0 && (
                             <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-xl font-bold text-[#171717]">{dd.metrics.publishedPosts}</p>
-                              <p className="text-[11px] text-[#808080] mt-1 font-medium">Bài đã đăng</p>
+                              <p className="text-xl font-bold text-ink">{dd.metrics.publishedPosts}</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Bài đã đăng</p>
                             </div>
                           )}
                         </div>
@@ -733,11 +733,11 @@ export default function Reports() {
                     {/* File đính kèm */}
                     {dd.attachments && dd.attachments.length > 0 && (
                       <div>
-                        <h4 className="text-[11px] font-semibold text-[#808080] uppercase tracking-wider mb-3">File đính kèm</h4>
+                        <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">File đính kèm</h4>
                         <div className="flex flex-wrap gap-2">
                           {dd.attachments.map((url:string, i:number) => (
                             <a key={i} href={url} target="_blank" rel="noreferrer"
-                              className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] rounded-xl text-xs text-[#4d4d4d] hover:text-[#4f46e5] transition-all"
+                              className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] rounded-xl text-xs text-[#4d4d4d] hover:text-primary transition-all"
                               style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
                               <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1={12} y1={15} x2={12} y2={3}/></svg>
                               {url.split('/').pop() || ('File ' + (i+1))}
@@ -758,19 +758,19 @@ export default function Reports() {
         <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDrivePicker(false)}>
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[70vh] flex flex-col overflow-hidden" style={{boxShadow:'rgba(0,0,0,0.12) 0px 0px 0px 1px, rgba(0,0,0,0.08) 0px 4px 12px'}} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#ebebeb]">
-              <h3 className="text-sm font-semibold text-[#171717]">Chọn file từ Kho dữ liệu</h3>
-              <button onClick={() => setShowDrivePicker(false)} className="p-1.5 rounded-lg hover:bg-[#f5f5f5] transition-all"><X size={16} className="text-[#808080]" /></button>
+              <h3 className="text-sm font-semibold text-ink">Chọn file từ Kho dữ liệu</h3>
+              <button onClick={() => setShowDrivePicker(false)} className="p-1.5 rounded-lg hover:bg-[#f5f5f5] transition-all"><X size={16} className="text-muted" /></button>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 border-b border-[#ebebeb] bg-[#fafafa]">
-              {driveFolderId && <button onClick={async()=>{const r=await api('/drive');setDriveFiles(r||[]);setDriveFolderId(null);setDriveSearch('');}} className="flex items-center gap-1 text-[11px] text-[#808080] hover:text-[#171717] transition-all"><svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="15 18 9 12 15 6"/></svg>Kho dữ liệu</button>}
+              {driveFolderId && <button onClick={async()=>{const r=await api('/drive');setDriveFiles(r||[]);setDriveFolderId(null);setDriveSearch('');}} className="flex items-center gap-1 text-xs text-muted hover:text-ink transition-all"><svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="15 18 9 12 15 6"/></svg>Kho dữ liệu</button>}
               <input value={driveSearch} onChange={e => setDriveSearch(e.target.value)} placeholder="Tìm kiếm..." autoFocus
-                className="flex-1 px-3 py-1.5 bg-white border border-[#ebebeb] rounded-lg text-xs text-[#171717] outline-none focus:border-[#4f46e5]/40 transition-all" />
+                className="flex-1 px-3 py-1.5 bg-white border border-[#ebebeb] rounded-lg text-xs text-ink outline-none focus:border-[#4f46e5]/40 transition-all" />
             </div>
             <div className="flex-1 overflow-y-auto">
               {driveFiles.length === 0 ? (
                 <div className="text-center py-12">
                   <Folder size={36} className="mx-auto mb-3 text-[#d4d4d4]" />
-                  <p className="text-sm text-[#808080]">Chưa có file nào</p>
+                  <p className="text-sm text-muted">Chưa có file nào</p>
                 </div>
               ) : (
                 <div>
@@ -780,11 +780,11 @@ export default function Reports() {
                       {isF ? <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center"><svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-amber-500"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div> : f.mime_type?.startsWith('image/') ? (
                         <img src={f.url} alt={f.name} className="w-10 h-10 rounded-lg object-cover" />
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-[#f5f5f5] flex items-center justify-center"><FileText size={18} className="text-[#808080]" /></div>
+                        <div className="w-10 h-10 rounded-lg bg-[#f5f5f5] flex items-center justify-center"><FileText size={18} className="text-muted" /></div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#171717] truncate">{f.name}</p>
-                        <p className="text-[11px] text-[#808080]">{isF ? 'Thư mục' : (f.uploadedByName || 'File')}</p>
+                        <p className="text-sm font-medium text-ink truncate">{f.name}</p>
+                        <p className="text-xs text-muted">{isF ? 'Thư mục' : (f.uploadedByName || 'File')}</p>
                       </div>
                       <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-[#d4d4d4] shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
@@ -802,7 +802,7 @@ export default function Reports() {
         <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setHistoryDetail(null)}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl border border-border overflow-hidden max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="px-5 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between sticky top-0 z-10">
-              <h3 className="font-bold text-sm text-[#171717]">Chi tiết báo cáo</h3>
+              <h3 className="font-bold text-sm text-ink">Chi tiết báo cáo</h3>
               <button onClick={() => setHistoryDetail(null)} className="p-1 rounded hover:bg-gray-200 text-muted"><X size={16} /></button>
             </div>
             <div className="p-6 flex gap-6">
@@ -812,38 +812,38 @@ export default function Reports() {
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shadow-lg shadow-indigo-200">{getUserName(historyDetail.user_id)?.charAt(0) || '?'}</div>
                   <div>
-                    <p className="text-sm font-semibold text-[#171717]">{getUserName(historyDetail.user_id)}</p>
-                    <p className="text-[11px] text-[#808080]">{formatDate(historyDetail.date)} · {formatTime(historyDetail.created_at)}</p>
+                    <p className="text-sm font-semibold text-ink">{getUserName(historyDetail.user_id)}</p>
+                    <p className="text-xs text-muted">{formatDate(historyDetail.date)} · {formatTime(historyDetail.created_at)}</p>
                   </div>
                 </div>
                 {/* Content */}
                 <div className="rounded-xl p-4" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 2px'}}>
-                  <p className="text-[10px] font-semibold text-[#808080] uppercase tracking-wider mb-2">Nội dung báo cáo</p>
-                  <p className="text-sm text-[#171717] leading-relaxed whitespace-pre-wrap">{(JSON.parse(historyDetail.data||'{}')).content||'—'}</p>
-                  {(JSON.parse(historyDetail.data||'{}')).notes && <p className="text-xs text-[#808080] mt-2 pt-2" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}>{(JSON.parse(historyDetail.data||'{}')).notes}</p>}
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Nội dung báo cáo</p>
+                  <p className="text-sm text-ink leading-relaxed whitespace-pre-wrap">{(JSON.parse(historyDetail.data||'{}')).content||'—'}</p>
+                  {(JSON.parse(historyDetail.data||'{}')).notes && <p className="text-xs text-muted mt-2 pt-2" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}>{(JSON.parse(historyDetail.data||'{}')).notes}</p>}
                 </div>
                 {/* Difficulties & Suggestions */}
                 <div className="grid grid-cols-2 gap-3">
-                  {(JSON.parse(historyDetail.data||'{}')).difficulties && <div className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-[10px] font-semibold text-red-500 uppercase tracking-wider mb-1">Khó khăn</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).difficulties}</p></div>}
-                  {(JSON.parse(historyDetail.data||'{}')).suggestions && <div className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1">Đề xuất</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).suggestions}</p></div>}
+                  {(JSON.parse(historyDetail.data||'{}')).difficulties && <div className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-1">Khó khăn</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).difficulties}</p></div>}
+                  {(JSON.parse(historyDetail.data||'{}')).suggestions && <div className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Đề xuất</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).suggestions}</p></div>}
                 </div>
                 {/* Extra Tasks */}
-                {(JSON.parse(historyDetail.data||'{}')).extraTasks?.length > 0 && <div><p className="text-[10px] font-semibold text-[#808080] uppercase tracking-wider mb-2">Công việc khác</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).extraTasks.map((t:any,i:number)=><span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{t}</span>)}</div></div>}
+                {(JSON.parse(historyDetail.data||'{}')).extraTasks?.length > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Công việc khác</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).extraTasks.map((t:any,i:number)=><span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{t}</span>)}</div></div>}
                 {/* Metrics */}
-                {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div><p className="text-[10px] font-semibold text-[#808080] uppercase tracking-wider mb-3">Chỉ số kinh doanh</p><div className="flex flex-wrap gap-3">{(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#4f46e5]">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</p><p className="text-[10px] text-[#808080] mt-0.5 font-medium">Đơn</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.todayCost > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.todayCost).toLocaleString('vi-VN')}</p><p className="text-[10px] text-[#808080] mt-0.5 font-medium">Chi phí</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.adsTotal > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#db2777]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal).toLocaleString('vi-VN')}</p><p className="text-[10px] text-[#808080] mt-0.5 font-medium">QC</p></div>}</div></div>}
+                {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Chỉ số kinh doanh</p><div className="flex flex-wrap gap-3">{(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-primary">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</p><p className="text-xs text-muted mt-0.5 font-medium">Đơn</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.todayCost > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.todayCost).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">Chi phí</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.adsTotal > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#db2777]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">QC</p></div>}</div></div>}
                 {/* Recipients */}
-                {(JSON.parse(historyDetail.data||'{}')).recipients?.length > 0 && <div className="pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}><p className="text-[10px] font-semibold text-[#808080] uppercase tracking-wider mb-2">Đã gửi đến</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string)=><span key={rid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{getUserName(rid)}</span>)}</div></div>}
+                {(JSON.parse(historyDetail.data||'{}')).recipients?.length > 0 && <div className="pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Đã gửi đến</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string)=><span key={rid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{getUserName(rid)}</span>)}</div></div>}
               </div>
               {/* Right: Comments */}
               <div className="w-80 shrink-0 flex flex-col" style={{borderLeft:'1px solid rgba(0,0,0,0.06)', paddingLeft:'1.25rem', maxHeight:'calc(80vh - 80px)'}}>
-                <p className="text-sm font-semibold text-[#171717] mb-4">Góp ý <span className="text-[#808080] font-medium">({reportComments.length})</span></p>
+                <p className="text-sm font-semibold text-ink mb-4">Góp ý <span className="text-muted font-medium">({reportComments.length})</span></p>
                 <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
-                  {reportComments.length === 0 && <div className="flex flex-col items-center justify-center py-10 text-center"><div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}><MessageSquare size={18} className="text-[#808080]" /></div><p className="text-sm font-medium text-[#808080]">Chưa có góp ý</p></div>}
+                  {reportComments.length === 0 && <div className="flex flex-col items-center justify-center py-10 text-center"><div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}><MessageSquare size={18} className="text-muted" /></div><p className="text-sm font-medium text-muted">Chưa có góp ý</p></div>}
                   {reportComments.map((c: any) => (
                     <div key={c.id} className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}>
                       <div className="flex items-center gap-2 mb-1.5">
                         <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[8px] font-bold">{c.userName?.charAt(0) || '?'}</div>
-                        <div className="flex-1 min-w-0"><p className="text-xs font-semibold text-[#171717] truncate">{c.userName} <span className="text-[10px] text-[#808080] font-normal">{new Date(c.created_at).toLocaleString('vi-VN')}</span></p></div>
+                        <div className="flex-1 min-w-0"><p className="text-xs font-semibold text-ink truncate">{c.userName} <span className="text-xs text-muted font-normal">{new Date(c.created_at).toLocaleString('vi-VN')}</span></p></div>
                       </div>
                       <p className="text-xs text-[#4d4d4d] leading-relaxed">{c.content}</p>
                     </div>

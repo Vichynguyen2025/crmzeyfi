@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { LayoutDashboard, UserCog, Users, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3, ClipboardList, PhoneCall, Shield, Lock, User } from 'lucide-react';
+import { Settings, LayoutDashboard, UserCog, Users, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3, ClipboardList, PhoneCall, Shield, Lock, User } from 'lucide-react';
 
 const NAV = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/crm/dashboard', module: 'dashboard' },
@@ -66,6 +66,14 @@ export default function Sidebar() {
             </button>
           );
         })}
+        {isAdmin && (
+          <button onClick={() => nav('/admin/settings')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+              ${loc.pathname.startsWith('/admin/settings') ? 'bg-white/10 text-white shadow-sm' : 'text-white/60 hover:bg-white/5 hover:text-white/90'}`}>
+            <Settings size={20} className={loc.pathname.startsWith('/admin/settings') ? 'text-primary' : ''} />
+            {!collapsed && <span className="flex-1 text-left">Cài đặt</span>}
+          </button>
+        )}
         {isAdmin && (
           <button onClick={() => nav('/crm/admin')}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all

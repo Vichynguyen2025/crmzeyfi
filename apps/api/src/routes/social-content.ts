@@ -7,7 +7,7 @@ export default async function (app: FastifyInstance) {
     if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
     const q = req.query as any;
     const month = q.month || new Date().toISOString().slice(0, 7);
-    let sql = "SELECT sc.*, u.name as assigneeName FROM social_content sc LEFT JOIN users u ON u.id COLLATE utf8mb4_unicode_ci = sc.assignee WHERE sc.month = ?";
+    let sql = "SELECT DATE_FORMAT(sc.date, '%Y-%m-%d') as date, DATE_FORMAT(sc.publish_date, '%Y-%m-%d') as publish_date, sc.id, sc.assignee, sc.platform, sc.title, sc.summary, sc.status, sc.post_link, sc.results, sc.created_by, sc.month, u.name as assigneeName FROM social_content sc LEFT JOIN users u ON u.id COLLATE utf8mb4_unicode_ci = sc.assignee WHERE sc.month = ?";
     const params: any[] = [month];
     if (q.platform) { sql += " AND sc.platform = ?"; params.push(q.platform); }
     if (q.status) { sql += " AND sc.status = ?"; params.push(q.status); }
@@ -36,7 +36,7 @@ export default async function (app: FastifyInstance) {
     const fields: string[] = []; const params: any[] = [];
     const map: any = { assignee:'assignee', platform:'platform', title:'title', summary:'summary', status:'status', publishDate:'publish_date', postLink:'post_link', results:'results', date:'date' };
     for (const [key, col] of Object.entries(map)) {
-      if (body[key] !== undefined) { fields.push(col + ' = ?'); params.push(body[key]); }
+      if (body[key] !== undefined) { let v = body[key]; if (col === 'date') { v = String(v).split('T')[0]; } fields.push(col + ' = ?'); params.push(v); }
     }
     if (fields.length === 0) return reply.send({ success: true });
     params.push(id);

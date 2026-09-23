@@ -199,12 +199,12 @@ const addAdRow = async () => {
         </div>
       )}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-[#171717]">Marketing eSim</h1>
+        <h1 className="text-2xl font-bold text-ink">Marketing eSim</h1>
         <div className="flex items-center gap-1 bg-white rounded-xl border border-border shadow-sm p-0.5">
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={'flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all ' +
-                (tab===t.key ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>
+                (tab===t.key ? 'bg-primary text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>
               <t.icon size={16} />{t.label}
             </button>
           ))}
@@ -238,13 +238,13 @@ const addAdRow = async () => {
       <div className="space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-[#171717]">Thống kê Marketing</h1>
+            <h1 className="text-xl font-bold text-ink">Thống kê Marketing</h1>
             <input type="month" value={tkMonth} onChange={e => setTkMonth(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
           </div>
           <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
             {(['day','week','month'] as const).map(v => (
               <button key={v} onClick={() => setTkGroupBy(v)}
-                className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (tkGroupBy===v ? 'bg-[#4f46e5] text-white' : 'text-muted hover:text-ink')}>
+                className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (tkGroupBy===v ? 'bg-primary text-white' : 'text-muted hover:text-ink')}>
                 {v==='day' ? 'Ngày' : v==='week' ? 'Tuần' : 'Tháng'}
               </button>
             ))}
@@ -255,7 +255,7 @@ const addAdRow = async () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-white rounded-xl border border-border shadow-sm p-4">
             <p className="text-xs text-muted mb-1">Tổng đầu tư (có thuế)</p>
-            <p className="text-xl font-bold text-[#171717]">{sumTax > 0 ? fmt(sumTax)+'đ' : '0đ'}</p>
+            <p className="text-xl font-bold text-ink">{sumTax > 0 ? fmt(sumTax)+'đ' : '0đ'}</p>
           </div>
           <div className="bg-white rounded-xl border border-border shadow-sm p-4">
             <p className="text-xs text-muted mb-1">Tổng doanh thu</p>
@@ -263,11 +263,11 @@ const addAdRow = async () => {
           </div>
           <div className="bg-white rounded-xl border border-border shadow-sm p-4">
             <p className="text-xs text-muted mb-1">Đơn hàng</p>
-            <p className="text-xl font-bold text-[#171717]">{sumOrd} đơn · {sumSim} SIM</p>
+            <p className="text-xl font-bold text-ink">{sumOrd} đơn · {sumSim} SIM</p>
           </div>
           <div className="bg-white rounded-xl border border-border shadow-sm p-4">
             <p className="text-xs text-muted mb-1">Hiệu quả</p>
-            <p className="text-xl font-bold text-[#4f46e5]">{roas.toFixed(1)}x ROAS</p>
+            <p className="text-xl font-bold text-primary">{roas.toFixed(1)}x ROAS</p>
           </div>
         </div>
 
@@ -276,28 +276,28 @@ const addAdRow = async () => {
           {/* Content Social */}
           <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between">
-              <h3 className="font-semibold text-sm text-[#171717]">Content Social</h3>
+              <h3 className="font-semibold text-sm text-ink">Content Social</h3>
               <span className="text-xs text-muted">{totalSocial} bài</span>
             </div>
             <div className="p-4 space-y-4">
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-3 bg-indigo-50/50 rounded-xl">
-                  <p className="text-lg font-bold text-[#4f46e5]">{published}</p>
-                  <p className="text-[10px] text-muted mt-0.5">Đã đăng</p>
+                  <p className="text-lg font-bold text-primary">{published}</p>
+                  <p className="text-xs text-muted mt-0.5">Đã đăng</p>
                 </div>
                 <div className="text-center p-3 bg-amber-50/50 rounded-xl">
                   <p className="text-lg font-bold text-amber-600">{inProgress}</p>
-                  <p className="text-[10px] text-muted mt-0.5">Đang xử lý</p>
+                  <p className="text-xs text-muted mt-0.5">Đang xử lý</p>
                 </div>
                 <div className="text-center p-3 bg-blue-50/50 rounded-xl">
                   <p className="text-lg font-bold text-blue-600">{completionRate}%</p>
-                  <p className="text-[10px] text-muted mt-0.5">Hoàn thành</p>
+                  <p className="text-xs text-muted mt-0.5">Hoàn thành</p>
                 </div>
               </div>
               {topPlatform.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {topPlatform.map(([p,c]:[string,number]) => (
-                    <span key={p} className="px-2 py-0.5 bg-gray-50 border border-border rounded text-[10px] text-muted font-medium">
+                    <span key={p} className="px-2 py-0.5 bg-gray-50 border border-border rounded text-xs text-muted font-medium">
                       {p==='Facebook'?'FB':p==='Instagram'?'IG':p==='Tiktok'?'TT':p==='Zalo'?'ZL':p==='Youtube'?'YT':p==='Website'?'WEB':p} {c}
                     </span>
                   ))}
@@ -305,12 +305,12 @@ const addAdRow = async () => {
               )}
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50">
                 <div className="bg-gray-50 rounded-lg p-2.5">
-                  <p className="text-[10px] text-muted">CP / bài</p>
-                  <p className="text-sm font-bold text-[#171717]">{costPerContent>0 ? fmt(costPerContent)+'đ' : '—'}</p>
+                  <p className="text-xs text-muted">CP / bài</p>
+                  <p className="text-sm font-bold text-ink">{costPerContent>0 ? fmt(costPerContent)+'đ' : '—'}</p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-2.5">
-                  <p className="text-[10px] text-muted">DT / bài</p>
-                  <p className="text-sm font-bold text-[#171717]">{revPerContent>0 ? fmt(revPerContent)+'đ' : '—'}</p>
+                  <p className="text-xs text-muted">DT / bài</p>
+                  <p className="text-sm font-bold text-ink">{revPerContent>0 ? fmt(revPerContent)+'đ' : '—'}</p>
                 </div>
               </div>
             </div>
@@ -319,36 +319,36 @@ const addAdRow = async () => {
           {/* Quảng cáo */}
           <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between">
-              <h3 className="font-semibold text-sm text-[#171717]">Quảng cáo</h3>
+              <h3 className="font-semibold text-sm text-ink">Quảng cáo</h3>
               <span className="text-xs text-muted">{tkAdsData.length} dòng</span>
             </div>
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-3 bg-indigo-50/50 rounded-xl">
-                  <p className="text-lg font-bold text-[#4f46e5]">{sumTax>0 ? fmt(sumTax)+'đ' : '0đ'}</p>
-                  <p className="text-[10px] text-muted mt-0.5">CP (có thuế)</p>
+                  <p className="text-lg font-bold text-primary">{sumTax>0 ? fmt(sumTax)+'đ' : '0đ'}</p>
+                  <p className="text-xs text-muted mt-0.5">CP (có thuế)</p>
                 </div>
                 <div className="text-center p-3 bg-emerald-50/50 rounded-xl">
                   <p className="text-lg font-bold text-green-600">{sumRev>0 ? fmt(sumRev)+'đ' : '0đ'}</p>
-                  <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
+                  <p className="text-xs text-muted mt-0.5">Doanh thu</p>
                 </div>
                 <div className="text-center p-3 bg-amber-50/50 rounded-xl">
                   <p className="text-lg font-bold text-amber-600">{sumOrd} đơn</p>
-                  <p className="text-[10px] text-muted mt-0.5">{sumSim} SIM</p>
+                  <p className="text-xs text-muted mt-0.5">{sumSim} SIM</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-gradient-to-br from-indigo-50 to-white rounded-lg p-2.5 border border-indigo-100">
-                  <p className="text-[10px] text-muted">ROAS</p>
-                  <p className="text-sm font-bold text-[#4f46e5]">{roas.toFixed(1)}x</p>
+                  <p className="text-xs text-muted">ROAS</p>
+                  <p className="text-sm font-bold text-primary">{roas.toFixed(1)}x</p>
                 </div>
                 <div className="text-center bg-gray-50 rounded-lg p-2.5">
-                  <p className="text-[10px] text-muted">CTR</p>
-                  <p className="text-sm font-bold text-[#171717]">{ctr.toFixed(1)}%</p>
+                  <p className="text-xs text-muted">CTR</p>
+                  <p className="text-sm font-bold text-ink">{ctr.toFixed(1)}%</p>
                 </div>
                 <div className="text-center bg-gray-50 rounded-lg p-2.5">
-                  <p className="text-[10px] text-muted">CPC</p>
-                  <p className="text-sm font-bold text-[#171717]">{cpc>0 ? fmt(cpc)+'đ' : '—'}</p>
+                  <p className="text-xs text-muted">CPC</p>
+                  <p className="text-sm font-bold text-ink">{cpc>0 ? fmt(cpc)+'đ' : '—'}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between px-3 py-2 bg-red-50/50 rounded-lg border border-red-100">
@@ -362,8 +362,8 @@ const addAdRow = async () => {
         {/* Member list */}
         <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between">
-            <h3 className="font-semibold text-sm text-[#171717]">Thành viên</h3>
-            <button onClick={() => setShowAddMember(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] text-white rounded-lg text-xs font-medium hover:bg-[#4338ca] transition-all"><Plus size={13} /> Thêm</button>
+            <h3 className="font-semibold text-sm text-ink">Thành viên</h3>
+            <button onClick={() => setShowAddMember(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-[#4338ca] transition-all"><Plus size={13} /> Thêm</button>
           </div>
           <div className="divide-y divide-border/50">
             {members.length === 0 && <div className="px-5 py-8 text-center text-sm text-muted">Chưa có thành viên</div>}
@@ -380,12 +380,12 @@ const addAdRow = async () => {
                     {(m.userName||m.name||'?').charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#171717] truncate">{m.userName||m.name}</p>
-                    <p className="text-[11px] text-muted">{mySocial.length} bài · {myPublished} đã đăng</p>
+                    <p className="text-sm font-medium text-ink truncate">{m.userName||m.name}</p>
+                    <p className="text-xs text-muted">{mySocial.length} bài · {myPublished} đã đăng</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs font-bold text-[#171717]">{myCPSum>0 ? fmt(myCPSum)+'đ' : '0đ'}</p>
-                    <p className="text-[10px] text-muted">CP · {myRev>0 ? fmt(myRev)+'đ' : '0đ'} DT</p>
+                    <p className="text-xs font-bold text-ink">{myCPSum>0 ? fmt(myCPSum)+'đ' : '0đ'}</p>
+                    <p className="text-xs text-muted">CP · {myRev>0 ? fmt(myRev)+'đ' : '0đ'} DT</p>
                   </div>
                 
                   <button onClick={() => removeMarketingMember(mId)} className="p-1.5 rounded-lg hover:bg-red-50 text-muted hover:text-red-500 transition-all" title="Xoá khỏi Marketing"><Trash2 size={14} /></button></div>
@@ -399,7 +399,7 @@ const addAdRow = async () => {
           <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAddMember(false)}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
               <div className="px-5 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between">
-                <h3 className="font-bold text-sm text-[#171717]">Thêm thành viên</h3>
+                <h3 className="font-bold text-sm text-ink">Thêm thành viên</h3>
                 <button onClick={() => setShowAddMember(false)} className="p-1 rounded hover:bg-gray-200 text-muted"><X size={16} /></button>
               </div>
               <div className="p-5 space-y-4">
@@ -414,7 +414,7 @@ const addAdRow = async () => {
                 </div>
                 <input type="password" value={newMember.password} onChange={e => setNewMember({...newMember, password:e.target.value})} placeholder="Mật khẩu *" className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={() => addMember(selectedUserId)} disabled={!selectedUserId} className="flex-1 px-5 py-2.5 bg-[#4f46e5] text-white font-semibold rounded-xl text-sm hover:bg-[#4338ca] transition-all disabled:opacity-50"><Plus size={15} className="inline mr-1" />Thêm</button>
+                  <button onClick={() => addMember(selectedUserId)} disabled={!selectedUserId} className="flex-1 px-5 py-2.5 bg-primary text-white font-semibold rounded-xl text-sm hover:bg-[#4338ca] transition-all disabled:opacity-50"><Plus size={15} className="inline mr-1" />Thêm</button>
                   <button onClick={() => setShowAddMember(false)} className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-muted rounded-xl text-sm font-medium transition-all">Huỷ</button>
                 </div>
               </div>
@@ -438,7 +438,7 @@ const addAdRow = async () => {
               <option value="">Tất cả nhân sự</option>
               {members.map((m:any) => <option key={m.id} value={m.id}>{m.userName||m.name}</option>)}
             </select>
-            <button onClick={addAdRow} className="flex items-center gap-2 px-4 py-2 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all"><Plus size={16} />Thêm</button>
+            <button onClick={addAdRow} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all"><Plus size={16} />Thêm</button>
           </div>
 
           {(() => {
@@ -461,11 +461,11 @@ const addAdRow = async () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><Receipt size={13} /><span>CP Ads (Có thuế)</span></div>
-                  <p className="text-lg font-bold text-[#171717]">{sumTax>0 ? fmt(sumTax)+'đ' : '0đ'}</p>
+                  <p className="text-lg font-bold text-ink">{sumTax>0 ? fmt(sumTax)+'đ' : '0đ'}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><Receipt size={13} className="opacity-50" /><span>CP Ads (Chưa thuế)</span></div>
-                  <p className="text-lg font-bold text-[#171717]">{sumEx>0 ? fmt(sumEx)+'đ' : '0đ'}</p>
+                  <p className="text-lg font-bold text-ink">{sumEx>0 ? fmt(sumEx)+'đ' : '0đ'}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><TrendingUp size={13} className="text-green-500" /><span>Doanh thu</span></div>
@@ -473,31 +473,31 @@ const addAdRow = async () => {
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><DollarSign size={13} className="text-blue-500" /><span>Đơn hàng</span></div>
-                  <p className="text-lg font-bold text-[#171717]">{sumOrd}</p>
+                  <p className="text-lg font-bold text-ink">{sumOrd}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><DollarSign size={13} className="text-purple-500" /><span>Số SIM</span></div>
-                  <p className="text-lg font-bold text-[#171717]">{sumSim}</p>
+                  <p className="text-lg font-bold text-ink">{sumSim}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><Eye size={13} /><span>Impression</span></div>
-                  <p className="text-lg font-bold text-[#171717]">{fmt(sumImp)}</p>
+                  <p className="text-lg font-bold text-ink">{fmt(sumImp)}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><MousePointerClick size={13} /><span>Click (TB)</span></div>
-                  <p className="text-lg font-bold text-[#171717]">{sumClk>0 ? String(Math.round(sumClk/Math.max(1,adRows.length))) : '0'}</p>
+                  <p className="text-lg font-bold text-ink">{sumClk>0 ? String(Math.round(sumClk/Math.max(1,adRows.length))) : '0'}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><Percent size={13} /><span>CTR (TB)</span></div>
-                  <p className="text-lg font-bold text-[#171717]">{ctr.toFixed(1)}%</p>
+                  <p className="text-lg font-bold text-ink">{ctr.toFixed(1)}%</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><DollarSign size={13} /><span>CP/Đơn (TB)</span></div>
-                  <p className="text-lg font-bold text-[#171717]">{cpOrder>0 ? fmt(cpOrder)+'đ' : '—'}</p>
+                  <p className="text-lg font-bold text-ink">{cpOrder>0 ? fmt(cpOrder)+'đ' : '—'}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><TrendingUp size={13} className="text-emerald-500" /><span>ROAS</span></div>
-                  <p className="text-lg font-bold text-[#4f46e5]">{roas.toFixed(1)}x</p>
+                  <p className="text-lg font-bold text-primary">{roas.toFixed(1)}x</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><Percent size={13} className="text-orange-500" /><span>CP Ads / DT</span></div>
@@ -505,7 +505,7 @@ const addAdRow = async () => {
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><MousePointerClick size={13} /><span>CPC (TB)</span></div>
-                  <p className="text-lg font-bold text-[#171717]">{cpc>0 ? fmt(cpc)+'đ' : '—'}</p>
+                  <p className="text-lg font-bold text-ink">{cpc>0 ? fmt(cpc)+'đ' : '—'}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-border shadow-sm p-4">
                   <div className="flex items-center gap-2 text-xs text-muted mb-2"><Percent size={13} className="text-red-500" /><span>Thuế (8%)</span></div>
@@ -519,7 +519,7 @@ const addAdRow = async () => {
             {(['day','week','month'] as const).map(v => (
               <button key={v} onClick={() => setAdGroupBy(v)}
                 className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' +
-                  (adGroupBy===v ? 'bg-[#4f46e5] text-white' : 'text-muted hover:text-ink')}>
+                  (adGroupBy===v ? 'bg-primary text-white' : 'text-muted hover:text-ink')}>
                 {v==='day' ? 'Ngày' : v==='week' ? 'Tuần' : 'Tháng'}
               </button>
             ))}
@@ -619,7 +619,7 @@ const addAdRow = async () => {
                         </td>
                         <td className="px-1 py-0.5 text-sm text-right text-muted">{ctr.toFixed(1)}</td>
                         <td className="px-1 py-0.5 text-sm text-right text-muted">{cpOrder>0 ? Math.round(cpOrder).toLocaleString('vi-VN') : '—'}</td>
-                        <td className="px-1 py-0.5 text-sm text-right font-medium text-[#4f46e5]">{roas.toFixed(1)}x</td>
+                        <td className="px-1 py-0.5 text-sm text-right font-medium text-primary">{roas.toFixed(1)}x</td>
                         <td className="px-1 py-0.5 text-sm text-right text-muted">{cpDt.toFixed(1)}</td>
                         <td className="px-1 py-0.5 text-sm text-right text-muted">{cpc>0 ? Math.round(cpc).toLocaleString('vi-VN') : '—'}</td>
                         <td className="px-1 py-0.5 text-sm text-right text-red-500 font-medium">{Math.round(tax).toLocaleString('vi-VN')}</td>
@@ -637,7 +637,7 @@ const addAdRow = async () => {
                           if (res?.id) { loadAds(); showToast('success','✓ Đã thêm dòng'); }
                           else { showToast('error','✗ Lỗi thêm'); }
                         } catch(e:any) { showToast('error','✗ '+e.message); }
-                      }} className="flex items-center justify-center gap-1 w-full py-2 text-xs text-muted hover:text-[#4f46e5] border-2 border-dashed border-border/50 rounded-lg hover:bg-gray-50/30 transition-all">
+                      }} className="flex items-center justify-center gap-1 w-full py-2 text-xs text-muted hover:text-primary border-2 border-dashed border-border/50 rounded-lg hover:bg-gray-50/30 transition-all">
                         <Plus size={14} /> Thêm dòng
                       </button>
                     </td>
@@ -659,7 +659,7 @@ const addAdRow = async () => {
             </>}
             <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
               {['day','week','month'].map(v=>(
-                <button key={v} onClick={()=>setSeoGroupBy(v)} className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all '+(seoGroupBy===v?'bg-[#4f46e5] text-white':'text-muted hover:text-ink')}>{v==='day'?'Ngày':v==='week'?'Tuần':'Tháng'}</button>
+                <button key={v} onClick={()=>setSeoGroupBy(v)} className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all '+(seoGroupBy===v?'bg-primary text-white':'text-muted hover:text-ink')}>{v==='day'?'Ngày':v==='week'?'Tuần':'Tháng'}</button>
               ))}
             </div>
           </div>
@@ -667,13 +667,13 @@ const addAdRow = async () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead><tr className="bg-gray-50/80 border-b border-border">
-                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-left w-28">Ngày</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-left w-24">Kênh</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-16">Đơn</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-24">Doanh thu</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-20">CP</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-20">Impr</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold text-muted text-right w-16">Click</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted text-left w-28">Ngày</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted text-left w-24">Kênh</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted text-right w-16">Đơn</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted text-right w-24">Doanh thu</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted text-right w-20">CP</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted text-right w-20">Impr</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-muted text-right w-16">Click</th>
                   <th className="px-4 py-3 w-8"></th>
                 </tr></thead>
                 <tbody>
@@ -702,7 +702,7 @@ const addAdRow = async () => {
                   {/* Total row */}
                   {seoRows.length>0&&<tr className="bg-gray-50/70 border-t-2 border-border font-medium">
                     <td className="px-4 py-3 text-xs font-bold" colSpan={2}>Tổng cộng</td>
-                    <td className="px-4 py-3 text-xs font-bold text-[#4f46e5] text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.orders||0),0).toLocaleString('vi-VN')}</td>
+                    <td className="px-4 py-3 text-xs font-bold text-primary text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.orders||0),0).toLocaleString('vi-VN')}</td>
                     <td className="px-4 py-3 text-xs font-bold text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.revenue||0),0).toLocaleString('vi-VN')}đ</td>
                     <td className="px-4 py-3 text-xs font-bold text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.cost||0),0).toLocaleString('vi-VN')}đ</td>
                     <td className="px-4 py-3 text-xs font-bold text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.impressions||0),0).toLocaleString('vi-VN')}</td>
@@ -712,8 +712,8 @@ const addAdRow = async () => {
                   {/* Add row */}
                   <tr className="border-t-2 border-dashed border-border/50">
                     <td colSpan={8} className="px-4 py-3">
-                      <button onClick={()=>setSeoRows([...seoRows,{date:seoGroupBy==='day'?(seoDateFrom||new Date().toISOString().slice(0,10)):new Date().toISOString().slice(0,10),channel:'',orders:0,revenue:0,cost:0,impressions:0,clicks:0}])} className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted hover:text-[#4f46e5] transition-all">
-                        <span className="w-5 h-5 rounded-full border-2 border-dashed border-current grid place-items-center text-[10px]">+</span> Thêm dòng</button>
+                      <button onClick={()=>setSeoRows([...seoRows,{date:seoGroupBy==='day'?(seoDateFrom||new Date().toISOString().slice(0,10)):new Date().toISOString().slice(0,10),channel:'',orders:0,revenue:0,cost:0,impressions:0,clicks:0}])} className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted hover:text-primary transition-all">
+                        <span className="w-5 h-5 rounded-full border-2 border-dashed border-current grid place-items-center text-xs">+</span> Thêm dòng</button>
                     </td>
                   </tr>
                 </tbody>
@@ -729,7 +729,7 @@ const addAdRow = async () => {
                   await api('/seo-revenue/'+(u.id||'all'),{method:'POST',body:JSON.stringify({rows:seoRows,month:seoMonth})});
                   showToast('success','Đã lưu');
                 }catch(e:any){showToast('error',e.message);}setSeoSaving(false);
-              }} disabled={seoSaving} className="px-5 py-2 bg-[#4f46e5] text-white text-sm font-medium rounded-xl hover:shadow-md transition-all disabled:opacity-40">
+              }} disabled={seoSaving} className="px-5 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:shadow-md transition-all disabled:opacity-40">
                 {seoSaving?'Đang lưu...':'Lưu dữ liệu'}
               </button>
             </div>
@@ -752,7 +752,7 @@ const addAdRow = async () => {
               <option value="">Trạng thái</option>
               {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
-            <button onClick={addRow} className="flex items-center gap-2 px-4 py-2 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all"><Plus size={16} />Thêm</button>
+            <button onClick={addRow} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all"><Plus size={16} />Thêm</button>
           </div>
           <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -762,14 +762,14 @@ const addAdRow = async () => {
                 </colgroup>
                 <thead>
                   <tr className="bg-gray-50/80 border-b border-border">
-                    <th className="px-2 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Ngày</th>
-                    <th className="px-2 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Nhân sự</th>
-                    <th className="px-2 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Nền tảng</th>
-                    <th className="px-2 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Tiêu đề</th>
-                    <th className="px-2 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Tóm tắt</th>
-                    <th className="px-2 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Trạng thái</th>
-                    <th className="px-2 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Ngày đăng</th>
-                    <th className="px-2 py-1.5 text-[11px] font-semibold text-muted uppercase text-left">Link</th>
+                    <th className="px-2 py-1.5 text-xs font-semibold text-muted uppercase text-left">Ngày</th>
+                    <th className="px-2 py-1.5 text-xs font-semibold text-muted uppercase text-left">Nhân sự</th>
+                    <th className="px-2 py-1.5 text-xs font-semibold text-muted uppercase text-left">Nền tảng</th>
+                    <th className="px-2 py-1.5 text-xs font-semibold text-muted uppercase text-left">Tiêu đề</th>
+                    <th className="px-2 py-1.5 text-xs font-semibold text-muted uppercase text-left">Tóm tắt</th>
+                    <th className="px-2 py-1.5 text-xs font-semibold text-muted uppercase text-left">Trạng thái</th>
+                    <th className="px-2 py-1.5 text-xs font-semibold text-muted uppercase text-left">Ngày đăng</th>
+                    <th className="px-2 py-1.5 text-xs font-semibold text-muted uppercase text-left">Link</th>
                     <th className="px-2 py-1.5"></th>
                   </tr>
                 </thead>
@@ -800,7 +800,7 @@ const addAdRow = async () => {
                         <input type="text" value={r.title||''} onBlur={e => saveField(r.id,'title',e.target.value)} onChange={e => setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,title:e.target.value}:x))} placeholder="Tiêu đề..." className="w-full bg-transparent text-xs outline-none border-0" />
                       </td>
                       <td className="px-2 py-1 text-xs">
-                        <span onClick={() => setWordEditor({id:r.id,title:r.title||'',summary:r.summary||''})} className="block truncate cursor-pointer hover:text-[#4f46e5]" title="Click để soạn nội dung">
+                        <span onClick={() => setWordEditor({id:r.id,title:r.title||'',summary:r.summary||''})} className="block truncate cursor-pointer hover:text-primary" title="Click để soạn nội dung">
                           {r.summary ? <span>{r.summary.slice(0,60)}{r.summary.length>60?'...':''}</span> : <span className="italic text-muted">Soạn nội dung</span>}
                         </span>
                       </td>
@@ -830,7 +830,7 @@ const addAdRow = async () => {
             <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setWordEditor(null)}>
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-gray-50/80">
-                  <h3 className="font-bold text-sm text-[#171717]">Soạn nội dung Content Social</h3>
+                  <h3 className="font-bold text-sm text-ink">Soạn nội dung Content Social</h3>
                   <button onClick={async () => {
                     if (!wordEditor) return;
                     try {
@@ -838,12 +838,12 @@ const addAdRow = async () => {
                       setRows((prev:any[])=>prev.map((r:any)=>r.id===wordEditor.id?{...r,title:wordEditor.title,summary:wordEditor.summary}:r));
                       setWordEditor(null); showToast('success','✓ Đã lưu');
                     } catch { showToast('error','✗ Lỗi lưu'); }
-                  }} className="flex items-center gap-2 px-5 py-2.5 bg-[#4f46e5] text-white font-semibold rounded-xl text-sm hover:bg-[#4338ca] transition-all"><Save size={16} />Lưu & Đóng</button>
+                  }} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-semibold rounded-xl text-sm hover:bg-[#4338ca] transition-all"><Save size={16} />Lưu & Đóng</button>
                 </div>
                 <div className="flex-1 overflow-auto p-8 bg-[#fafafa]">
                   <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-border p-8 min-h-[500px] space-y-4">
-                    <input value={wordEditor.title} onChange={e => setWordEditor({...wordEditor, title: e.target.value})} placeholder="Tiêu đề bài viết..." className="w-full text-xl font-bold text-[#171717] border-0 outline-none placeholder-muted/40 bg-transparent" />
-                    <textarea value={wordEditor.summary} onChange={e => setWordEditor({...wordEditor, summary: e.target.value})} placeholder="Viết nội dung chi tiết tại đây..." className="w-full min-h-[400px] resize-none bg-transparent border-0 text-sm text-[#171717] leading-7 outline-none placeholder-muted/40" />
+                    <input value={wordEditor.title} onChange={e => setWordEditor({...wordEditor, title: e.target.value})} placeholder="Tiêu đề bài viết..." className="w-full text-xl font-bold text-ink border-0 outline-none placeholder-muted/40 bg-transparent" />
+                    <textarea value={wordEditor.summary} onChange={e => setWordEditor({...wordEditor, summary: e.target.value})} placeholder="Viết nội dung chi tiết tại đây..." className="w-full min-h-[400px] resize-none bg-transparent border-0 text-sm text-ink leading-7 outline-none placeholder-muted/40" />
                   </div>
                 </div>
                 <div className="px-6 py-2.5 bg-gray-50/80 border-t border-border flex items-center gap-4 text-xs text-muted">

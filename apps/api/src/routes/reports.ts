@@ -130,5 +130,6 @@ export default async function (app: FastifyInstance) {
       } catch { return false; }
     });
     reply.send(filtered);
+
   });
 }

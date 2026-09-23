@@ -77,7 +77,7 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-[#171717]">Quản lý nhân sự</h1><p className="text-sm text-muted mt-1">Thêm, sửa, khoá, phân quyền tài khoản</p></div>
+        <div><h1 className="text-2xl font-bold text-ink">Quản lý nhân sự</h1><p className="text-sm text-muted mt-1">Thêm, sửa, khoá, phân quyền tài khoản</p></div>
         <button onClick={() => setAdd(true)} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all">
           <Plus size={18} />Thêm nhân sự
         </button>
@@ -151,7 +151,7 @@ export default function UsersPage() {
                       {u.name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-[#171717] truncate">{u.name}</p>
+                      <p className="font-medium text-ink truncate">{u.name}</p>
                       <div className="flex items-center gap-1 text-xs text-muted">
                         <Mail size={10} /><span className="truncate">{u.email}</span>
                       </div>
@@ -162,14 +162,14 @@ export default function UsersPage() {
                   {u.team_names ? (
                     <div className="flex flex-wrap gap-1">
                       {u.team_names.split(', ').map((t: string, i: number) => (
-                        <span key={i} className="px-2.5 py-0.5 bg-indigo-50 text-[#4f46e5] rounded-full text-xs font-medium">
+                        <span key={i} className="px-2.5 py-0.5 bg-indigo-50 text-primary rounded-full text-xs font-medium">
                           {t}
                         </span>
                       ))}
                     </div>
                   ) : <span className="text-muted">—</span>}
                 </td>
-                <td className="px-4 py-3 text-xs"><span className="text-[#171717]">{u.position || <span className="text-muted">—</span>}</span></td>
+                <td className="px-4 py-3 text-xs"><span className="text-ink">{u.position || <span className="text-muted">—</span>}</span></td>
                 <td className="px-4 py-3 text-xs">
                   {u.hometown ? <span className="flex items-center gap-1.5 text-xs"><MapPin size={12} className="text-muted shrink-0" />{u.hometown}</span> : <span className="text-muted">—</span>}
                 </td>

@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { api } from './lib/api';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Login from './pages/Login';
@@ -12,6 +14,7 @@ import ChannelsPage from './pages/Channels';
 import ProductsPage from './pages/Products';
 import MarketingESim from './pages/MarketingESim';
 import AdminPermissions from './pages/AdminPermissions';
+import AdminSettings, { applySettings } from './pages/AdminSettings';
 import Profile from './pages/Profile';
 import AppLayout from './components/layout/AppLayout';
 
@@ -30,6 +33,7 @@ function RootRedirect() {
   }, []);
   return <Navigate to={token ? '/crm/dashboard' : '/login'} replace />;
 }
+
 
 export default function App() {
   return (
@@ -58,6 +62,7 @@ export default function App() {
         <Route path="/crm/marketing/:tab" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
           <Route path="/crm/profile" element={<ProtectedRoute><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/admin" element={<ProtectedRoute><AppLayout><AdminPermissions /></AppLayout></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute><AppLayout><AdminSettings /></AppLayout></ProtectedRoute>} />
 
         {/* Redirect old routes to new /crm/ equivalents */}
         <Route path="/dashboard" element={<Navigate to="/crm/dashboard" replace />} />

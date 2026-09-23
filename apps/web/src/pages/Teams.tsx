@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, X, Phone, Mail, Shield, Edit3, Trash2, BarChart3, Globe, ExternalLink, User, CheckCircle, AlertCircle, Target , Lock} from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
+import DateRangeFilter from '../components/DateRangeFilter';
+import DateRangeFilter from '../components/DateRangeFilter';
 import { slugify } from '../lib/utils';
 import { getSocket } from '../lib/socket';
 
@@ -29,9 +31,9 @@ export default function Teams() {
   const [planData, setPlanData] = useState<any[]>([]);
   const [b6Data, setB6Data] = useState<any[]>([]);
   const [b6GroupBy, setB6GroupBy] = useState('day');
-  const [b6Month, setB6Month] = useState(() => new Date().toISOString().slice(0, 7));
-  const [b6DateFrom, setB6DateFrom] = useState('');
+    const [b6DateFrom, setB6DateFrom] = useState('');
   const [b6DateTo, setB6DateTo] = useState('');
+  const [b6Dater, setB6Dater] = useState({ from: '', to: '', key: 'month' });
   const [planMonth, setPlanMonth] = useState(new Date().toISOString().slice(0, 7));
   const [slugMap, setSlugMap] = useState<Record<string,any>>({});
   const { teamSlug } = useParams();
@@ -220,15 +222,18 @@ export default function Teams() {
 
   const loadB6 = useCallback(async () => {
     try {
-      let url = '/actuals-summary?month=' + b6Month + '&groupBy=product&viewMode=' + b6GroupBy;
-      if (b6GroupBy === 'day' || b6GroupBy === 'week') {
-        if (b6DateFrom) url += '&dateFrom=' + b6DateFrom;
-        if (b6DateTo) url += '&dateTo=' + b6DateTo;
+      let url = '/actuals-summary?groupBy=product&viewMode=' + b6GroupBy;
+      if (b6GroupBy === 'month') {
+        const m = b6Dater.from ? b6Dater.from.slice(0, 7) : new Date().toISOString().slice(0, 7);
+        url += '&month=' + m;
+      } else {
+        if (b6Dater.from) url += '&dateFrom=' + b6Dater.from;
+        if (b6Dater.to) url += '&dateTo=' + b6Dater.to;
       }
       const r = await api(url);
       setB6Data(r || []);
     } catch { setB6Data([]); }
-  }, [b6Month, b6GroupBy, b6DateFrom, b6DateTo]);
+  }, [b6Dater, b6GroupBy]);
   useEffect(() => { loadB6(); }, [loadB6]);
 
   const loadPlan = async (month: string) => {
@@ -854,13 +859,13 @@ export default function Teams() {
             </colgroup>
             <thead>
               <tr>
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-left" className="">Team</th>
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-left" className="">Sản phẩm</th>
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">Mục tiêu</th>
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">Ngân sách</th>
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">CP/đơn</th>
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-center" className="">TV</th>
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">%KPI</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-left" className="">Team</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-left" className="">Sản phẩm</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">Mục tiêu</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">Ngân sách</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">CP/đơn</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-center" className="">TV</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">%KPI</th>
                 <th className="px-4 py-3 w-[36px]"></th>
               </tr>
               
@@ -870,7 +875,7 @@ export default function Teams() {
                 const totalCostPerOrder = team.totalTarget > 0 ? Math.round((team.totalBudget * 30) / team.totalTarget) : 0;
                 return (
                   <tr key={team.id} className="border-b border-border/50 hover:bg-[#f8f9fc] transition-all">
-                    <td className="px-4 py-3 text-xs font-medium">
+                    <td className="px-4 py-3 text-table-body">
                       <div className="flex items-center gap-2.5">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[9px] font-bold shadow-sm" style={{backgroundColor: team.color || '#4f46e5'}}>
                           {team.name?.charAt(0)?.toUpperCase() || '?'}
@@ -890,13 +895,13 @@ export default function Teams() {
                         </div>
                       ) : <span className="text-xs italic text-muted/60">Chưa có KPI</span>}
                     </td>
-                    <td className="px-4 py-3 text-xs text-right font-medium">{team.totalTarget > 0 ? team.totalTarget.toLocaleString('vi-VN') : ''}</td>
-                    <td className="px-4 py-3 text-xs text-right">{team.totalBudget > 0 ? (team.totalBudget * 30).toLocaleString('vi-VN') + 'đ' : ''}</td>
-                    <td className="px-4 py-3 text-xs text-right">{totalCostPerOrder > 0 ? totalCostPerOrder.toLocaleString('vi-VN') + 'đ' : ''}</td>
-                    <td className="px-4 py-3 text-xs text-center">
+                    <td className="px-4 py-3 text-table-body text-right">{team.totalTarget > 0 ? team.totalTarget.toLocaleString('vi-VN') : ''}</td>
+                    <td className="px-4 py-3 text-table-body text-right">{team.totalBudget > 0 ? (team.totalBudget * 30).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    <td className="px-4 py-3 text-table-body text-right">{totalCostPerOrder > 0 ? totalCostPerOrder.toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    <td className="px-4 py-3 text-table-body text-center">
                       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-muted font-medium text-xs">{team.memberCount || 0}</span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-right font-bold">
+                    <td className="px-4 py-3 text-table-body text-right font-bold">
                       {(() => { const totalAllTarget = planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0); return team.totalActual > 0 && totalAllTarget > 0 ? <span className="text-[#4f46e5]">{Math.round(team.totalActual / totalAllTarget * 100)}%</span> : <span className="text-muted italic">—</span>; })()}
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -908,12 +913,12 @@ export default function Teams() {
               {/* Total row */}
               {planData.length > 0 && (
                 <tr className="bg-[#f8f9fc] font-semibold border-t-2 border-[#e2e4e7]">
-                  <td colSpan={2} className="px-4 py-3 text-xs font-bold text-[#4f46e5]">Tổng cộng</td>
-                  <td className="px-4 py-3 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
-                  <td className="px-4 py-3 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
-                  <td className="px-4 py-3 text-xs text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
-                  <td className="px-4 py-3 text-xs text-center font-semibold">{planData.reduce((s: number, t: any) => s + (t.member_count || 0), 0)}</td>
-                  <td className="px-4 py-3 text-xs text-right font-bold text-[#4f46e5]">{(()=>{const a=planData.reduce((s:number,t:any)=>s+(t.totalActual||0),0);const b=planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0);return a>0&&b>0?Math.round(a/b*100)+'%':'—';})()}</td>
+                  <td colSpan={2} className="px-4 py-3 text-table-body font-bold text-primary">Tổng cộng</td>
+                  <td className="px-4 py-3 text-table-body text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
+                  <td className="px-4 py-3 text-table-body text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
+                  <td className="px-4 py-3 text-table-body text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                  <td className="px-4 py-3 text-table-body text-center font-semibold">{planData.reduce((s: number, t: any) => s + (t.member_count || 0), 0)}</td>
+                  <td className="px-4 py-3 text-table-body text-right font-bold text-[#4f46e5]">{(()=>{const a=planData.reduce((s:number,t:any)=>s+(t.totalActual||0),0);const b=planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0);return a>0&&b>0?Math.round(a/b*100)+'%':'—';})()}</td>
                   <td className="px-4 py-3"></td>
                 </tr>
               )}
@@ -942,12 +947,7 @@ export default function Teams() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <input type="month" value={b6Month} onChange={e => setB6Month(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
-            {b6GroupBy === 'day' && <>
-              <input type="date" value={b6DateFrom} onChange={e => setB6DateFrom(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
-              <span className="text-xs text-muted">→</span>
-              <input type="date" value={b6DateTo} onChange={e => setB6DateTo(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
-            </>}
+<DateRangeFilter value={b6Dater} onChange={v => { setB6Dater(v); setB6DateFrom(v.from); setB6DateTo(v.to); }} ranges={[{key:'week',label:'7 ngày'},{key:'month',label:'30 ngày'},{key:'custom',label:'Tuỳ chỉnh'}]} />
             <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
               {['day','week','month'].map(v => (
                 <button key={v} onClick={() => setB6GroupBy(v)}
@@ -965,24 +965,24 @@ export default function Teams() {
             </colgroup>
             <thead>
               <tr className="bg-gray-50/80 border-b border-border">
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-left" className="">Team</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-left" className="">Team</th>
                 {((b6Data as any)?.products || []).map((p: string) => (
-                  <th key={p} className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" style={{width:140}} colSpan={2}>{p}</th>
+                  <th key={p} className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" style={{width:140}} colSpan={2}>{p}</th>
                 ))}
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">Tổng Đơn</th>
-                <th className="px-4 py-3 text-[9px] font-semibold text-muted tracking-wider text-right" className="">Tổng CP</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">Tổng Đơn</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">Tổng CP</th>
                 <th className="px-4 py-3 w-[36px]"></th>
               </tr>
               <tr className="bg-gray-50/40 border-b border-border">
-                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-left" className=""></th>
+                <th className="px-4 py-2 text-table-sub font-medium text-muted tracking-wider text-left" className=""></th>
                 {((b6Data as any)?.products || []).map((p: string) => (
                   <React.Fragment key={p+'-sub'}>
-                    <th className="px-3 py-2 text-[11px] font-medium text-muted tracking-wider text-right" style={{width:70}}>Đơn</th>
-                    <th className="px-3 py-2 text-[11px] font-medium text-muted tracking-wider text-right" style={{width:70}}>CP</th>
+                    <th className="px-3 py-2 text-table-sub font-medium text-muted tracking-wider text-right" style={{width:70}}>Đơn</th>
+                    <th className="px-3 py-2 text-table-sub font-medium text-muted tracking-wider text-right" style={{width:70}}>CP</th>
                   </React.Fragment>
                 ))}
-                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" className="">Đơn</th>
-                <th className="px-4 py-2 text-[10px] font-medium text-muted tracking-wider text-right" className="">CP</th>
+                <th className="px-4 py-2 text-table-sub font-medium text-muted tracking-wider text-right" className="">Đơn</th>
+                <th className="px-4 py-2 text-table-sub font-medium text-muted tracking-wider text-right" className="">CP</th>
               </tr>
             </thead>
             <tbody>
@@ -994,7 +994,7 @@ export default function Teams() {
                   let teamTotalOrders = 0, teamTotalCost = 0;
                   return (
                     <tr key={team.id} className="border-b border-border/50 hover:bg-gray-50/60 transition-all">
-                      <td className="px-4 py-3 text-xs font-medium">
+                      <td className="px-4 py-3 text-table-body">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-md grid place-items-center text-white text-[8px] font-bold" style={{backgroundColor: team.color || '#4f46e5'}}>{team.name.charAt(0)}</div>
                           <span>{team.name}</span>
@@ -1008,13 +1008,13 @@ export default function Teams() {
                         teamTotalCost += c;
                         return (
                           <React.Fragment key={p}>
-                            <td className="px-3 py-3 text-xs text-right font-medium">{o.toLocaleString('vi-VN')}</td>
-                            <td className="px-3 py-3 text-xs text-right text-muted">{c > 0 ? c.toLocaleString('vi-VN')+'d' : '-'}</td>
+                            <td className="px-3 py-3 text-table-body text-right">{o.toLocaleString('vi-VN')}</td>
+                            <td className="px-3 py-3 text-table-body text-right text-muted">{c > 0 ? c.toLocaleString('vi-VN')+'d' : '-'}</td>
                           </React.Fragment>
                         );
                       })}
-                      <td className="px-4 py-3 text-xs text-right font-bold text-[#4f46e5]">{teamTotalOrders}</td>
-                      <td className="px-4 py-3 text-xs text-right font-bold">{teamTotalCost > 0 ? teamTotalCost.toLocaleString('vi-VN')+'d' : '-'}</td>
+                      <td className="px-4 py-3 text-table-body text-right font-bold text-[#4f46e5]">{teamTotalOrders}</td>
+                      <td className="px-4 py-3 text-table-body text-right font-bold">{teamTotalCost > 0 ? teamTotalCost.toLocaleString('vi-VN')+'d' : '-'}</td>
                       <td className="px-3 py-3 text-center">
                         {currentUser?.role === 'admin' && <button onClick={() => { if (confirm('Xoá team khỏi bảng B6?')) api('/teams/' + team.id + '/visibility', { method:'PATCH', body:JSON.stringify({table:'b6'}) }).then(() => loadB6()); }} className="p-1 rounded hover:bg-red-50 text-muted hover:text-red-500 transition-all" title="Xoá khỏi bảng"><X size={13} /></button>}
                       </td>
@@ -1024,21 +1024,21 @@ export default function Teams() {
               {/* Tổng cộng */}
               {((b6Data as any)?.teams || []).length > 0 && (
                 <tr className="bg-gray-50/70 border-t-2 border-border font-medium">
-                  <td className="px-4 py-3 text-xs font-bold text-[#171717]">Tổng cộng</td>
+                  <td className="px-4 py-3 text-table-body font-bold text-ink">Tổng cộng</td>
                   {(b6Data as any).products.map((p: string) => {
                     const totalO = ((b6Data as any).teams || []).reduce((s: number, t: any) => s + ((((b6Data as any).data||{})[t.id]||{})[p]?.orders || 0), 0);
                     const totalC = ((b6Data as any).teams || []).reduce((s: number, t: any) => s + ((((b6Data as any).data||{})[t.id]||{})[p]?.cost || 0), 0);
                     return (
                       <React.Fragment key={'tot-'+p}>
-                        <td className="px-3 py-3 text-xs text-right font-bold text-[#4f46e5]">{totalO}</td>
-                        <td className="px-3 py-3 text-xs text-right font-bold">{totalC > 0 ? totalC.toLocaleString('vi-VN')+'d' : '-'}</td>
+                        <td className="px-3 py-3 text-table-body text-right font-bold text-[#4f46e5]">{totalO}</td>
+                        <td className="px-3 py-3 text-table-body text-right font-bold">{totalC > 0 ? totalC.toLocaleString('vi-VN')+'d' : '-'}</td>
                       </React.Fragment>
                     );
                   })}
-                  <td className="px-4 py-3 text-xs text-right font-bold text-[#4f46e5]">{(b6Data as any).teams.reduce((s: number, t: any) => {
+                  <td className="px-4 py-3 text-table-body text-right font-bold text-[#4f46e5]">{(b6Data as any).teams.reduce((s: number, t: any) => {
                     return s + ((b6Data as any).products || []).reduce((s2: number, p: string) => s2 + ((((b6Data as any).data||{})[t.id]||{})[p]?.orders || 0), 0);
                   }, 0)}</td>
-                  <td className="px-4 py-3 text-xs text-right font-bold">{(b6Data as any).teams.reduce((s: number, t: any) => {
+                  <td className="px-4 py-3 text-table-body text-right font-bold">{(b6Data as any).teams.reduce((s: number, t: any) => {
                     return s + ((b6Data as any).products || []).reduce((s2: number, p: string) => s2 + ((((b6Data as any).data||{})[t.id]||{})[p]?.cost || 0), 0);
                   }, 0) > 0 ? ((b6Data as any).teams.reduce((s: number, t: any) => {
                     return s + ((b6Data as any).products || []).reduce((s2: number, p: string) => s2 + ((((b6Data as any).data||{})[t.id]||{})[p]?.cost || 0), 0);

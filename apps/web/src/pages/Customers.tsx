@@ -144,14 +144,14 @@ export default function Customers() {
       )}
 
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-[#171717]">Khách hàng</h1><p className="text-sm text-muted mt-1">Quản lý danh sách khách hàng và chăm sóc</p></div>
+        <div><h1 className="text-2xl font-bold text-ink">Khách hàng</h1><p className="text-sm text-muted mt-1">Quản lý danh sách khách hàng và chăm sóc</p></div>
         <button onClick={() => { setEditForm({}); setShowAdd(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all"><Plus size={18} />Thêm khách hàng</button>
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 max-w-xs">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#808080]" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm tên, SĐT, email..." className="w-full pl-9 pr-4 py-2 bg-white border border-border rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-[#4f46e5]/25 focus:border-[#4f46e5]" />
         </div>
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2 bg-white border border-border rounded-xl text-xs outline-none cursor-pointer"><option value="">Tất cả trạng thái</option>{STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}</select>
@@ -165,15 +165,15 @@ export default function Customers() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-border bg-[#fafafa]">
-              <th className="px-5 py-3.5 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Khách hàng</th>
-              <th className="px-5 py-3.5 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">SĐT</th>
-              <th className="px-5 py-3.5 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Tags</th>
-              <th className="px-5 py-3.5 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Nguồn</th>
-              <th className="px-5 py-3.5 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Người PT</th>
-              <th className="px-5 py-3.5 text-[11px] font-semibold text-muted uppercase tracking-wider text-left">Trạng thái</th>
-              <th className="px-5 py-3.5 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Lần cuối</th>
-              <th className="px-5 py-3.5 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Tương tác</th>
-              <th className="px-5 py-3.5 text-[11px] font-semibold text-muted uppercase tracking-wider text-right">Thao tác</th>
+              <th className="px-5 py-3.5 text-xs font-semibold text-muted uppercase tracking-wider text-left">Khách hàng</th>
+              <th className="px-5 py-3.5 text-xs font-semibold text-muted uppercase tracking-wider text-left">SĐT</th>
+              <th className="px-5 py-3.5 text-xs font-semibold text-muted uppercase tracking-wider text-left">Tags</th>
+              <th className="px-5 py-3.5 text-xs font-semibold text-muted uppercase tracking-wider text-left">Nguồn</th>
+              <th className="px-5 py-3.5 text-xs font-semibold text-muted uppercase tracking-wider text-left">Người PT</th>
+              <th className="px-5 py-3.5 text-xs font-semibold text-muted uppercase tracking-wider text-left">Trạng thái</th>
+              <th className="px-5 py-3.5 text-xs font-semibold text-muted uppercase tracking-wider text-right">Lần cuối</th>
+              <th className="px-5 py-3.5 text-xs font-semibold text-muted uppercase tracking-wider text-right">Tương tác</th>
+              <th className="px-5 py-3.5 text-xs font-semibold text-muted uppercase tracking-wider text-right">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
@@ -184,19 +184,19 @@ export default function Customers() {
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shrink-0">{c.name?.charAt(0) || '?'}</div>
                     <div>
-                      <p className="text-sm font-medium text-[#171717]">{c.name}</p>
-                      {c.email && <p className="text-[11px] text-muted">{c.email}</p>}
+                      <p className="text-sm font-medium text-ink">{c.name}</p>
+                      {c.email && <p className="text-xs text-muted">{c.email}</p>}
                     </div>
                   </div>
                 </td>
-                <td className="px-5 py-3.5 text-sm text-[#808080]">{c.phone || '—'}</td>
-                <td className="px-5 py-3.5">{c.tags ? <div className="flex flex-wrap gap-1">{c.tags.split(',').map((t:string)=><span key={t} className={'px-2 py-0.5 text-[10px] font-medium rounded-md '+(TAG_COLORS[t]||'bg-gray-100 text-muted')}>{t}</span>)}</div> : <span className="text-xs text-muted">—</span>}</td>
-                <td className="px-5 py-3.5"><span className="text-xs text-[#808080]">{c.source || '—'}</span></td>
-                <td className="px-5 py-3.5 text-xs text-[#808080]">{c.assigneeName || '—'}</td>
+                <td className="px-5 py-3.5 text-sm text-muted">{c.phone || '—'}</td>
+                <td className="px-5 py-3.5">{c.tags ? <div className="flex flex-wrap gap-1">{c.tags.split(',').map((t:string)=><span key={t} className={'px-2 py-0.5 text-xs font-medium rounded-md '+(TAG_COLORS[t]||'bg-gray-100 text-muted')}>{t}</span>)}</div> : <span className="text-xs text-muted">—</span>}</td>
+                <td className="px-5 py-3.5"><span className="text-xs text-muted">{c.source || '—'}</span></td>
+                <td className="px-5 py-3.5 text-xs text-muted">{c.assigneeName || '—'}</td>
                 <td className="px-5 py-3.5"><select value={c.status||'new'} onChange={e=>{e.stopPropagation();changeStatus(c.id,e.target.value)}} className={'text-xs font-medium rounded-full px-2 py-1 border-0 outline-none cursor-pointer '+(STATUSES.find((s:any)=>s.key===(c.status||'new'))?.color||'bg-gray-100')} onClick={e=>e.stopPropagation()}>{STATUSES.map((s:any)=><option key={s.key} value={s.key}>{s.label}</option>)}</select></td>
-                <td className="px-5 py-3.5 text-right text-xs text-[#808080]">{c.last_contact ? new Date(c.last_contact).toLocaleDateString('vi-VN') : '—'}</td>
+                <td className="px-5 py-3.5 text-right text-xs text-muted">{c.last_contact ? new Date(c.last_contact).toLocaleDateString('vi-VN') : '—'}</td>
                 <td className="px-5 py-3.5 text-right">
-                  <span className="text-xs font-medium text-[#808080]">{c.interactionCount || c.contact_count || 0}</span>
+                  <span className="text-xs font-medium text-muted">{c.interactionCount || c.contact_count || 0}</span>
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <button onClick={e => { e.stopPropagation(); openDetail(c); }} className="p-1.5 rounded-lg hover:bg-blue-50 text-muted hover:text-blue-500 transition-all" title="Chi tiết"><Edit3 size={14} /></button>
@@ -213,7 +213,7 @@ export default function Customers() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAdd(false)}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-border overflow-hidden max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="px-5 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between sticky top-0 z-10">
-              <h3 className="font-bold text-sm text-[#171717]">Thêm khách hàng</h3>
+              <h3 className="font-bold text-sm text-ink">Thêm khách hàng</h3>
               <button onClick={() => setShowAdd(false)} className="p-1 rounded hover:bg-gray-200 text-muted"><X size={16} /></button>
             </div>
             <div className="p-5 space-y-4">
@@ -228,7 +228,7 @@ export default function Customers() {
                 <div><label className="text-xs font-medium text-muted mb-1 block">Zalo</label><input value={editForm.zalo||''} onChange={e=>setEditForm({...editForm,zalo:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
                 <div><label className="text-xs font-medium text-muted mb-1 block">TikTok</label><input value={editForm.tiktok||''} onChange={e=>setEditForm({...editForm,tiktok:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
                 <div><label className="text-xs font-medium text-muted mb-1 block">Trạng thái</label><select value={editForm.status||'new'} onChange={e=>setEditForm({...editForm,status:e.target.value})} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none cursor-pointer">{STATUSES.map(s=><option key={s.key} value={s.key}>{s.label}</option>)}</select></div>
-                <div className="col-span-2"><label className="text-xs font-medium text-muted mb-1 block">Tags</label><div className="flex flex-wrap gap-1.5">{TAGS.map(t=>{const active=(editForm.tags||'').includes(t);return <button key={t} onClick={()=>{const ts=(editForm.tags||'').split(',').filter(Boolean);const has=ts.includes(t);setEditForm({...editForm,tags:has?ts.filter(x=>x!==t).join(','):[...ts,t].join(',')})}} className={'px-3 py-1 rounded-lg text-xs font-medium transition-all '+(active?'bg-[#4f46e5] text-white':(TAG_COLORS[t]||'bg-gray-100 text-muted hover:bg-gray-200'))}>{t}</button>})}</div></div>
+                <div className="col-span-2"><label className="text-xs font-medium text-muted mb-1 block">Tags</label><div className="flex flex-wrap gap-1.5">{TAGS.map(t=>{const active=(editForm.tags||'').includes(t);return <button key={t} onClick={()=>{const ts=(editForm.tags||'').split(',').filter(Boolean);const has=ts.includes(t);setEditForm({...editForm,tags:has?ts.filter(x=>x!==t).join(','):[...ts,t].join(',')})}} className={'px-3 py-1 rounded-lg text-xs font-medium transition-all '+(active?'bg-primary text-white':(TAG_COLORS[t]||'bg-gray-100 text-muted hover:bg-gray-200'))}>{t}</button>})}</div></div>
                 <div className="col-span-2"><label className="text-xs font-medium text-muted mb-1 block">Ghi chú</label><textarea value={editForm.notes||''} onChange={e=>setEditForm({...editForm,notes:e.target.value})} rows={3} className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25 resize-none" /></div>
               </div>
               <div className="flex justify-end gap-3 pt-2">
@@ -249,12 +249,12 @@ export default function Customers() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-sm font-bold">{fullDetail.name?.charAt(0) || '?'}</div>
                 <div>
-                  <h3 className="font-bold text-[#171717]">{fullDetail.name}</h3>
+                  <h3 className="font-bold text-ink">{fullDetail.name}</h3>
                   <div className="flex items-center gap-2 text-xs text-muted">{statusBadge(fullDetail.status)}{fullDetail.source && <span>· {fullDetail.source}</span>}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={updateCustomer} className="px-4 py-2 bg-[#4f46e5] text-white rounded-lg text-xs font-medium hover:bg-[#4338ca] transition-all">Lưu</button>
+                <button onClick={updateCustomer} className="px-4 py-2 bg-primary text-white rounded-lg text-xs font-medium hover:bg-[#4338ca] transition-all">Lưu</button>
                 <button onClick={() => setDetail(null)} className="p-2 rounded-lg hover:bg-gray-200 text-muted transition-all"><X size={16} /></button>
               </div>
             </div>
@@ -265,10 +265,10 @@ export default function Customers() {
                 <div className="bg-[#fafafa] rounded-xl border border-border p-4 space-y-3">
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider">Thông tin liên hệ</p>
                   <div className="space-y-2.5">
-                    <div><p className="text-[10px] text-muted">Số điện thoại</p><p className="text-sm">{fullDetail.phone || '—'}</p></div>
-                    <div><p className="text-[10px] text-muted">Email</p><p className="text-sm">{fullDetail.email || '—'}</p></div>
-                    <div><p className="text-[10px] text-muted">Ngày sinh</p><p className="text-sm">{fmt(fullDetail.birthday) || '—'}</p></div>
-                    <div><p className="text-[10px] text-muted">Địa chỉ</p><p className="text-sm">{fullDetail.address || '—'}</p></div>
+                    <div><p className="text-xs text-muted">Số điện thoại</p><p className="text-sm">{fullDetail.phone || '—'}</p></div>
+                    <div><p className="text-xs text-muted">Email</p><p className="text-sm">{fullDetail.email || '—'}</p></div>
+                    <div><p className="text-xs text-muted">Ngày sinh</p><p className="text-sm">{fmt(fullDetail.birthday) || '—'}</p></div>
+                    <div><p className="text-xs text-muted">Địa chỉ</p><p className="text-sm">{fullDetail.address || '—'}</p></div>
                   </div>
                 </div>
 
@@ -276,10 +276,10 @@ export default function Customers() {
                 <div className="bg-[#fafafa] rounded-xl border border-border p-4 space-y-3">
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider">Mạng xã hội</p>
                   <div className="space-y-2.5">
-                    <div><p className="text-[10px] text-muted">Facebook</p><p className="text-sm">{fullDetail.facebook || '—'}</p></div>
-                    <div><p className="text-[10px] text-muted">Zalo</p><p className="text-sm">{fullDetail.zalo || '—'}</p></div>
-                    <div><p className="text-[10px] text-muted">TikTok</p><p className="text-sm">{fullDetail.tiktok || '—'}</p></div>
-                    <div><p className="text-[10px] text-muted">Social khác</p><p className="text-sm">{fullDetail.social || '—'}</p></div>
+                    <div><p className="text-xs text-muted">Facebook</p><p className="text-sm">{fullDetail.facebook || '—'}</p></div>
+                    <div><p className="text-xs text-muted">Zalo</p><p className="text-sm">{fullDetail.zalo || '—'}</p></div>
+                    <div><p className="text-xs text-muted">TikTok</p><p className="text-sm">{fullDetail.tiktok || '—'}</p></div>
+                    <div><p className="text-xs text-muted">Social khác</p><p className="text-sm">{fullDetail.social || '—'}</p></div>
                   </div>
                 </div>
               </div>
@@ -291,7 +291,7 @@ export default function Customers() {
                   <div className="flex flex-wrap gap-1.5">
                     {TAGS.map(t => {
                       const active = (editForm.tags||'').includes(t);
-                      return <button key={t} onClick={()=>{const ts=(editForm.tags||'').split(',').filter(Boolean);const has=ts.includes(t);setEditForm({...editForm,tags:has?ts.filter(x=>x!==t).join(','):[...ts,t].join(',')})}} className={'px-3 py-1 rounded-lg text-xs font-medium transition-all '+(active?'bg-[#4f46e5] text-white':(TAG_COLORS[t]||'bg-gray-100 text-muted hover:bg-gray-200'))}>{t}</button>;
+                      return <button key={t} onClick={()=>{const ts=(editForm.tags||'').split(',').filter(Boolean);const has=ts.includes(t);setEditForm({...editForm,tags:has?ts.filter(x=>x!==t).join(','):[...ts,t].join(',')})}} className={'px-3 py-1 rounded-lg text-xs font-medium transition-all '+(active?'bg-primary text-white':(TAG_COLORS[t]||'bg-gray-100 text-muted hover:bg-gray-200'))}>{t}</button>;
                     })}
                   </div>
                 </div>
@@ -316,11 +316,11 @@ export default function Customers() {
                   {interactions.length === 0 && <p className="text-sm text-muted py-2">Chưa có tương tác nào</p>}
                   {interactions.map((i: any) => (
                     <div key={i.id} className="flex items-start gap-3 p-3 bg-[#fafafa] border border-border rounded-xl">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[9px] font-bold shrink-0">{i.userName?.charAt(0) || '?'}</div>
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shrink-0">{i.userName?.charAt(0) || '?'}</div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-xs font-medium text-[#171717]">{i.userName}</span>
-                          <span className="text-[10px] text-muted">{new Date(i.created_at).toLocaleString('vi-VN')}</span>
+                          <span className="text-xs font-medium text-ink">{i.userName}</span>
+                          <span className="text-xs text-muted">{new Date(i.created_at).toLocaleString('vi-VN')}</span>
                         </div>
                         <p className="text-sm text-[#4d4d4d]">{i.content}</p>
                       </div>
@@ -330,7 +330,7 @@ export default function Customers() {
                 <div className="flex gap-2">
                   <input value={newInteraction} onChange={e=>setNewInteraction(e.target.value)} placeholder="Nhập nội dung tương tác..." className="flex-1 px-4 py-2.5 bg-white border border-border rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25"
                     onKeyDown={e => { if (e.key === 'Enter') addInteraction(); }} />
-                  <button onClick={addInteraction} disabled={!newInteraction.trim()} className="px-4 py-2.5 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all disabled:opacity-50">Gửi</button>
+                  <button onClick={addInteraction} disabled={!newInteraction.trim()} className="px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all disabled:opacity-50">Gửi</button>
                 </div>
               </div>
             </div>

@@ -51,13 +51,13 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#171717]">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-ink">Dashboard</h1>
           <p className="text-sm text-muted mt-1">Tổng quan hiệu suất CRM — Quản lý tình hình kinh doanh</p>
         </div>
         <div className="flex items-center gap-1 bg-white rounded-xl border border-border shadow-sm">
           {PERIODS.map(p => (
             <button key={p.key} onClick={() => setPeriod(p.key)}
-              className={'px-4 py-2 text-sm font-medium transition-all first:rounded-l-xl last:rounded-r-xl ' + (period === p.key ? 'bg-[#4f46e5] text-white shadow-sm' : 'hover:bg-gray-50 text-muted')}>
+              className={'px-4 py-2 text-sm font-medium transition-all first:rounded-l-xl last:rounded-r-xl ' + (period === p.key ? 'bg-primary text-white shadow-sm' : 'hover:bg-gray-50 text-muted')}>
               {p.label}
             </button>
           ))}
@@ -81,8 +81,8 @@ export default function Dashboard() {
                 <c.icon size={14} className={'text-' + c.color + '-500'} />
                 <span>{c.label}</span>
               </div>
-              <p className="text-xl font-bold text-[#171717] truncate">{v}</p>
-              <p className="text-[10px] text-muted mt-0.5">Hôm nay</p>
+              <p className="text-xl font-bold text-ink truncate">{v}</p>
+              <p className="text-xs text-muted mt-0.5">Hôm nay</p>
             </div>
           );
         })}
@@ -94,7 +94,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center"><Target size={16} className="text-white" /></div>
             <div>
-              <h2 className="text-lg font-bold text-[#171717]">Tình hình Kinh doanh</h2>
+              <h2 className="text-lg font-bold text-ink">Tình hình Kinh doanh</h2>
               <p className="text-xs text-muted">Dữ liệu Bảng B2 — Mục tiêu vs Thực tế</p>
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function Dashboard() {
                           {t.name.charAt(0)}
                         </div>
                         <div>
-                          <h3 className="font-bold text-[#171717] text-base">{t.name}</h3>
+                          <h3 className="font-bold text-ink text-base">{t.name}</h3>
                           <p className="text-xs text-muted flex items-center gap-1">
                             <Users size={12} /> {t.memberCount || 0} thành viên
                           </p>
@@ -141,7 +141,7 @@ export default function Dashboard() {
                     <div className="mb-5">
                       <div className="flex items-center justify-between text-xs mb-1.5">
                         <span className="text-muted">Tiến độ KPI</span>
-                        <span className="font-semibold text-[#171717]">{t.actualOrders}/{t.kpiOrders} đơn</span>
+                        <span className="font-semibold text-ink">{t.actualOrders}/{t.kpiOrders} đơn</span>
                       </div>
                       <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
                         <div className={'h-full rounded-full transition-all duration-700 ease-out ' + barColor}
@@ -154,29 +154,29 @@ export default function Dashboard() {
                     {/* Metrics grid */}
                     <div className="grid grid-cols-3 gap-4">
                       <div className="bg-gray-50/80 rounded-xl p-3 text-center">
-                        <p className="text-[11px] text-muted mb-1">Mục tiêu</p>
-                        <p className="text-base font-bold text-[#171717]">{t.kpiOrders}</p>
-                        <p className="text-[10px] text-muted">đơn</p>
+                        <p className="text-xs text-muted mb-1">Mục tiêu</p>
+                        <p className="text-base font-bold text-ink">{t.kpiOrders}</p>
+                        <p className="text-xs text-muted">đơn</p>
                       </div>
                       <div className="bg-indigo-50/80 rounded-xl p-3 text-center">
-                        <p className="text-[11px] text-muted mb-1">Thực tế</p>
-                        <p className="text-base font-bold text-[#4f46e5]">{t.actualOrders}</p>
-                        <p className="text-[10px] text-muted">đơn</p>
+                        <p className="text-xs text-muted mb-1">Thực tế</p>
+                        <p className="text-base font-bold text-primary">{t.actualOrders}</p>
+                        <p className="text-xs text-muted">đơn</p>
                       </div>
                       <div className={'rounded-xl p-3 text-center ' + (gap > 0 ? 'bg-rose-50/80' : 'bg-emerald-50/80')}>
-                        <p className="text-[11px] text-muted mb-1">Còn thiếu</p>
+                        <p className="text-xs text-muted mb-1">Còn thiếu</p>
                         <p className={'text-base font-bold ' + (gap > 0 ? 'text-rose-600' : 'text-emerald-600')}>{gap > 0 ? gap : '0'}</p>
-                        <p className="text-[10px] text-muted">đơn</p>
+                        <p className="text-xs text-muted">đơn</p>
                       </div>
                     </div>
 
                     {/* Bottom details row */}
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50 text-xs">
                       <div className="flex items-center gap-4">
-                        <span className="text-muted">CP/Đơn: <b className="text-[#171717]">{cpOrder > 0 ? cpOrder.toLocaleString('vi-VN') + 'đ' : '—'}</b></span>
-                        <span className="text-muted">Chi phí: <b className="text-[#171717]">{Number(t.actualCosts || 0).toLocaleString('vi-VN')}đ</b></span>
+                        <span className="text-muted">CP/Đơn: <b className="text-ink">{cpOrder > 0 ? cpOrder.toLocaleString('vi-VN') + 'đ' : '—'}</b></span>
+                        <span className="text-muted">Chi phí: <b className="text-ink">{Number(t.actualCosts || 0).toLocaleString('vi-VN')}đ</b></span>
                       </div>
-                      <span className="text-muted">CP QC: <b className="text-[#4f46e5]">{Number(t.adCostTotal || 0).toLocaleString('vi-VN')}đ</b></span>
+                      <span className="text-muted">CP QC: <b className="text-primary">{Number(t.adCostTotal || 0).toLocaleString('vi-VN')}đ</b></span>
                     </div>
                   </div>
                 </div>
@@ -190,8 +190,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
           <div className="flex items-center gap-2 mb-4">
-            <BarChart2 size={18} className="text-[#4f46e5]" />
-            <h2 className="text-sm font-bold text-[#171717]">Mục tiêu vs Thực tế</h2>
+            <BarChart2 size={18} className="text-primary" />
+            <h2 className="text-sm font-bold text-ink">Mục tiêu vs Thực tế</h2>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data.teams}>
@@ -207,8 +207,8 @@ export default function Dashboard() {
 
         <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
           <div className="flex items-center gap-2 mb-4">
-            <DollarSign size={18} className="text-[#4f46e5]" />
-            <h2 className="text-sm font-bold text-[#171717]">Chi phí theo Team</h2>
+            <DollarSign size={18} className="text-primary" />
+            <h2 className="text-sm font-bold text-ink">Chi phí theo Team</h2>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data.teams}>
@@ -227,14 +227,14 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-border bg-gray-50/60 flex items-center justify-between">
-            <h3 className="font-semibold text-sm flex items-center gap-2"><Activity size={15} className="text-[#4f46e5]" /> Hoạt động gần đây</h3>
+            <h3 className="font-semibold text-sm flex items-center gap-2"><Activity size={15} className="text-primary" /> Hoạt động gần đây</h3>
             <span className="text-xs text-muted">Realtime</span>
           </div>
           <div className="divide-y divide-border/50 max-h-[340px] overflow-y-auto">
             {logs.length === 0 && <div className="px-5 py-10 text-center text-sm text-muted">Chưa có hoạt động</div>}
             {logs.map((log: any, i: number) => (
               <div key={log.id || i} className="px-5 py-2.5 flex items-start gap-3 hover:bg-gray-50/60 transition-all">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[10px] font-bold mt-0.5 shrink-0">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold mt-0.5 shrink-0">
                   {(log.user_name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -245,7 +245,7 @@ export default function Dashboard() {
                     <span className="font-medium">{log.module}</span></p>
                   <p className="text-xs text-muted mt-0.5 truncate">{log.entity || ''}{log.detail ? ' — ' + log.detail.slice(0,60) : ''}</p>
                 </div>
-                <span className="text-[10px] text-muted shrink-0">{log.timeAgo || ''}</span>
+                <span className="text-xs text-muted shrink-0">{log.timeAgo || ''}</span>
               </div>
             ))}
           </div>
@@ -253,7 +253,7 @@ export default function Dashboard() {
 
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-border bg-gray-50/60">
-            <h3 className="font-semibold text-sm flex items-center gap-2"><Layers size={15} className="text-[#4f46e5]" /> Tổng quan Module</h3>
+            <h3 className="font-semibold text-sm flex items-center gap-2"><Layers size={15} className="text-primary" /> Tổng quan Module</h3>
           </div>
           <div className="divide-y divide-border/50">
             {[
@@ -270,7 +270,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-muted">{m.label}</p>
-                  <p className="text-sm font-bold text-[#171717]">{m.val || 0}</p>
+                  <p className="text-sm font-bold text-ink">{m.val || 0}</p>
                 </div>
               </div>
             ))}

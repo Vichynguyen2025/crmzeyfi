@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import authRoutes from './routes/auth';
 import teamRoutes from './routes/teams';
 import reportRoutes from './routes/reports';
+import adminSettingsRoutes from './routes/admin-settings';
 import taskRoutes from './routes/tasks';
 import customerRoutes from './routes/customers';
 import adCostRoutes from './routes/ad-costs';
@@ -53,6 +54,7 @@ async function start() {
   await app.register(authRoutes, { prefix: '/api' });
   await app.register(teamRoutes, { prefix: '/api' });
   await app.register(reportRoutes, { prefix: '/api' });
+  await app.register(adminSettingsRoutes, { prefix: '/api' });
   await app.register(taskRoutes, { prefix: '/api' });
   await app.register(customerRoutes, { prefix: '/api' });
   await app.register(adCostRoutes, { prefix: '/api' });

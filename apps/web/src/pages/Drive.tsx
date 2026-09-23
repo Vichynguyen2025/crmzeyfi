@@ -145,7 +145,7 @@ export default function Drive() {
       )}
 
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-[#171717]">Kho dữ liệu</h1><p className="text-sm text-muted mt-1">Lưu trữ file, tài liệu, hình ảnh</p></div>
+        <div><h1 className="text-2xl font-bold text-ink">Kho dữ liệu</h1><p className="text-sm text-muted mt-1">Lưu trữ file, tài liệu, hình ảnh</p></div>
         <div className="flex items-center gap-2 text-xs text-muted bg-gray-50 border border-border rounded-lg px-3 py-1.5">
           <span className="w-2 h-2 rounded-full bg-green-500" />
           <span>~18 GB trống</span>
@@ -154,11 +154,11 @@ export default function Drive() {
         </div>
         <div className="flex items-center gap-1">
           <button onClick={() => setViewMode('list')}
-            className={'p-2 rounded-lg transition-all ' + (viewMode === 'list' ? 'bg-[#4f46e5] text-white' : 'text-[#808080] hover:text-[#171717] hover:bg-[#f5f5f5]')}>
+            className={'p-2 rounded-lg transition-all ' + (viewMode === 'list' ? 'bg-primary text-white' : 'text-muted hover:text-ink hover:bg-[#f5f5f5]')}>
             <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1={8} y1={6} x2={21} y2={6}/><line x1={8} y1={12} x2={21} y2={12}/><line x1={8} y1={18} x2={21} y2={18}/><line x1={3} y1={6} x2={3.01} y2={6}/><line x1={3} y1={12} x2={3.01} y2={12}/><line x1={3} y1={18} x2={3.01} y2={18}/></svg>
           </button>
           <button onClick={() => setViewMode('grid')}
-            className={'p-2 rounded-lg transition-all ' + (viewMode === 'grid' ? 'bg-[#4f46e5] text-white' : 'text-[#808080] hover:text-[#171717] hover:bg-[#f5f5f5]')}>
+            className={'p-2 rounded-lg transition-all ' + (viewMode === 'grid' ? 'bg-primary text-white' : 'text-muted hover:text-ink hover:bg-[#f5f5f5]')}>
             <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x={3} y={3} width={7} height={7}/><rect x={14} y={3} width={7} height={7}/><rect x={3} y={14} width={7} height={7}/><rect x={14} y={14} width={7} height={7}/></svg>
           </button>
         </div>
@@ -182,8 +182,8 @@ export default function Drive() {
             <div key={i} className="flex items-center gap-3">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-[#171717] truncate max-w-[200px]">{p.name}</span>
-                  <span className="text-[10px] text-muted">{p.status==='done' ? '✓' : p.status==='error' ? '!' : p.progress+'%'}</span>
+                  <span className="text-xs text-ink truncate max-w-[200px]">{p.name}</span>
+                  <span className="text-xs text-muted">{p.status==='done' ? '✓' : p.status==='error' ? '!' : p.progress+'%'}</span>
                 </div>
                 <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] rounded-full transition-all duration-300" style={{width:p.progress+'%'}}></div>
@@ -208,7 +208,7 @@ export default function Drive() {
         {folderPath.map((p, i) => (
           <span key={i} className="flex items-center gap-2">
             {i > 0 && <ChevronRight size={14} className="text-muted" />}
-            <button onClick={() => goToPath(i)} className={'hover:text-primary transition-all ' + (i === folderPath.length - 1 ? 'font-semibold text-[#171717]' : 'text-muted')}>
+            <button onClick={() => goToPath(i)} className={'hover:text-primary transition-all ' + (i === folderPath.length - 1 ? 'font-semibold text-ink' : 'text-muted')}>
               {p.name}
             </button>
           </span>
@@ -226,7 +226,7 @@ export default function Drive() {
                 <div key={item.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-all group">
                   <div className={'w-10 h-10 rounded-xl grid place-items-center shrink-0 ' + (item.type === 'folder' ? 'bg-amber-50' : 'bg-indigo-50')}
                     onClick={() => item.type === 'folder' && openFolder(item.id, item.name)}>
-                    {item.type === 'folder' ? <Folder size={22} className="text-amber-500" /> : <Icon size={22} className="text-[#4f46e5]" />}
+                    {item.type === 'folder' ? <Folder size={22} className="text-amber-500" /> : <Icon size={22} className="text-primary" />}
                   </div>
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={async () => {
                 if (item.type === 'folder') { openFolder(item.id, item.name); return; }
@@ -235,7 +235,7 @@ export default function Drive() {
                   try { const res = await api('/drive/preview/'+item.id, {method:'POST'}); if (res?.previewUrl) setPreviewUrl(res.previewUrl); else setPreviewUrl(item.url); } catch { setPreviewUrl(item.url); }
                 } else { setPreviewUrl(item.url); }
               }}>
-                    <p className="font-medium text-sm text-[#171717] truncate">{item.name}</p>
+                    <p className="font-medium text-sm text-ink truncate">{item.name}</p>
                     <div className="flex items-center gap-3 text-xs text-muted mt-0.5">
                       <span>{item.type === 'folder' ? 'Thư mục' : formatSize(item.size) || 'File'}</span>
                       {item.uploadedByName && <span className="flex items-center gap-1"><User size={11} />{item.uploadedByName}</span>}
@@ -282,12 +282,12 @@ export default function Drive() {
                     ) : isImage ? (
                       <img src={item.url} alt={item.name} className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105" onError={(e:any)=>{e.target.style.display='none';}} />
                     ) : (
-                      <Icon size={40} className="text-[#4f46e5]/30" />
+                      <Icon size={40} className="text-primary/30" />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-all" />
                     <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                       <button onClick={e=>{e.stopPropagation();rename(item.id, item.name)}} className="w-7 h-7 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all" title="Đổi tên">
-                        <Edit3 size={12} className="text-[#171717]" />
+                        <Edit3 size={12} className="text-ink" />
                       </button>
                       {!isFolder && <button onClick={e=>{e.stopPropagation();deleteItem(item.id, item.name)}} className="w-7 h-7 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all" title="Xóa">
                         <Trash2 size={12} className="text-red-500" />
@@ -295,9 +295,9 @@ export default function Drive() {
                     </div>
                   </div>
                   <div className="px-3 py-2.5">
-                    <p className="text-xs font-medium text-[#171717] truncate leading-tight">{item.name}</p>
-                    <p className="text-[10px] text-[#999] mt-1">{isFolder ? 'Thư mục' : formatSize(item.size)}</p>
-                    {item.uploadedByName && <p className="text-[10px] text-[#999] mt-0.5 truncate">{item.uploadedByName}</p>}
+                    <p className="text-xs font-medium text-ink truncate leading-tight">{item.name}</p>
+                    <p className="text-xs text-[#999] mt-1">{isFolder ? 'Thư mục' : formatSize(item.size)}</p>
+                    {item.uploadedByName && <p className="text-xs text-[#999] mt-0.5 truncate">{item.uploadedByName}</p>}
                   </div>
                 </div>
               );
@@ -321,10 +321,10 @@ export default function Drive() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-white shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center shrink-0">
-                  {(() => { const Icon = getFileIcon(preview.mime_type); return <Icon size={20} className="text-[#4f46e5]" />; })()}
+                  {(() => { const Icon = getFileIcon(preview.mime_type); return <Icon size={20} className="text-primary" />; })()}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-bold text-sm text-[#171717] truncate max-w-[300px]">{preview.name}</h3>
+                  <h3 className="font-bold text-sm text-ink truncate max-w-[300px]">{preview.name}</h3>
                   <p className="text-xs text-muted">{preview.mime_type || 'File'} — {formatSize(preview.size)}</p>
                 </div>
               </div>
@@ -397,7 +397,7 @@ export default function Drive() {
               ) : (
                 <div className="p-12 flex flex-col items-center justify-center min-h-[300px] text-center">
                   <FileText size={64} className="mx-auto mb-5 opacity-20 text-muted" />
-                  <p className="font-medium text-[#171717]">Không hỗ trợ xem trước loại file này</p>
+                  <p className="font-medium text-ink">Không hỗ trợ xem trước loại file này</p>
                   <p className="text-sm text-muted mt-1 mb-6">
                     {preview.mime_type?.includes('word') || preview.mime_type?.includes('spreadsheet') || preview.mime_type?.includes('presentation') 
                       ? 'File văn phòng cần tải xuống để xem'
@@ -405,7 +405,7 @@ export default function Drive() {
                   </p>
                   {preview.url && (
                     <a href={preview.url} download={preview.name}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4f46e5] text-white rounded-xl text-sm font-medium hover:shadow-md hover:bg-[#5e6ad2] transition-all">
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:shadow-md hover:bg-[#5e6ad2] transition-all">
                       <Download size={16} /> Tải xuống
                     </a>
                   )}

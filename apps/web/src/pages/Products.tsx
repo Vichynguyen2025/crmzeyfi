@@ -69,7 +69,7 @@ export default function Products() {
       )}
 
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-[#171717]">Quản lý sản phẩm</h1><p className="text-sm text-muted mt-1">Sản phẩm, dịch vụ, dữ liệu chung cho các team</p></div>
+        <div><h1 className="text-2xl font-bold text-ink">Quản lý sản phẩm</h1><p className="text-sm text-muted mt-1">Sản phẩm, dịch vụ, dữ liệu chung cho các team</p></div>
         <button onClick={() => { setEdit(null); setForm({name:'',description:'',price:'',category:'',teamId:'',status:'active'}); setShowAdd(true); }}
           className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all">
           <Plus size={18} />Thêm sản phẩm
@@ -134,10 +134,10 @@ export default function Products() {
             <div key={p.id} className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all group relative">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 grid place-items-center">
-                  <Package size={22} className="text-[#4f46e5]" />
+                  <Package size={22} className="text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-[#171717] truncate">{p.name}</h3>
+                  <h3 className="font-semibold text-ink truncate">{p.name}</h3>
                   <span className={'px-2.5 py-0.5 rounded-full text-xs font-medium ' + (STATUS_COLORS[p.status] || 'bg-gray-100')}>
                     {STATUS_LABELS[p.status] || p.status}
                   </span>
@@ -155,7 +155,7 @@ export default function Products() {
                 {p.category && <span className="flex items-center gap-1 text-muted"><Tag size={12} />{p.category}</span>}
                 {p.teamName && <span className="flex items-center gap-1 text-muted"><Users size={12} />{p.teamName}</span>}
               </div>
-              {p.createdByName && <p className="text-[10px] text-muted mt-2">Tạo bởi: {p.createdByName}</p>}
+              {p.createdByName && <p className="text-xs text-muted mt-2">Tạo bởi: {p.createdByName}</p>}
             </div>
           ))}
           {products.length === 0 && (
