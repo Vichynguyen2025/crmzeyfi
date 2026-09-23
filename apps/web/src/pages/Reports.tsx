@@ -56,7 +56,7 @@ export default function Reports() {
   // Sync URL with tab state
   useEffect(() => { if (urlTab && urlTab !== tab) setTab(urlTab); }, [urlTab]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const [today, setToday] = useState(() => new Date().toISOString().slice(0, 10));
 
   const dateRange = [
     { key: 'today', label: 'Hôm nay' },
@@ -112,7 +112,7 @@ export default function Reports() {
       // Fetch all data sources in parallel
       const [b3Data, seoData, b2Data, adsData, socialData] = await Promise.all([
         // B3: dành cho team 3M (daily-perf)
-        userTeamId && u.id ? api('/daily-perf/' + userTeamId + '/' + u.id + '?month=' + reportDate.slice(0,7) + '&dateFrom=' + from + '&dateTo=' + to).catch(() => []) : Promise.resolve([]),
+        userTeamId && u.id ? api('/daily-perf/' + userTeamId + '/' + u.id + '?month=' + reportDate.slice(0,7) + '&dateFrom=' + reportDate + '&dateTo=' + reportDate).catch(() => []) : Promise.resolve([]),
         // SEO: tất cả team
         api('/seo-revenue/' + (u.id || 'all') + '?dateFrom=' + from + '&dateTo=' + to).catch(() => []),
         // B2 (actuals): tất cả team
@@ -172,6 +172,31 @@ export default function Reports() {
   }, []);
 
   useEffect(() => { loadMetrics(); loadReports(); }, [loadMetrics, loadReports]);
+
+  // Auto-advance to new day every 30s
+  useEffect(() => {
+    const check = () => {
+      const d = new Date().toISOString().slice(0, 10);
+      if (d !== today) {
+        setToday(d);
+        setReportDate(d);
+        setContent('');
+        setReason('');
+        setDifficulties('');
+        setSuggestions('');
+        setExtraTasks([]);
+        setAttachments([]);
+        setReportLinks([]);
+        setNewLink('');
+        setConfirming(false);
+        loadReports();
+        loadMetrics();
+        showToast('success', '\u0110\u00e3 sang ng\u00e0y m\u1edbi (' + d + ') — form b\u00e1o c\u00e1o m\u1edbi');
+      }
+    };
+    const t = setInterval(check, 30000);
+    return () => clearInterval(t);
+  }, [today]);
   useEffect(() => {
     if (tab !== 'received' || !user.id) return;
     const loadReceived = async () => {
