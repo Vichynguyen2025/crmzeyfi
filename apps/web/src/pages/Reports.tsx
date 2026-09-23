@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Send, Calendar, ChevronDown, Paperclip, X, CheckCircle2, Clock, Users, BarChart3, TrendingUp, MessageSquare, Download, Eye, Inbox, UserCheck, ChevronRight, Folder } from 'lucide-react';
+import { FileText, Send, Calendar, ChevronDown, Paperclip, X, CheckCircle2, Clock, Users, BarChart3, TrendingUp, MessageSquare, Download, Eye, Inbox, UserCheck, ChevronRight, Folder, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getSocket } from '../lib/socket';
