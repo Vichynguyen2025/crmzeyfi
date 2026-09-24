@@ -124,7 +124,7 @@ export default function Drive() {
         progress[i].status='uploading'; progress[i].progress=10; setUploadProgress([...progress]);
         const base64 = await new Promise<string>(r=>{const fr=new FileReader();fr.onload=()=>r((fr.result as string).split(',')[1]);fr.readAsDataURL(file);});
         progress[i].progress=60; setUploadProgress([...progress]);
-        await api('/drive/upload',{method:'POST',body:JSON.stringify({name:file.name,mimeType:file.type,size:file.size,data:base64})});
+        await api('/drive/upload',{method:'POST',body:JSON.stringify({name:file.name,mimeType:file.type,size:file.size,data:base64,parentId:currentFolder||null})});
         progress[i].progress=100; progress[i].status='done'; setUploadProgress([...progress]); ok++;
       } catch { progress[i].status='error'; setUploadProgress([...progress]); fail++; }
     }
