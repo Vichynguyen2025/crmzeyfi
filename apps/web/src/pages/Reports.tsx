@@ -915,7 +915,38 @@ export default function Reports() {
                   <p className="text-sm text-ink leading-relaxed whitespace-pre-wrap">{(JSON.parse(historyDetail.data||'{}')).content||'—'}</p>
                   {(JSON.parse(historyDetail.data||'{}')).notes && <p className="text-xs text-muted mt-2 pt-2" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}>{(JSON.parse(historyDetail.data||'{}')).notes}</p>}
                 </div>
-                {/* Difficulties & Suggestions */}
+                
+                {/* File đính kèm */}
+                {(JSON.parse(historyDetail.data||'{}')).attachments?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">File đính kèm</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(JSON.parse(historyDetail.data||'{}')).attachments.map((url:string, i:number) => (
+                        <a key={i} href={url} target="_blank" rel="noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 bg-[#fafafa] border border-border rounded-lg text-xs text-primary hover:bg-blue-50 transition-all">
+                          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1={12} y1={15} x2={12} y2={3}/></svg>
+                          {url.split('/').pop() || ('File ' + (i+1))}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Link đính kèm */}
+                {(JSON.parse(historyDetail.data||'{}')).links?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Link đính kèm</p>
+                    <div className="space-y-1.5">
+                      {(JSON.parse(historyDetail.data||'{}')).links.map((link: string, i: number) => (
+                        <a key={i} href={link} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-2 bg-[#fafafa] border border-border rounded-lg text-xs text-primary hover:bg-blue-50 transition-all">
+                          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                          <span className="truncate">{link}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+{/* Difficulties & Suggestions */}
                 <div className="grid grid-cols-2 gap-3">
                   {(JSON.parse(historyDetail.data||'{}')).difficulties && <div className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-1">Khó khăn</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).difficulties}</p></div>}
                   {(JSON.parse(historyDetail.data||'{}')).suggestions && <div className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Đề xuất</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).suggestions}</p></div>}
