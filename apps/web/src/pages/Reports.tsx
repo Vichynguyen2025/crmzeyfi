@@ -910,6 +910,8 @@ export default function Reports() {
                 {/* Metrics */}
                 {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Chỉ số kinh doanh</p><div className="flex flex-wrap gap-3">{(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-primary">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</p><p className="text-xs text-muted mt-0.5 font-medium">Đơn</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.todayCost > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.todayCost).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">Chi phí</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.adsTotal > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#db2777]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">QC</p></div>}</div></div>}
                 
+                        {/* Recipients */}
+                {(JSON.parse(historyDetail.data||'{}')).recipients?.length > 0 && <div className="pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
                         {/* Kết quả kinh doanh */}
                         <div className="mt-4">
                           <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Kết quả kinh doanh</h4>
@@ -989,8 +991,7 @@ export default function Reports() {
                             </div>
                           </div>
                         </div>
-{/* Recipients */}
-                {(JSON.parse(historyDetail.data||'{}')).recipients?.length > 0 && <div className="pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Đã gửi đến</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string)=><span key={rid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{getUserName(rid)}</span>)}</div></div>}
+Đã gửi đến</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string)=><span key={rid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{getUserName(rid)}</span>)}</div></div>}
               </div>
               {/* Right: Comments */}
               <div className="w-80 shrink-0 flex flex-col" style={{borderLeft:'1px solid rgba(0,0,0,0.06)', paddingLeft:'1.25rem', maxHeight:'calc(80vh - 80px)'}}>
