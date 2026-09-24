@@ -45,6 +45,7 @@ export default function Reports() {
   const [confirming, setConfirming] = useState(false);
   const [receivedReports, setReceivedReports] = useState<any[]>([]);
   const [detailReport, setDetailReport] = useState<any>(null);
+  const showToast = (type:string, msg:string) => { const e = document.createElement('div'); e.className = 'fixed top-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-xl border text-sm font-medium animate-slide-in ' + (type==='success'?'bg-green-50 border-green-200 text-green-700':'bg-red-50 border-red-200 text-red-700'); e.textContent = msg; document.body.appendChild(e); setTimeout(() => e.remove(), 3000); };
   const userRole = user.role;
 //  const allUsersList = allUsers; // for recipient name lookup
   const getUserName = (id:string) => { const u = allUsers.find(u2 => u2.id === id); return u ? (u.name || u.email) : id.slice(0,8); };
@@ -749,10 +750,34 @@ export default function Reports() {
                               <p className="text-xs text-muted mt-1 font-medium">Chi phí</p>
                             </div>
                           )}
+                          {dd.metrics.todayMessages > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-ink">{dd.metrics.todayMessages}</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Tin nhắn</p>
+                            </div>
+                          )}
+                          {dd.metrics.avgMessCost > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#d97706]">{Number(dd.metrics.avgMessCost).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-xs text-muted mt-1 font-medium">CP/Mess</p>
+                            </div>
+                          )}
                           {dd.metrics.adsTotal > 0 && (
                             <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
                               <p className="text-xl font-bold text-[#0068d6]">{Number(dd.metrics.adsTotal).toLocaleString('vi-VN')}đ</p>
                               <p className="text-xs text-muted mt-1 font-medium">CP QC</p>
+                            </div>
+                          )}
+                          {dd.metrics.adsRevenue > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#16a34a]">{Number(dd.metrics.adsRevenue).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Doanh thu QC</p>
+                            </div>
+                          )}
+                          {dd.metrics.adsOrders > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-ink">{dd.metrics.adsOrders}</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Đơn QC</p>
                             </div>
                           )}
                           {dd.metrics.roas !== '—' && (
@@ -765,6 +790,12 @@ export default function Reports() {
                             <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
                               <p className="text-xl font-bold text-[#16a34a]">{dd.metrics.seoOrders}</p>
                               <p className="text-xs text-muted mt-1 font-medium">Đơn SEO</p>
+                            </div>
+                          )}
+                          {dd.metrics.seoRevenue > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#16a34a]">{Number(dd.metrics.seoRevenue).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Doanh thu SEO</p>
                             </div>
                           )}
                           {dd.metrics.publishedPosts > 0 && (
