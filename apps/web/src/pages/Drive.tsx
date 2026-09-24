@@ -433,7 +433,32 @@ return (
             </div>
           </div>
         </div>
+      )}      {/* Move modal */}
+      {moveFileId && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setMoveFileId(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden" style={{boxShadow:'rgba(0,0,0,0.12) 0px 0px 0px 1px, rgba(0,0,0,0.08) 0px 4px 12px'}} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h3 className="text-sm font-semibold text-ink">Di chuyen den thu muc</h3>
+              <button onClick={() => setMoveFileId(null)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={16} className="text-muted" /></button>
+            </div>
+            <div className="p-4 max-h-[300px] overflow-y-auto space-y-1">
+              <button onClick={async () => { try { await api('/drive/' + moveFileId, { method:'PUT', body:JSON.stringify({ parentId: null }) }); showToast('success', 'Da di chuyen'); setMoveFileId(null); location.reload(); } catch { showToast('error', 'Loi'); } }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 transition-all text-left">
+                <Folder size={18} className="text-amber-500" />
+                <span className="text-sm font-medium text-ink">Thu muc goc</span>
+              </button>
+              {(files||[]).filter((f) => f.type === 'folder' && f.id !== currentFolder).map((f) => (
+                <button key={f.id} onClick={async () => { try { await api('/drive/' + moveFileId, { method:'PUT', body:JSON.stringify({ parentId: f.id }) }); showToast('success', 'Da di chuyen'); setMoveFileId(null); location.reload(); } catch { showToast('error', 'Loi'); } }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 transition-all text-left">
+                  <Folder size={18} className="text-amber-500" />
+                  <span className="text-sm font-medium text-ink">{f.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
+
     </div>
   );
 }
