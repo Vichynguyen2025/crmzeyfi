@@ -46,6 +46,8 @@ export default function Drive() {
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [moveTarget, setMoveTarget] = useState<string|null>(null);
   const [moveFileId, setMoveFileId] = useState<string|null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchMove, setBatchMove] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
@@ -105,6 +107,17 @@ export default function Drive() {
       showToast('success', 'Đã đổi tên thành "' + name + '"');
       load();
     } catch { showToast('error', 'Lỗi đổi tên'); }
+  };
+
+  const deleteSelected = async () => {
+    const ids = [...selectedIds];
+    if (!confirm('Xoá ' + ids.length + ' file?')) return;
+    for (const id of ids) {
+      try { await api('/drive/' + id, { method:'DELETE' }); } catch {}
+    }
+    setSelectedIds(new Set());
+    showToast('success', 'Đã xoá ' + ids.length + ' file');
+    load();
   };
 
   const deleteItem = async (id: string, name: string) => {
@@ -235,6 +248,16 @@ return (
       </div>
 
       {/* File grid */}
+      {/* Batch actions */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 border border-primary/20 rounded-xl mb-4">
+          <span className="text-sm font-medium text-ink">Da chon {selectedIds.size} file</span>
+          <button onClick={deleteSelected} className="ml-auto px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 transition-all">Xoa</button>
+          <button onClick={() => { setBatchMove(true); setMoveFileId('batch'); }} className="px-4 py-2 bg-primary text-white rounded-lg text-xs font-medium hover:bg-primary/90 transition-all">Di chuyen</button>
+          <button onClick={() => setSelectedIds(new Set())} className="px-3 py-2 text-xs text-muted hover:text-ink transition-all">Bo chon</button>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
         {viewMode === 'list' && files.length > 0 && (
           <div className="divide-y divide-border">
@@ -242,9 +265,9 @@ return (
               const Icon = getFileIcon(item.mime_type);
               return (
                 <div key={item.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-all group">
-                  <div className={'w-10 h-10 rounded-xl grid place-items-center shrink-0 ' + (item.type === 'folder' ? 'bg-amber-50' : 'bg-indigo-50')}
+                  <div className={'flex items-center gap-1 px-3 py-2 rounded-xl shrink-0 ' + (item.type === 'folder' ? 'bg-amber-50' : 'bg-indigo-50')}
                     onClick={() => item.type === 'folder' && openFolder(item.id, item.name)}>
-                    {item.type === 'folder' ? <Folder size={22} className="text-amber-500" /> : <Icon size={22} className="text-primary" />}
+                    <input type="checkbox" checked={selectedIds.has(item.id)} onChange={e => {const n=new Set(selectedIds); if(e.target.checked)n.add(item.id);else n.delete(item.id);setSelectedIds(n);}} className="w-4 h-4 accent-primary shrink-0 cursor-pointer" onClick={e=>e.stopPropagation()} /> {item.type === 'folder' ? <Folder size={22} className="text-amber-500" /> : <Icon size={22} className="text-primary" />}
                   </div>
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={async () => {
                 if (item.type === 'folder') { openFolder(item.id, item.name); return; }
@@ -442,13 +465,13 @@ return (
               <button onClick={() => setMoveFileId(null)} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={16} className="text-muted" /></button>
             </div>
             <div className="p-4 max-h-[300px] overflow-y-auto space-y-1">
-              <button onClick={async () => { try { await api('/drive/' + moveFileId, { method:'PUT', body:JSON.stringify({ parentId: null }) }); showToast('success', 'Da di chuyen'); setMoveFileId(null); location.reload(); } catch { showToast('error', 'Loi'); } }}
+              <button onClick={async () => { try { await batchMove && moveFileId === 'batch' ? Promise.all([...selectedIds].map(id => api('/drive/' + id, { method:'PUT', body:JSON.stringify({ parentId: null }) }))) : api('/drive/' + moveFileId, { method:'PUT', body:JSON.stringify({ parentId: null }) }); showToast('success', 'Da di chuyen'); setMoveFileId(null); setSelectedIds(new Set()); setBatchMove(false); location.reload(); } catch { showToast('error', 'Loi'); } }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 transition-all text-left">
                 <Folder size={18} className="text-amber-500" />
                 <span className="text-sm font-medium text-ink">Thu muc goc</span>
               </button>
               {(files||[]).filter((f) => f.type === 'folder' && f.id !== currentFolder).map((f) => (
-                <button key={f.id} onClick={async () => { try { await api('/drive/' + moveFileId, { method:'PUT', body:JSON.stringify({ parentId: f.id }) }); showToast('success', 'Da di chuyen'); setMoveFileId(null); location.reload(); } catch { showToast('error', 'Loi'); } }}
+                <button key={f.id} onClick={async () => { try { await batchMove && moveFileId === 'batch' ? Promise.all([...selectedIds].map(id => api('/drive/' + id, { method:'PUT', body:JSON.stringify({ parentId: f.id }) }))) : api('/drive/' + moveFileId, { method:'PUT', body:JSON.stringify({ parentId: f.id }) }); showToast('success', 'Da di chuyen'); setMoveFileId(null); setSelectedIds(new Set()); setBatchMove(false); location.reload(); } catch { showToast('error', 'Loi'); } }}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 transition-all text-left">
                   <Folder size={18} className="text-amber-500" />
                   <span className="text-sm font-medium text-ink">{f.name}</span>
