@@ -822,7 +822,22 @@ export default function Reports() {
                             </a>
                           ))}
                         </div>
-                      </div>
+                                            {/* Link đính kèm */}
+                      {dd.links && dd.links.length > 0 && (
+                        <div className="mt-3">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Link đính kèm</h4>
+                          <div className="space-y-1.5">
+                            {dd.links.map((link: string, i: number) => (
+                              <a key={i} href={link} target="_blank" rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-3 py-2 bg-[#fafafa] border border-border rounded-lg text-xs text-primary hover:bg-blue-50 transition-all">
+                                <Link size={12} />
+                                <span className="truncate">{link}</span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+</div>
                     )}
                   </>
                 );
@@ -917,11 +932,11 @@ export default function Reports() {
                           <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Kết quả kinh doanh</h4>
                           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{dd.metrics.todayOrders ?? 0}</p>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders ?? 0}</p>
                               <p className="text-[10px] text-muted mt-0.5">Đơn (B2)</p>
                             </div>
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#0068d6]">{Number(dd.metrics.b3TotalCost || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-sm font-bold text-[#0068d6]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.b3TotalCost || 0).toLocaleString('vi-VN')}đ</p>
                               <p className="text-[10px] text-muted mt-0.5">CP QC 3M</p>
                             </div>
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
@@ -929,11 +944,11 @@ export default function Reports() {
                               <p className="text-[10px] text-muted mt-0.5">CP eSim</p>
                             </div>
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{dd.metrics.todayMessages ?? 0}</p>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.todayMessages ?? 0}</p>
                               <p className="text-[10px] text-muted mt-0.5">Tổng Mess</p>
                             </div>
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#d97706]">{Number(dd.metrics.avgMessCost || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-sm font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.avgMessCost || 0).toLocaleString('vi-VN')}đ</p>
                               <p className="text-[10px] text-muted mt-0.5">Giá Mess TB</p>
                             </div>
                           </div>
@@ -944,19 +959,19 @@ export default function Reports() {
                           <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Quảng cáo</h4>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#0068d6]">{Number(dd.metrics.adsTotal || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-sm font-bold text-[#0068d6]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal || 0).toLocaleString('vi-VN')}đ</p>
                               <p className="text-[10px] text-muted mt-0.5">CP có thuế</p>
                             </div>
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#16a34a]">{Number(dd.metrics.adsRevenue || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-sm font-bold text-[#16a34a]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsRevenue || 0).toLocaleString('vi-VN')}đ</p>
                               <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
                             </div>
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{dd.metrics.adsOrders ?? 0}</p>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.adsOrders ?? 0}</p>
                               <p className="text-[10px] text-muted mt-0.5">Đơn</p>
                             </div>
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#7c3aed]">{dd.metrics.roas ?? '—'}x</p>
+                              <p className="text-sm font-bold text-[#7c3aed]">{(JSON.parse(historyDetail.data||'{}')).metrics.roas ?? '—'}x</p>
                               <p className="text-[10px] text-muted mt-0.5">ROAS</p>
                             </div>
                           </div>
@@ -967,11 +982,11 @@ export default function Reports() {
                           <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Doanh thu SEO</h4>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#16a34a]">{dd.metrics.seoOrders ?? 0}</p>
+                              <p className="text-sm font-bold text-[#16a34a]">{(JSON.parse(historyDetail.data||'{}')).metrics.seoOrders ?? 0}</p>
                               <p className="text-[10px] text-muted mt-0.5">Đơn</p>
                             </div>
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#16a34a]">{Number(dd.metrics.seoRevenue || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-sm font-bold text-[#16a34a]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.seoRevenue || 0).toLocaleString('vi-VN')}đ</p>
                               <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
                             </div>
                           </div>
@@ -982,11 +997,11 @@ export default function Reports() {
                           <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Content Social</h4>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{dd.metrics.socialPosts ?? 0}</p>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.socialPosts ?? 0}</p>
                               <p className="text-[10px] text-muted mt-0.5">Bài viết</p>
                             </div>
                             <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{dd.metrics.publishedPosts ?? 0}</p>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.publishedPosts ?? 0}</p>
                               <p className="text-[10px] text-muted mt-0.5">Đã đăng</p>
                             </div>
                           </div>
