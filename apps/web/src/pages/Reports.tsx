@@ -910,7 +910,7 @@ export default function Reports() {
                   </div>
                 </div>
                 {/* Content */}
-                <div className="rounded-xl p-4" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 2px'}}>
+                <div className="rounded-xl p-5 bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}>
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Nội dung báo cáo</p>
                   <p className="text-sm text-ink leading-relaxed whitespace-pre-wrap">{(JSON.parse(historyDetail.data||'{}')).content||'—'}</p>
                   {(JSON.parse(historyDetail.data||'{}')).notes && <p className="text-xs text-muted mt-2 pt-2" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}>{(JSON.parse(historyDetail.data||'{}')).notes}</p>}
@@ -923,8 +923,8 @@ export default function Reports() {
                     <div className="flex flex-wrap gap-2">
                       {(JSON.parse(historyDetail.data||'{}')).attachments.map((url:string, i:number) => (
                         <a key={i} href={url} target="_blank" rel="noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 bg-[#fafafa] border border-border rounded-lg text-xs text-primary hover:bg-blue-50 transition-all">
-                          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1={12} y1={15} x2={12} y2={3}/></svg>
+                          className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] border border-border rounded-xl text-xs text-primary hover:bg-blue-50 transition-all">
+                          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1={12} y1={15} x2={12} y2={3}/></svg>
                           {url.split('/').pop() || ('File ' + (i+1))}
                         </a>
                       ))}
@@ -938,8 +938,8 @@ export default function Reports() {
                     <div className="space-y-1.5">
                       {(JSON.parse(historyDetail.data||'{}')).links.map((link: string, i: number) => (
                         <a key={i} href={link} target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 bg-[#fafafa] border border-border rounded-lg text-xs text-primary hover:bg-blue-50 transition-all">
-                          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                          className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] border border-border rounded-xl text-xs text-primary hover:bg-blue-50 transition-all">
+                          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                           <span className="truncate">{link}</span>
                         </a>
                       ))}
@@ -948,13 +948,13 @@ export default function Reports() {
                 )}
 {/* Difficulties & Suggestions */}
                 <div className="grid grid-cols-2 gap-3">
-                  {(JSON.parse(historyDetail.data||'{}')).difficulties && <div className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-1">Khó khăn</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).difficulties}</p></div>}
-                  {(JSON.parse(historyDetail.data||'{}')).suggestions && <div className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Đề xuất</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).suggestions}</p></div>}
+                  {(JSON.parse(historyDetail.data||'{}')).difficulties && <div className="rounded-xl p-4 bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-1.5">Khó khăn</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).difficulties}</p></div>}
+                  {(JSON.parse(historyDetail.data||'{}')).suggestions && <div className="rounded-xl p-4 bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1.5">Đề xuất</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).suggestions}</p></div>}
                 </div>
                 {/* Extra Tasks */}
-                {(JSON.parse(historyDetail.data||'{}')).extraTasks?.length > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Công việc khác</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).extraTasks.map((t:any,i:number)=><span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{t}</span>)}</div></div>}
+                {(JSON.parse(historyDetail.data||'{}')).extraTasks?.length > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Công việc khác</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).extraTasks.map((t:any,i:number)=><span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#fafafa] border border-border" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>{t}</span>)}</div></div>}
                 {/* Metrics */}
-                {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Chỉ số kinh doanh</p><div className="flex flex-wrap gap-3">{(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-primary">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</p><p className="text-xs text-muted mt-0.5 font-medium">Đơn</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.todayCost > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.todayCost).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">Chi phí</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.adsTotal > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#db2777]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">QC</p></div>}</div></div>}
+                {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Chỉ số kinh doanh</p><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div className="rounded-xl px-4 py-4 text-center bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}><p className="text-xl font-bold text-primary">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</p><p className="text-xs text-muted mt-0.5 font-medium">Đơn</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.todayCost > 0 && <div className="rounded-xl px-4 py-4 text-center bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}><p className="text-xl font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.todayCost).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">Chi phí</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.adsTotal > 0 && <div className="rounded-xl px-4 py-4 text-center bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}><p className="text-xl font-bold text-[#db2777]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">QC</p></div>}</div></div>}
                 
                         {/* Recipients */}
                 {(JSON.parse(historyDetail.data||'{}')).recipients?.length > 0 && <div className="pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
@@ -1037,7 +1037,7 @@ export default function Reports() {
                             </div>
                           </div>
                         </div>
-Đã gửi đến</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string)=><span key={rid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{getUserName(rid)}</span>)}</div></div>}
+Đã gửi đến</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string)=><span key={rid} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#fafafa] border border-border" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>{getUserName(rid)}</span>)}</div></div>}
               </div>
               {/* Right: Comments */}
               <div className="w-80 shrink-0 flex flex-col" style={{borderLeft:'1px solid rgba(0,0,0,0.06)', paddingLeft:'1.25rem', maxHeight:'calc(80vh - 80px)'}}>
