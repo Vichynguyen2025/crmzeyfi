@@ -909,7 +909,87 @@ export default function Reports() {
                 {(JSON.parse(historyDetail.data||'{}')).extraTasks?.length > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Công việc khác</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).extraTasks.map((t:any,i:number)=><span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{t}</span>)}</div></div>}
                 {/* Metrics */}
                 {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Chỉ số kinh doanh</p><div className="flex flex-wrap gap-3">{(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-primary">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</p><p className="text-xs text-muted mt-0.5 font-medium">Đơn</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.todayCost > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.todayCost).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">Chi phí</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.adsTotal > 0 && <div className="rounded-xl px-4 py-3 text-center min-w-[90px]" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}><p className="text-xl font-bold text-[#db2777]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">QC</p></div>}</div></div>}
-                {/* Recipients */}
+                
+                        {/* Kết quả kinh doanh */}
+                        <div className="mt-4">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Kết quả kinh doanh</h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{dd.metrics.todayOrders ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Đơn (B2)</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#0068d6]">{Number(dd.metrics.b3TotalCost || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">CP QC 3M</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#0068d6]">0đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">CP eSim</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{dd.metrics.todayMessages ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Tổng Mess</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#d97706]">{Number(dd.metrics.avgMessCost || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">Giá Mess TB</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Quảng cáo */}
+                        <div className="mt-4">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Quảng cáo</h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#0068d6]">{Number(dd.metrics.adsTotal || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">CP có thuế</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#16a34a]">{Number(dd.metrics.adsRevenue || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{dd.metrics.adsOrders ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Đơn</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#7c3aed]">{dd.metrics.roas ?? '—'}x</p>
+                              <p className="text-[10px] text-muted mt-0.5">ROAS</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Doanh thu SEO */}
+                        <div className="mt-4">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Doanh thu SEO</h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#16a34a]">{dd.metrics.seoOrders ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Đơn</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#16a34a]">{Number(dd.metrics.seoRevenue || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Content Social */}
+                        <div className="mt-4">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Content Social</h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{dd.metrics.socialPosts ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Bài viết</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{dd.metrics.publishedPosts ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Đã đăng</p>
+                            </div>
+                          </div>
+                        </div>
+{/* Recipients */}
                 {(JSON.parse(historyDetail.data||'{}')).recipients?.length > 0 && <div className="pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Đã gửi đến</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string)=><span key={rid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}>{getUserName(rid)}</span>)}</div></div>}
               </div>
               {/* Right: Comments */}
