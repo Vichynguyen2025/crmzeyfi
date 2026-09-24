@@ -44,6 +44,8 @@ export default function Drive() {
   const [toast, setToast] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [preview, setPreview] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [moveTarget, setMoveTarget] = useState<string|null>(null);
+  const [moveFileId, setMoveFileId] = useState<string|null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
@@ -60,6 +62,11 @@ export default function Drive() {
   useEffect(load, [load]);
 
   // Realtime
+  useEffect(() => {
+    const u = JSON.parse(localStorage.getItem('zeyfi_user') || '{}');
+    if (u.id) setCurrentUser(u);
+  }, []);
+
   useEffect(() => { load(); }, []);
 
   useEffect(() => {
@@ -133,7 +140,18 @@ export default function Drive() {
     load();
   };
 
-  return (
+  
+  const moveItem = async (id: string) => {
+    if (!moveTarget) return;
+    try {
+      await api('/drive/' + id, { method:'PUT', body:JSON.stringify({ parentId: moveTarget }) });
+      showToast('success', 'Đã di chuyển');
+      setMoveFileId(null);
+      setMoveTarget(null);
+      load();
+    } catch { showToast('error', 'Lỗi di chuyển'); }
+  };
+return (
     <div className="space-y-6">
       {/* Toast notification */}
       {toast && (
@@ -246,8 +264,9 @@ export default function Drive() {
                     <button onClick={() => rename(item.id, item.name)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-500 transition-all" title="Đổi tên">
                       <Edit3 size={14} />
                     </button>
-                    {(currentUser?.role === 'admin' || currentUser?.id === item.uploaded_by) && <button onClick={() => deleteItem(item.id, item.name)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-all" title="Xoá">
-                      <Trash2 size={14} /></button>}
+                    {(currentUser?.role === 'admin' || currentUser?.id === item.uploaded_by) && <><button onClick={() => deleteItem(item.id, item.name)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-all" title="Xoá">
+                      <Trash2 size={14} /></button>
+                      <button onClick={() => { setMoveFileId(item.id); setMoveTarget(item.parent_id||null); }} className="p-2 rounded-lg hover:bg-blue-50 text-muted hover:text-primary transition-all" title="Di chuyển"><Folder size={14} /></button></>}
 
                   </div>
                 </div>

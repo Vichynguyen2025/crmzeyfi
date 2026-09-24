@@ -24,7 +24,7 @@ export default async function (app: FastifyInstance) {
     const month = (b.date || '').slice(0, 7) || new Date().toISOString().slice(0, 7);
     await pool.execute(
       "INSERT INTO social_content (id, date, assignee, platform, title, summary, status, publish_date, post_link, results, created_by, month) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-      [id, b.date || new Date().toISOString().slice(0, 10), b.assignee || null, b.platform || '', b.title || '', b.summary || '', b.status || 'idea', b.publishDate || null, b.postLink || '', b.results || '', req.user.id, month]
+      [id, b.date || null, b.assignee || null, b.platform || '', b.title || '', b.summary || '', b.status || 'idea', b.publishDate || null, b.postLink || '', b.results || '', req.user.id, month]
     );
     reply.send({ id, success: true });
   });

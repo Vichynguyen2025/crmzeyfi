@@ -56,9 +56,16 @@ export default async function (app: FastifyInstance) {
 
   app.put('/drive/:id', async (req, reply) => {
     const { id } = req.params as any;
-    const { name } = req.body as any;
-    await pool.execute("UPDATE drive_files SET name = ? WHERE id = ?", [name, id]);
-    io.emit('drive:update', { id, name, action: 'rename' });
+    const { name, parentId } = req.body as any;
+    if (name !== undefined) {
+      await pool.execute("UPDATE drive_files SET name = ? WHERE id = ?", [name, id]);
+      io.emit('drive:update', { id, name, action: 'rename' });
+    }
+    if (parentId !== undefined) {
+      await pool.execute("UPDATE drive_files SET parent_id = ? WHERE id = ?", [parentId || null, id]);
+      await pool.execute("UPDATE drive_files SET parent_id = ? WHERE parent_id = ?", [parentId || null, id]);
+      io.emit('drive:update', { id, parentId, action: 'move' });
+    }
     reply.send({ success: true });
   });
 

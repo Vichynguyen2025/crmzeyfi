@@ -782,7 +782,7 @@ const addAdRow = async () => {
                   {filteredRows.map((r:any) => (
                     <tr key={r.id} className={'hover:bg-gray-50/60 transition-all ' + (saving.has(r.id) ? 'opacity-50' : '')}>
                       <td className="px-2 py-1 text-xs">
-                        <input type="date" value={(r.date||'').split('T')[0].split(' ')[0]} onBlur={e => saveField(r.id,'date',e.target.value)} onChange={e => setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,date:e.target.value}:x))} className="w-full bg-transparent text-xs outline-none border-0" />
+                        <input type="date" value={r.date ? r.date.split('T')[0].split(' ')[0] : ''} onBlur={e => saveField(r.id,'date',e.target.value)} onChange={e => setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,date:e.target.value}:x))} className="w-full bg-transparent text-xs outline-none border-0" />
                       </td>
                       <td className="px-2 py-1 text-xs">
                         <select value={r.assignee||''} onChange={e => saveField(r.id,'assignee',e.target.value)} className="w-full bg-transparent text-xs outline-none border-0 cursor-pointer">
@@ -811,7 +811,7 @@ const addAdRow = async () => {
                         </select>
                       </td>
                       <td className="px-2 py-1 text-xs">
-                        <input type="date" value={(r.publish_date||'').split('T')[0].split(' ')[0]} onBlur={e => saveField(r.id,'publishDate',e.target.value)} onChange={e => setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,publish_date:e.target.value}:x))} className="w-full bg-transparent text-xs outline-none border-0" />
+                        <input type="date" value={r.publish_date ? r.publish_date.split('T')[0].split(' ')[0] : ''} onBlur={e => saveField(r.id,'publishDate',e.target.value)} onChange={e => setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,publish_date:e.target.value}:x))} className="w-full bg-transparent text-xs outline-none border-0" />
                       </td>
                       <td className="px-2 py-1 text-xs">
                         <input type="text" value={r.post_link||''} onBlur={e => saveField(r.id,'postLink',e.target.value)} onChange={e => setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,post_link:e.target.value}:x))} placeholder="https://..." className="w-full bg-transparent text-xs outline-none border-0 truncate" />
