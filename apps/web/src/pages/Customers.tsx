@@ -125,12 +125,12 @@ export default function Customers() {
   };
 
   const changeStatus = async (cid: string, status: string) => {
+    setCustomers((prev: any[]) => prev.map(c => c.id === cid ? { ...c, status } : c));
     try {
       await api('/customers/' + cid, { method:'PUT', body:JSON.stringify({ status }) });
       showToast('success', '\u0110\u00e3 c\u1eadp nh\u1eadt tr\u1ea1ng th\u00e1i');
       load();
-    } catch { showToast('error', 'L\u1ed7i c\u1eadp nh\u1eadt'); }
-  };
+    } catch { setCustomers((prev: any[]) => prev.map(c => c.id === cid ? { ...c, status: prev.find(x=>x.id===cid)?.status||'new' } : c)); showToast('error', 'L\u1ed7i c\u1eadp nh\u1eadt'); } };
 
   const fmt = (d: any) => d ? new Date(d).toLocaleDateString('vi-VN') : '';
 
