@@ -859,13 +859,13 @@ export default function Teams() {
             </colgroup>
             <thead>
               <tr>
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-left" className="">Team</th>
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-left" className="">Sản phẩm</th>
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">Mục tiêu</th>
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">Ngân sách</th>
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">CP/đơn</th>
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-center" className="">TV</th>
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">%KPI</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-left" >Team</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-left" >Sản phẩm</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" >Mục tiêu</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" >Ngân sách</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" >CP/đơn</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-center" >TV</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" >%KPI</th>
                 <th className="px-4 py-3 w-[36px]"></th>
               </tr>
               
@@ -965,24 +965,24 @@ export default function Teams() {
             </colgroup>
             <thead>
               <tr className="bg-gray-50/80 border-b border-border">
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-left" className="">Team</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-left" >Team</th>
                 {((b6Data as any)?.products || []).map((p: string) => (
                   <th key={p} className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" style={{width:140}} colSpan={2}>{p}</th>
                 ))}
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">Tổng Đơn</th>
-                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" className="">Tổng CP</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" >Tổng Đơn</th>
+                <th className="px-4 py-3 text-table-header font-semibold text-muted tracking-wider text-right" >Tổng CP</th>
                 <th className="px-4 py-3 w-[36px]"></th>
               </tr>
               <tr className="bg-gray-50/40 border-b border-border">
-                <th className="px-4 py-2 text-table-sub font-medium text-muted tracking-wider text-left" className=""></th>
+                <th className="px-4 py-2 text-table-sub font-medium text-muted tracking-wider text-left" ></th>
                 {((b6Data as any)?.products || []).map((p: string) => (
                   <React.Fragment key={p+'-sub'}>
                     <th className="px-3 py-2 text-table-sub font-medium text-muted tracking-wider text-right" style={{width:70}}>Đơn</th>
                     <th className="px-3 py-2 text-table-sub font-medium text-muted tracking-wider text-right" style={{width:70}}>CP</th>
                   </React.Fragment>
                 ))}
-                <th className="px-4 py-2 text-table-sub font-medium text-muted tracking-wider text-right" className="">Đơn</th>
-                <th className="px-4 py-2 text-table-sub font-medium text-muted tracking-wider text-right" className="">CP</th>
+                <th className="px-4 py-2 text-table-sub font-medium text-muted tracking-wider text-right" >Đơn</th>
+                <th className="px-4 py-2 text-table-sub font-medium text-muted tracking-wider text-right" >CP</th>
               </tr>
             </thead>
             <tbody>

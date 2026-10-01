@@ -568,7 +568,7 @@ const addAdRow = async () => {
                     const isGrouped = adGroupBy !== 'day';
                     return (
                       <tr key={r.id||idx} className={'hover:bg-gray-50/60 transition-all ' + (adSaving.has(r.id) ? 'opacity-50' : '')}>
-                        <td className="px-1 py-1 text-sm text-muted">{adGroupBy==='day' ? (r.dateStr||(r.date||'').split('T')[0]||r.periodLabel||'') : r.periodLabel||''}</td>
+                        <td className="px-1 py-1 text-sm text-muted">{(() => { const d = r.dateStr || (r.date?new Date(r.date).toLocaleDateString('fr-CA',{timeZone:'Asia/Ho_Chi_Minh'}):'') || r.periodLabel || ''; return adGroupBy === 'day' ? <input type="date" value={d} onChange={e=>{const v=e.target.value;setAdRows((prev:any[])=>prev.map(x=>x.id===r.id?{...x,date:v,dateStr:v}:x))}} onBlur={e=>saveAdField(r.id,'date',e.target.value)} className="w-full bg-transparent border-none outline-none text-xs cursor-pointer" /> : <span className="text-xs text-muted">{r.periodLabel||''}</span>; })()}</td>
                         <td className="px-1 py-0.5 text-sm">
                         {isGrouped ? <span className="text-muted">{r.platform==='google_ads'?'Google':r.platform==='facebook_ads'?'Facebook':r.platform==='tiktok_ads'?'Tiktok':r.platform||'-'}</span> :
                           <select value={r.platform||'facebook_ads'} onChange={e => saveAdField(r.id,'platform',e.target.value)}
@@ -680,7 +680,7 @@ const addAdRow = async () => {
                   {(!seoRows||seoRows.length===0)?<tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-muted">Chưa có dữ liệu</td></tr>
                   :seoRows.map((r,i)=>(
                     <tr key={i} className="border-b border-border/50 hover:bg-gray-50/60 transition-all">
-                      <td className="px-4 py-2.5 text-xs">{r.date?new Date(r.date).toLocaleDateString('fr-CA'):''}</td>
+                      <td className="px-4 py-2.5 text-xs"><input type="date" value={r.dateStr||(r.date?new Date(r.date).toLocaleDateString('fr-CA',{timeZone:'Asia/Ho_Chi_Minh'}):'')} onChange={e=>{const v=e.target.value;setSeoRows((prev)=>prev.map(x=>x.id===r.id?{...x,date:v,dateStr:v}:x))}} className="w-full bg-transparent border-none outline-none text-xs cursor-pointer" /></td>
                       <td className="px-4 py-2.5">
                         <select value={r.channel||''} onChange={e=>{const x=[...seoRows];x[i]={...x[i],channel:e.target.value};setSeoRows(x);}} className="w-full px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none">
                           <option value="">Chọn</option>

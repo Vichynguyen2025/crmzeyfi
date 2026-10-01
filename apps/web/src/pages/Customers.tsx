@@ -92,7 +92,7 @@ export default function Customers() {
       showToast('success', 'Đã cập nhật');
       setDetail(null);
       load();
-    } catch { showToast('error', 'Lỗi cập nhật'); }
+    } catch (e) { console.error('Update error:', e); showToast('error', 'Lỗi: ' + ((e as any)?.message||'cập nhật thất bại')); }
   };
 
   const deleteCustomer = async (id: string, name: string) => {
@@ -144,7 +144,7 @@ export default function Customers() {
       )}
 
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-ink">Khách hàng</h1><p className="text-sm text-muted mt-1">Quản lý danh sách khách hàng và chăm sóc</p></div>
+        <div><h1 className="text-2xl font-bold text-ink">Customer List</h1><p className="text-sm text-muted mt-1">Quản lý danh sách khách hàng và chăm sóc</p></div>
         <button onClick={() => { setEditForm({}); setShowAdd(true); }} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all"><Plus size={18} />Thêm khách hàng</button>
       </div>
 
@@ -249,7 +249,8 @@ export default function Customers() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-sm font-bold">{fullDetail.name?.charAt(0) || '?'}</div>
                 <div>
-                  <h3 className="font-bold text-ink">{fullDetail.name}</h3>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-1">Customer Detail</p>
+                    <h3 className="font-bold text-ink">{fullDetail.name}</h3>
                   <div className="flex items-center gap-2 text-xs text-muted">{statusBadge(fullDetail.status)}{fullDetail.source && <span>· {fullDetail.source}</span>}</div>
                 </div>
               </div>
@@ -265,10 +266,10 @@ export default function Customers() {
                 <div className="bg-[#fafafa] rounded-xl border border-border p-4 space-y-3">
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider">Thông tin liên hệ</p>
                   <div className="space-y-2.5">
-                    <div><p className="text-xs text-muted">Số điện thoại</p><p className="text-sm">{fullDetail.phone || '—'}</p></div>
-                    <div><p className="text-xs text-muted">Email</p><p className="text-sm">{fullDetail.email || '—'}</p></div>
-                    <div><p className="text-xs text-muted">Ngày sinh</p><p className="text-sm">{fmt(fullDetail.birthday) || '—'}</p></div>
-                    <div><p className="text-xs text-muted">Địa chỉ</p><p className="text-sm">{fullDetail.address || '—'}</p></div>
+                    <div><p className="text-xs text-muted">Số điện thoại</p><input value={editForm.phone||''} onChange={e=>setEditForm({...editForm,phone:e.target.value})} placeholder="Nhập số điện thoại" className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                    <div><p className="text-xs text-muted">Email</p><input value={editForm.email||''} onChange={e=>setEditForm({...editForm,email:e.target.value})} placeholder="Nhập email" className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                    <div><p className="text-xs text-muted">Ngày sinh</p><input type="date" value={editForm.birthday||''} onChange={e=>setEditForm({...editForm,birthday:e.target.value})} className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
+                    <div><p className="text-xs text-muted">Địa chỉ</p><input value={editForm.address||''} onChange={e=>setEditForm({...editForm,address:e.target.value})} placeholder="Nhập địa chỉ" className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" /></div>
                   </div>
                 </div>
 
@@ -293,6 +294,26 @@ export default function Customers() {
                       const active = (editForm.tags||'').includes(t);
                       return <button key={t} onClick={()=>{const ts=(editForm.tags||'').split(',').filter(Boolean);const has=ts.includes(t);setEditForm({...editForm,tags:has?ts.filter(x=>x!==t).join(','):[...ts,t].join(',')})}} className={'px-3 py-1 rounded-lg text-xs font-medium transition-all '+(active?'bg-primary text-white':(TAG_COLORS[t]||'bg-gray-100 text-muted hover:bg-gray-200'))}>{t}</button>;
                     })}
+                  </div>
+                </div>
+
+                {/* Social platforms */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Social</p>
+                    <input value={editForm.social||''} onChange={e=>setEditForm({...editForm,social:e.target.value})} placeholder="Facebook, Zalo..." className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Facebook</p>
+                    <input value={editForm.facebook||''} onChange={e=>setEditForm({...editForm,facebook:e.target.value})} placeholder="Link hoặc tên" className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Zalo</p>
+                    <input value={editForm.zalo||''} onChange={e=>setEditForm({...editForm,zalo:e.target.value})} placeholder="Số điện thoại Zalo" className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">TikTok</p>
+                    <input value={editForm.tiktok||''} onChange={e=>setEditForm({...editForm,tiktok:e.target.value})} placeholder="Link TikTok" className="w-full px-3 py-2 bg-white border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4f46e5]/25" />
                   </div>
                 </div>
                 <div>
