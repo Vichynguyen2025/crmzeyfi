@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { Plus, Trash2, Edit3, Check, X, Filter, List, Clock, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Edit3, Check, X, List, Clock, ExternalLink } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function Marketing3M() {
+  const { tab: urlTab } = useParams();
+  const nav = useNavigate();
   const [tasks, setTasks] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
-  const [tab, setTab] = useState<'content_website' | 'content_daily'>('content_website');
+  const [tab, setTab] = useState<string>(urlTab === 'daily' ? 'content_daily' : 'content_website');
   const [filterAssignee, setFilterAssignee] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
@@ -17,6 +20,14 @@ export default function Marketing3M() {
   const [seoSaving, setSeoSaving] = useState(false);
   const [editCell, setEditCell] = useState<{id:string, field:string}|null>(null);
   const currentUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('zeyfi_user')||'{}') : {};
+
+  // Sync tab from URL
+  useEffect(() => {
+    if (urlTab) {
+      const mapped = urlTab === 'daily' ? 'content_daily' : 'content_website';
+      if (mapped !== tab) setTab(mapped);
+    }
+  }, [urlTab]);
 
   const statusColors: Record<string, string> = { pending: 'bg-amber-50/60 text-amber-700', in_progress: 'bg-blue-50/60 text-blue-700', done: 'bg-green-50/60 text-green-700', review: 'bg-purple-50/60 text-purple-700' };
   const statusLabels: Record<string, string> = { pending: 'Chờ', in_progress: 'Đang làm', done: 'Hoàn thành', review: 'Đánh giá' };
@@ -134,7 +145,7 @@ export default function Marketing3M() {
       {/* Tabs */}
       <div className="flex items-center gap-px border-b border-[#E5E7EB] mt-4">
         {['content_website', 'content_daily'].map((t) => (
-          <button key={t} onClick={() => setTab(t as any)} className={'px-5 py-2 text-sm font-medium transition-all ' + (tab === t ? 'bg-[#4f46e5] text-white rounded-t-lg' : 'text-[#667085] hover:text-[#1F2937] bg-white border border-[#E5E7EB] border-b-0 rounded-t-lg')}>
+          <button key={t} onClick={() => { setTab(t as any); nav('/crm/marketing3m/' + (t === 'content_website' ? 'website' : 'daily')); }} className={'px-5 py-2 text-sm font-medium transition-all ' + (tab === t ? 'bg-[#4f46e5] text-white rounded-t-lg' : 'text-[#667085] hover:text-[#1F2937] bg-white border border-[#E5E7EB] border-b-0 rounded-t-lg')}>
             {t === 'content_website' ? 'Content Website' : 'Content Daily'}
           </button>
         ))}

@@ -73,6 +73,7 @@ export default function App() {
         <Route path="/crm/marketing" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/marketing/:tab" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
           <Route path="/crm/marketing3m" element={<ProtectedRoute><AppLayout><Marketing3M /></AppLayout></ProtectedRoute>} />
+          <Route path="/crm/marketing3m/:tab" element={<ProtectedRoute><AppLayout><Marketing3M /></AppLayout></ProtectedRoute>} />
           <Route path="/crm/profile" element={<ProtectedRoute><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/admin" element={<ProtectedRoute><AppLayout><AdminPermissions /></AppLayout></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute><AppLayout><AdminSettings /></AppLayout></ProtectedRoute>} />
