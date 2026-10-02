@@ -9,6 +9,7 @@ const NAV = [
   { label: 'Kinh doanh 3M', icon: Users, path: '/crm/teams', module: 'teams' },
   { label: 'Kho dữ liệu', icon: HardDrive, path: '/crm/drive', module: 'drive' },
   { label: 'Kênh Marketing', icon: Globe, path: '/crm/channels', module: 'channels' },
+  { label: 'Marketing 3M', icon: BarChart3, path: '/crm/marketing3m', module: 'marketing3m' },
   { label: 'Sản phẩm', icon: Package, path: '/crm/products', module: 'products' },
   { label: 'Marketing eSim', icon: BarChart3, path: '/crm/marketing', module: 'marketing' },
   { label: 'Báo cáo', icon: ClipboardList, path: '/crm/reports', module: 'reports' },
@@ -53,7 +54,7 @@ export default function Sidebar() {
       <nav className="flex-1 py-4 space-y-1 px-3">
         {NAV.map(item => {
           const Icon = item.icon;
-          const active = loc.pathname.startsWith(item.path);
+          const active = loc.pathname === item.path || loc.pathname.startsWith(item.path + '/');
           const locked = item.module !== 'profile' && !canAccess(item.module);
           return (
             <button key={item.path} onClick={() => handleNav(item)}

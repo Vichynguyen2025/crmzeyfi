@@ -21,6 +21,7 @@ import dailyPerfRoutes from './routes/daily-perf';
 import seoRoutes from './routes/seo';
 import adRoutes from './routes/ads';
 import teamModulesRoutes from './routes/team-modules';
+import marketing3mRoutes from './routes/marketing-3m';
 import socialContentRoutes from './routes/social-content';
 import seoRevenueRoutes from './routes/seo-revenue';
 import mysql from 'mysql2/promise';
@@ -72,6 +73,7 @@ async function start() {
   await app.register(socialContentRoutes, { prefix: '/api' });
   await app.register(seoRevenueRoutes, { prefix: '/api' });
   await app.register(teamModulesRoutes, { prefix: '/api' });
+    await app.register(marketing3mRoutes, { prefix: '/api' });
   await app.register(seoRoutes, { prefix: '/api' });
   await app.listen({ port: PORT, host: '0.0.0.0' });
   console.log('[CRM Zeyfi] API running on port ' + PORT);

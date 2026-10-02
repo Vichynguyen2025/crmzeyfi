@@ -260,12 +260,12 @@ return (
 
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
         {viewMode === 'list' && files.length > 0 && (
-          <div className="divide-y divide-border">
+          <div className="flex flex-col gap-2">
             {files.map((item: any) => {
               const Icon = getFileIcon(item.mime_type);
               return (
-                <div key={item.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-all group">
-                  <div className={'flex items-center gap-1 px-3 py-2 rounded-xl shrink-0 ' + (item.type === 'folder' ? 'bg-amber-50' : 'bg-indigo-50')}
+                <div key={item.id} className="bg-white rounded-xl border border-border/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group px-4 py-3">
+                  <div className={'w-10 h-10 rounded-xl grid place-items-center shrink-0 ' + (item.type === 'folder' ? 'bg-amber-50' : 'bg-indigo-50')}
                     onClick={() => item.type === 'folder' && openFolder(item.id, item.name)}>
                     <input type="checkbox" checked={selectedIds.has(item.id)} onChange={e => {const n=new Set(selectedIds); if(e.target.checked)n.add(item.id);else n.delete(item.id);setSelectedIds(n);}} className="w-4 h-4 accent-primary shrink-0 cursor-pointer" onClick={e=>e.stopPropagation()} /> {item.type === 'folder' ? <Folder size={22} className="text-amber-500" /> : <Icon size={22} className="text-primary" />}
                   </div>
@@ -276,18 +276,18 @@ return (
                   try { const res = await api('/drive/preview/'+item.id, {method:'POST'}); if (res?.previewUrl) setPreviewUrl(res.previewUrl); else setPreviewUrl(item.url); } catch { setPreviewUrl(item.url); }
                 } else { setPreviewUrl(item.url); }
               }}>
-                    <p className="font-medium text-sm text-ink truncate">{item.name}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted mt-0.5">
+                    <p className="font-medium text-sm text-ink truncate leading-5">{item.name}</p>
+                    <div className="flex items-center gap-2.5 text-xs text-muted mt-1">
                       <span>{item.type === 'folder' ? 'Thư mục' : formatSize(item.size) || 'File'}</span>
                       {item.uploadedByName && <span className="flex items-center gap-1"><User size={11} />{item.uploadedByName}</span>}
                       {item.created_at && <span className="flex items-center gap-1"><Clock size={11} />{formatDate(item.created_at)}</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => rename(item.id, item.name)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-500 transition-all" title="Đổi tên">
+                    <button onClick={() => rename(item.id, item.name)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-500 transition-all transition-all" title="Đổi tên">
                       <Edit3 size={14} />
                     </button>
-                    {(currentUser?.role === 'admin' || currentUser?.id === item.uploaded_by) && <><button onClick={() => deleteItem(item.id, item.name)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-all" title="Xoá">
+                    {(currentUser?.role === 'admin' || currentUser?.id === item.uploaded_by) && <><button onClick={() => deleteItem(item.id, item.name)} className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-all transition-all" title="Xoá">
                       <Trash2 size={14} /></button>
                       <button onClick={() => { setMoveFileId(item.id); setMoveTarget(item.parent_id||null); }} className="p-2 rounded-lg hover:bg-blue-50 text-muted hover:text-primary transition-all" title="Di chuyển"><Folder size={14} /></button></>}
 
