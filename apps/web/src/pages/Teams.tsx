@@ -60,7 +60,7 @@ export default function Teams() {
       catch {}
     }, 1000);
     return () => clearTimeout(timer);
-  }, [kpiRows, kpiMonth, selectedTeam?.id]);
+  }, [kpiRows, selectedTeam?.id]);
 
   const updateActual = (idx: number, field: string, val: any) => { if (!canEdit('b2')) return;
     const rows = [...actualRows];
@@ -205,13 +205,20 @@ export default function Teams() {
         setKpiRows([...baseRows, ...extraRows, {type: 'total'}]);
         return true;
       }
-      // Fallback: try without month filter (old data)
-      const fallback = await api('/kpis/' + teamId);
-      if (fallback && fallback.length > 0) {
-        setKpiRows([...fallback.map((s: any) => ({name: s.name, userId: s.user_id, product: s.product || '', budget: s.daily_budget || 0, messages: s.daily_messages || 0, orders: s.monthly_orders || 0})), {type: 'total'}]);
+      // Không có dữ liệu tháng này → hiển thị member với giá trị 0
+      const memberList2 = memberList || members || [];
+      if (memberList2.length > 0) {
+        setKpiRows([...memberList2.map((m: any) => ({name: m.name, userId: m.id, product: '', budget: 0, messages: 0, orders: 0})), {type: 'total'}]);
         return true;
       }
     } catch {}
+    // Không có dữ liệu → hiển thị member với giá trị 0
+    const memberList2 = memberList || members || [];
+    if (memberList2.length > 0) {
+      setKpiRows([...memberList2.map((m: any) => ({name: m.name, userId: m.id, product: '', budget: 0, messages: 0, orders: 0})), {type: 'total'}]);
+    } else {
+      setKpiRows([]);
+    }
     return false;
   };
 
