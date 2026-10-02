@@ -85,8 +85,11 @@ export default async function (app: FastifyInstance) {
       [req.user.id]
     );
     const [userRows] = await pool.execute("SELECT module_key FROM user_modules WHERE user_id = ?", [req.user.id]);
+    // Check marketing_3m_members for access
+    const [m3Rows] = await pool.execute("SELECT user_id FROM marketing_3m_members WHERE user_id = ?", [req.user.id]);
     const modules = new Set((teamRows as any[]).map((r: any) => r.module_key));
     (userRows as any[]).forEach((r: any) => modules.add(r.module_key));
+    if ((m3Rows as any[]).length > 0) modules.add('marketing3m');
     ['dashboard', 'reports'].forEach(m => modules.add(m));
     const result = MODULES.filter(m => modules.has(m) && isEnabled(m));
     reply.send(result);

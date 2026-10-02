@@ -100,10 +100,10 @@ export default function Marketing3M() {
   const isEdit = (id: string, field: string) => editCell?.id === id && editCell?.field === field;
   const canEdit = (r: any) => currentUser?.role === 'admin' || currentUser?.id === r.assignee_id;
 
-  const inputCls = 'w-full h-9 border border-[#E5E7EB] rounded-lg px-2.5 text-sm text-[#1F2937] bg-white outline-none transition-all';
+  const inputCls = 'w-full h-10 border border-[#E5E7EB] rounded-lg px-3 text-sm text-[#1F2937] bg-white outline-none transition-all';
   const textCls = 'w-full text-sm text-[#1F2937] cursor-pointer transition-all hover:text-primary';
 
-  const GRID = '150px minmax(180px,1.4fr) 60px minmax(220px,1.8fr) minmax(150px,1.1fr) 150px 130px minmax(160px,1.2fr) 48px';
+  const GRID = '180px 220px 80px minmax(260px,1.5fr) 180px 180px 150px 190px 80px';
 
   return (
     <div className="p-6 max-w-[1440px] mx-auto">
@@ -167,18 +167,18 @@ export default function Marketing3M() {
       {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-[#E5E7EB] shadow-sm">
         <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
-          <colgroup>{[150,null,60,null,null,150,130,null,48].map(w => <col key={w} style={{width: w ? w + 'px' : 'auto'}} />)}</colgroup>
+          <colgroup>{[180,220,80,null,180,180,150,190,80].map(w => <col key={w} style={{width: w ? w + 'px' : 'auto'}} />)}</colgroup>
           <thead>
-            <tr className="bg-[#F8FAFC] border-b border-[#E5E7EB]" style={{ display: 'grid', gridTemplateColumns: GRID }}>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Ngày</th>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Công việc</th>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-center">SL</th>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Nội dung</th>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Timeline</th>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Người TH</th>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Trạng thái</th>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Link hoàn thiện</th>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-center">Tác vụ</th>
+            <tr className="bg-[#F8FAFC] border-b border-[#E5E7EB]" style={{ display: 'grid', gridTemplateColumns: GRID, alignItems: 'center' }}>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Ngày</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Công việc</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-center whitespace-nowrap">SL</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Nội dung</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Timeline</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Người TH</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Trạng thái</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Link hoàn thiện</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-center whitespace-nowrap">Tác vụ</th>
             </tr>
           </thead>
           <tbody>
@@ -189,7 +189,7 @@ export default function Marketing3M() {
               return (
                 <tr key={r.id}
                   className={'hover:bg-[#F8FAFC] transition-all' + (!ce ? ' opacity-60' : '')}
-                  style={{ display: 'grid', gridTemplateColumns: GRID, borderBottom: '1px solid #E5E7EB' }}>
+                  style={{ display: 'grid', gridTemplateColumns: GRID, borderBottom: '1px solid #E5E7EB', alignItems: 'center' }}>
                   {/* Ngày */}
                   <td className="px-4 py-[11px] align-middle">
                     {isEdit(r.id,'date') && ce ? (
@@ -214,7 +214,7 @@ export default function Marketing3M() {
                   <td className="px-4 py-[11px] text-center text-sm text-[#1F2937]">
                     {isEdit(r.id,'quantity') && ce ? (
                       <input type="number" value={r.quantity||''} onChange={e => updateField(r.id,'quantity',Number(e.target.value))}
-                        onBlur={() => setEditCell(null)} className="w-14 h-9 border border-[#E5E7EB] rounded-lg px-2 text-sm text-center outline-none bg-white" />
+                        onBlur={() => setEditCell(null)} className="w-16 h-10 border border-[#E5E7EB] rounded-lg px-0 text-sm text-center outline-none bg-white mx-auto" />
                     ) : (
                       <span onClick={() => ce && startEdit(r.id,'quantity')} className="cursor-pointer hover:text-primary">{r.quantity || '—'}</span>
                     )}
@@ -241,7 +241,7 @@ export default function Marketing3M() {
                   <td className="px-4 py-[11px] align-middle">
                     {isEdit(r.id,'assignee_id') && ce ? (
                       <select value={r.assignee_id||''} onChange={e => updateField(r.id,'assignee_id',e.target.value)}
-                        onBlur={() => setEditCell(null)} className="h-9 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full">
+                        onBlur={() => setEditCell(null)} className="h-10 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full">
                         <option value="">Chọn</option>
                         {members.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
                       </select>
@@ -253,7 +253,7 @@ export default function Marketing3M() {
                   <td className="px-4 py-[11px] align-middle">
                     {isEdit(r.id,'status') && ce ? (
                       <select value={r.status||'pending'} onChange={e => updateField(r.id,'status',e.target.value)}
-                        onBlur={() => setEditCell(null)} className={'h-9 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full ' + (statusColors[r.status||'pending']||'')}>
+                        onBlur={() => setEditCell(null)} className={'h-10 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full ' + (statusColors[r.status||'pending']||'')}>
                         {Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                       </select>
                     ) : (
@@ -273,7 +273,7 @@ export default function Marketing3M() {
                   </td>
                   {/* Action */}
                   <td className="px-4 py-[11px] text-center">
-                    {currentUser?.role === 'admin' && <button onClick={() => deleteTask(r.id)} className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-muted hover:bg-red-50 hover:text-red-500 transition-all" title="Xóa công việc"><Trash2 size={14} /></button>}
+                    {currentUser?.role === 'admin' && <button onClick={() => deleteTask(r.id)} className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:bg-red-50 hover:text-red-500 transition-all" title="Xóa công việc"><Trash2 size={14} /></button>}
                   </td>
                 </tr>
               );
@@ -281,16 +281,16 @@ export default function Marketing3M() {
 
             {/* Add new row */}
             {adding && (
-              <tr className="bg-[#4f46e5]/5" style={{ display: 'grid', gridTemplateColumns: GRID, borderBottom: '1px solid #E5E7EB' }}>
+              <tr className="bg-[#4f46e5]/5" style={{ display: 'grid', gridTemplateColumns: GRID, borderBottom: '1px solid #E5E7EB', alignItems: 'center' }}>
                 <td className="px-4 py-[11px]"><input type="date" value={newTask.date||''} onChange={e => setNewTask({...newTask, date: e.target.value})} className={inputCls} /></td>
                 <td className="px-4 py-[11px]"><input value={newTask.task_name||''} onChange={e => setNewTask({...newTask, task_name: e.target.value})} className={inputCls} placeholder="Tên công việc" /></td>
-                <td className="px-4 py-[11px] text-center"><input type="number" value={newTask.quantity||''} onChange={e => setNewTask({...newTask, quantity: Number(e.target.value)})} className="w-14 h-9 border border-[#E5E7EB] rounded-lg px-2 text-sm text-center outline-none bg-white" /></td>
+                <td className="px-4 py-[11px] text-center"><input type="number" value={newTask.quantity||''} onChange={e => setNewTask({...newTask, quantity: Number(e.target.value)})} className="w-16 h-10 border border-[#E5E7EB] rounded-lg px-0 text-sm text-center outline-none bg-white mx-auto" /></td>
                 <td className="px-4 py-[11px]"><input value={newTask.content||''} onChange={e => setNewTask({...newTask, content: e.target.value})} className={inputCls} placeholder="Nội dung" /></td>
                 <td className="px-4 py-[11px]"><input value={newTask.timeline||''} onChange={e => setNewTask({...newTask, timeline: e.target.value})} className={inputCls} placeholder="Timeline" /></td>
-                <td className="px-4 py-[11px]"><select value={newTask.assignee_id||''} onChange={e => setNewTask({...newTask, assignee_id: e.target.value})} className="h-9 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full"><option value="">Chọn</option>{members.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></td>
-                <td className="px-4 py-[11px]"><select value={newTask.status||'pending'} onChange={e => setNewTask({...newTask, status: e.target.value})} className="h-9 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full bg-amber-50 text-amber-700">{Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></td>
+                <td className="px-4 py-[11px]"><select value={newTask.assignee_id||''} onChange={e => setNewTask({...newTask, assignee_id: e.target.value})} className="h-10 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full"><option value="">Chọn</option>{members.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></td>
+                <td className="px-4 py-[11px]"><select value={newTask.status||'pending'} onChange={e => setNewTask({...newTask, status: e.target.value})} className="h-10 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full bg-amber-50 text-amber-700">{Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></td>
                 <td className="px-4 py-[11px]"><input value={newTask.completion_link||''} onChange={e => setNewTask({...newTask, completion_link: e.target.value})} className={inputCls} placeholder="Link" /></td>
-                <td className="px-4 py-[11px] text-center"><div className="flex items-center justify-center gap-1.5"><button onClick={addTask} className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-green-50 text-green-600 transition-all" title="Thêm"><Check size={14} /></button><button onClick={() => { setAdding(false); setNewTask({}); }} className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-red-50 text-red-400 transition-all" title="Hủy"><X size={14} /></button></div></td>
+                <td className="px-4 py-[11px] text-center"><div className="flex items-center justify-center gap-1.5"><button onClick={addTask} className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-green-50 text-green-600 transition-all" title="Thêm"><Check size={14} /></button><button onClick={() => { setAdding(false); setNewTask({}); }} className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 text-red-400 transition-all" title="Hủy"><X size={14} /></button></div></td>
               </tr>
             )}
           </tbody>
