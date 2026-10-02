@@ -18,7 +18,7 @@ export default function Marketing3M() {
   const [editCell, setEditCell] = useState<{id:string, field:string}|null>(null);
   const currentUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('zeyfi_user')||'{}') : {};
 
-  const statusColors: Record<string, string> = { pending: 'bg-amber-50 text-amber-700', in_progress: 'bg-blue-50 text-blue-700', done: 'bg-green-50 text-green-700', review: 'bg-purple-50 text-purple-700' };
+  const statusColors: Record<string, string> = { pending: 'bg-amber-50/60 text-amber-700', in_progress: 'bg-blue-50/60 text-blue-700', done: 'bg-green-50/60 text-green-700', review: 'bg-purple-50/60 text-purple-700' };
   const statusLabels: Record<string, string> = { pending: 'Chờ', in_progress: 'Đang làm', done: 'Hoàn thành', review: 'Đánh giá' };
 
   const load = async () => {
@@ -102,8 +102,9 @@ export default function Marketing3M() {
 
   const inputCls = 'w-full h-10 border border-[#E5E7EB] rounded-lg px-3 text-sm text-[#1F2937] bg-white outline-none transition-all';
   const textCls = 'w-full text-sm text-[#1F2937] cursor-pointer transition-all hover:text-primary';
+  const selectCls = 'h-10 border border-[#E5E7EB] rounded-lg px-3 text-sm text-[#1F2937] bg-white outline-none transition-all w-full';
 
-  const GRID = '180px 220px 80px minmax(260px,1.5fr) 180px 180px 150px 190px 80px';
+  const GRID = '180px 90px 220px 70px minmax(260px,1.5fr) 180px 180px 150px 190px 64px';
 
   return (
     <div className="p-6 max-w-[1440px] mx-auto">
@@ -148,7 +149,7 @@ export default function Marketing3M() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2.5 mt-3 mb-4 bg-white rounded-xl border border-[#E5E7EB] px-4 py-2.5">
+      <div className="flex flex-wrap items-center gap-2.5 mt-3 mb-4 bg-white rounded-[12px] border border-[#E5E7EB] px-4 py-2.5 shadow-sm">
         <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} className="h-10 border border-[#E5E7EB] rounded-lg px-3 text-sm outline-none w-36" />
         <span className="text-sm text-[#667085]">→</span>
         <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} className="h-10 border border-[#E5E7EB] rounded-lg px-3 text-sm outline-none w-36" />
@@ -165,12 +166,13 @@ export default function Marketing3M() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-[#E5E7EB] shadow-sm">
+      <div className="overflow-x-auto rounded-[12px] border border-[#E5E7EB] shadow-sm bg-white">
         <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
-          <colgroup>{[180,220,80,null,180,180,150,190,80].map(w => <col key={w} style={{width: w ? w + 'px' : 'auto'}} />)}</colgroup>
+          <colgroup>{[180,90,220,70,null,180,180,150,190,64].map(w => <col key={w} style={{width: w ? w + 'px' : 'auto'}} />)}</colgroup>
           <thead>
             <tr className="bg-[#F8FAFC] border-b border-[#E5E7EB]" style={{ display: 'grid', gridTemplateColumns: GRID, alignItems: 'center' }}>
               <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Ngày</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Thứ</th>
               <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Công việc</th>
               <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-center whitespace-nowrap">SL</th>
               <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Nội dung</th>
@@ -178,17 +180,18 @@ export default function Marketing3M() {
               <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Người TH</th>
               <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Trạng thái</th>
               <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-left whitespace-nowrap">Link hoàn thiện</th>
-              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-center whitespace-nowrap">Tác vụ</th>
+              <th className="px-4 py-3 text-[14px] font-semibold leading-[20px] text-[#667085] text-center whitespace-nowrap">Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            {tasks.length === 0 && !adding && <tr><td colSpan={9} className="px-6 py-12 text-center text-sm text-[#667085]"><List size={24} className="mx-auto mb-2 opacity-20" /><p>Chưa có công việc</p></td></tr>}
+            {tasks.length === 0 && !adding && <tr><td colSpan={10} className="px-6 py-12 text-center text-sm text-[#667085]"><List size={24} className="mx-auto mb-2 opacity-20" /><p>Chưa có công việc</p></td></tr>}
 
             {tasks.map((r: any) => {
               const ce = canEdit(r);
+              const weekday = r.date ? ['CN','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][new Date(r.date).getDay()] : '';
               return (
                 <tr key={r.id}
-                  className={'hover:bg-[#F8FAFC] transition-all' + (!ce ? ' opacity-60' : '')}
+                  className={'hover:bg-[#F8FAFC] transition-all border-b border-[#E5E7EB]/50' + (!ce ? ' opacity-60' : '')}
                   style={{ display: 'grid', gridTemplateColumns: GRID, borderBottom: '1px solid #E5E7EB', alignItems: 'center' }}>
                   {/* Ngày */}
                   <td className="px-4 py-[11px] align-middle">
@@ -220,7 +223,7 @@ export default function Marketing3M() {
                     )}
                   </td>
                   {/* Nội dung */}
-                  <td className="px-4 py-[11px] align-middle">
+                  <td className="px-4 py-[11px] align-middle overflow-hidden" style={{maxWidth:'100%'}}>
                     {isEdit(r.id,'content') && ce ? (
                       <input value={r.content||''} onChange={e => updateField(r.id,'content',e.target.value)}
                         onBlur={() => setEditCell(null)} className={inputCls} placeholder="Nội dung" />
@@ -241,7 +244,7 @@ export default function Marketing3M() {
                   <td className="px-4 py-[11px] align-middle">
                     {isEdit(r.id,'assignee_id') && ce ? (
                       <select value={r.assignee_id||''} onChange={e => updateField(r.id,'assignee_id',e.target.value)}
-                        onBlur={() => setEditCell(null)} className="h-10 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full">
+                        onBlur={() => setEditCell(null)} className={selectCls}>
                         <option value="">Chọn</option>
                         {members.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
                       </select>
@@ -253,7 +256,7 @@ export default function Marketing3M() {
                   <td className="px-4 py-[11px] align-middle">
                     {isEdit(r.id,'status') && ce ? (
                       <select value={r.status||'pending'} onChange={e => updateField(r.id,'status',e.target.value)}
-                        onBlur={() => setEditCell(null)} className={'h-10 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full ' + (statusColors[r.status||'pending']||'')}>
+                        onBlur={() => setEditCell(null)} className={selectCls + ' ' + (statusColors[r.status||'pending']||'')}>
                         {Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                       </select>
                     ) : (
@@ -273,7 +276,7 @@ export default function Marketing3M() {
                   </td>
                   {/* Action */}
                   <td className="px-4 py-[11px] text-center">
-                    {currentUser?.role === 'admin' && <button onClick={() => deleteTask(r.id)} className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:bg-red-50 hover:text-red-500 transition-all" title="Xóa công việc"><Trash2 size={14} /></button>}
+                    {currentUser?.role === 'admin' && <button onClick={() => deleteTask(r.id)} className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 hover:text-red-500 transition-all" title="Xóa"><Trash2 size={14} className="text-muted" /></button>}
                   </td>
                 </tr>
               );
@@ -283,12 +286,13 @@ export default function Marketing3M() {
             {adding && (
               <tr className="bg-[#4f46e5]/5" style={{ display: 'grid', gridTemplateColumns: GRID, borderBottom: '1px solid #E5E7EB', alignItems: 'center' }}>
                 <td className="px-4 py-[11px]"><input type="date" value={newTask.date||''} onChange={e => setNewTask({...newTask, date: e.target.value})} className={inputCls} /></td>
+                <td className="px-4 py-[11px] text-sm text-[#1F2937]">{newTask.date ? ['CN','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][new Date(newTask.date).getDay()] : '—'}</td>
                 <td className="px-4 py-[11px]"><input value={newTask.task_name||''} onChange={e => setNewTask({...newTask, task_name: e.target.value})} className={inputCls} placeholder="Tên công việc" /></td>
                 <td className="px-4 py-[11px] text-center"><input type="number" value={newTask.quantity||''} onChange={e => setNewTask({...newTask, quantity: Number(e.target.value)})} className="w-16 h-10 border border-[#E5E7EB] rounded-lg px-0 text-sm text-center outline-none bg-white mx-auto" /></td>
                 <td className="px-4 py-[11px]"><input value={newTask.content||''} onChange={e => setNewTask({...newTask, content: e.target.value})} className={inputCls} placeholder="Nội dung" /></td>
                 <td className="px-4 py-[11px]"><input value={newTask.timeline||''} onChange={e => setNewTask({...newTask, timeline: e.target.value})} className={inputCls} placeholder="Timeline" /></td>
-                <td className="px-4 py-[11px]"><select value={newTask.assignee_id||''} onChange={e => setNewTask({...newTask, assignee_id: e.target.value})} className="h-10 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full"><option value="">Chọn</option>{members.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></td>
-                <td className="px-4 py-[11px]"><select value={newTask.status||'pending'} onChange={e => setNewTask({...newTask, status: e.target.value})} className="h-10 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full bg-amber-50 text-amber-700">{Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></td>
+                <td className="px-4 py-[11px]"><select value={newTask.assignee_id||''} onChange={e => setNewTask({...newTask, assignee_id: e.target.value})} className={selectCls}><option value="">Chọn</option>{members.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></td>
+                <td className="px-4 py-[11px]"><select value={newTask.status||'pending'} onChange={e => setNewTask({...newTask, status: e.target.value})} className={selectCls + " bg-amber-50 text-amber-700"}>{Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></td>
                 <td className="px-4 py-[11px]"><input value={newTask.completion_link||''} onChange={e => setNewTask({...newTask, completion_link: e.target.value})} className={inputCls} placeholder="Link" /></td>
                 <td className="px-4 py-[11px] text-center"><div className="flex items-center justify-center gap-1.5"><button onClick={addTask} className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-green-50 text-green-600 transition-all" title="Thêm"><Check size={14} /></button><button onClick={() => { setAdding(false); setNewTask({}); }} className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 text-red-400 transition-all" title="Hủy"><X size={14} /></button></div></td>
               </tr>
