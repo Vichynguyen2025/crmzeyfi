@@ -33,7 +33,8 @@ export default function Teams() {
   const [b6GroupBy, setB6GroupBy] = useState('day');
     const [b6DateFrom, setB6DateFrom] = useState('');
   const [b6DateTo, setB6DateTo] = useState('');
-  const [b6Dater, setB6Dater] = useState({ from: '', to: '', key: 'month' });
+  const [b6Month, setB6Month] = useState(new Date().toISOString().slice(0, 7));
+const [b6Dater, setB6Dater] = useState({ from: '', to: '', key: 'month' });
   const [planMonth, setPlanMonth] = useState(new Date().toISOString().slice(0, 7));
   const [slugMap, setSlugMap] = useState<Record<string,any>>({});
   const { teamSlug } = useParams();
@@ -229,18 +230,23 @@ export default function Teams() {
 
   const loadB6 = useCallback(async () => {
     try {
-      let url = '/actuals-summary?groupBy=product&viewMode=' + b6GroupBy;
-      if (b6GroupBy === 'month') {
-        const m = b6Dater.from ? b6Dater.from.slice(0, 7) : new Date().toISOString().slice(0, 7);
-        url += '&month=' + m;
+      let url = '/actuals-summary?groupBy=product&viewMode=';
+      if (b6DateFrom && b6DateTo && b6DateFrom === b6DateTo) {
+        // Single date: use day mode with exact date
+        url += 'day&dateFrom=' + b6DateFrom + '&dateTo=' + b6DateTo;
+      } else if (b6DateFrom || b6DateTo) {
+        // Date range (fallback)
+        url += 'day';
+        if (b6DateFrom) url += '&dateFrom=' + b6DateFrom;
+        if (b6DateTo) url += '&dateTo=' + b6DateTo;
       } else {
-        if (b6Dater.from) url += '&dateFrom=' + b6Dater.from;
-        if (b6Dater.to) url += '&dateTo=' + b6Dater.to;
+        // Month filter
+        url += 'month&month=' + b6Month;
       }
       const r = await api(url);
       setB6Data(r || []);
     } catch { setB6Data([]); }
-  }, [b6Dater, b6GroupBy]);
+  }, [b6DateFrom, b6DateTo, b6Month]);
   useEffect(() => { loadB6(); }, [loadB6]);
 
   const loadPlan = async (month: string) => {
@@ -962,15 +968,22 @@ export default function Teams() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-<DateRangeFilter value={b6Dater} onChange={v => { setB6Dater(v); setB6DateFrom(v.from); setB6DateTo(v.to); }} ranges={[{key:'week',label:'7 ngày'},{key:'month',label:'30 ngày'},{key:'custom',label:'Tuỳ chỉnh'}]} />
-            <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
-              {['day','week','month'].map(v => (
-                <button key={v} onClick={() => setB6GroupBy(v)}
-                  className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (b6GroupBy===v ? 'bg-[#4f46e5] text-white' : 'text-muted hover:text-ink')}>
-                  {v==='day' ? 'Ngày' : v==='week' ? 'Tuần' : 'Tháng'}
-                </button>
-              ))}
-            </div>
+            <label className="text-xs text-muted shrink-0">Tháng</label>
+            <input type="month" value={b6Month} onChange={e => {
+              const v = e.target.value;
+              setB6Month(v);
+              setB6Dater({from:'', to:'', key:'month'});
+              setB6DateFrom(''); setB6DateTo('');
+            }}
+              className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs text-ink outline-none cursor-pointer" />
+            <span className="text-xs text-muted">Hoặc chọn ngày</span>
+            <input type="date" value={b6DateFrom||''} onChange={e => {
+              const v = e.target.value;
+              setB6DateFrom(v);
+              setB6DateTo(v);
+              setB6Dater({from:v, to:v, key:'day'});
+            }}
+              className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs outline-none" />
           </div>
         </div>
         <div className="overflow-x-auto">

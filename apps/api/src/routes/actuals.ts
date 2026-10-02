@@ -90,6 +90,7 @@ export default async function (app: FastifyInstance) {
       
       if (viewMode === 'day' || viewMode === 'week') {
         where = "WHERE 1=1";
+        params.length = 0;  // clear month param
         if (dateFrom) { where += " AND d.date >= ?"; params.push(dateFrom); }
         if (dateTo) { where += " AND d.date <= ?"; params.push(dateTo); }
       }
