@@ -5,29 +5,18 @@ import { api } from '../lib/api';
 import { getSocket } from '../lib/socket';
 
 const COLORS = ['#4f46e5', '#22c55e', '#f59e0b', '#ef4444', '#7c3aed', '#06b6d4', '#f97316', '#ec4899'];
-const PERIODS = [
-  { key: 'today', label: 'Hôm nay', days: 0 },
-  { key: 'week', label: '7 ngày', days: 7 },
-  { key: 'month', label: '30 ngày', days: 30 },
-  { key: 'year', label: 'Năm nay', days: 366 },
-];
 
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
-  const [period, setPeriod] = useState('month');
-
-  const calcDates = (p: string) => {
-    const d = new Date();
-    if (p === 'today') return { from: d.toISOString().slice(0,10), to: d.toISOString().slice(0,10) };
-    if (p === 'week') { const w = new Date(); w.setDate(w.getDate()-7); return { from: w.toISOString().slice(0,10), to: d.toISOString().slice(0,10) }; }
-    if (p === 'month') { const m = new Date(); m.setMonth(m.getMonth()-1); return { from: m.toISOString().slice(0,10), to: d.toISOString().slice(0,10) }; }
-    return { from: '2024-01-01', to: d.toISOString().slice(0,10) };
-  };
+  const [dashboardMonth, setDashboardMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [dashboardDate, setDashboardDate] = useState('');
 
   const load = useCallback(() => {
-    const { from, to } = calcDates(period);
-    api('/dashboard?from=' + from + '&to=' + to).then(setData).catch(() => {});
-  }, [period]);
+    const params = new URLSearchParams();
+    params.set('month', dashboardMonth);
+    if (dashboardDate) params.set('date', dashboardDate);
+    api('/dashboard?' + params.toString()).then(setData).catch(() => {});
+  }, [dashboardMonth, dashboardDate]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -45,6 +34,9 @@ export default function Dashboard() {
 
   const o = data.overall || {};
   const logs = data.activityLogs || [];
+  const cardLabel = dashboardDate
+    ? 'Ngày ' + dashboardDate.split('-').reverse().join('/')
+    : 'Tháng ' + dashboardMonth;
 
   return (
     <div className="space-y-6">
@@ -54,21 +46,19 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-ink">Dashboard</h1>
           <p className="text-sm text-muted mt-1">Tổng quan hiệu suất CRM — Quản lý tình hình kinh doanh</p>
         </div>
-        <div className="flex items-center gap-1 bg-white rounded-xl border border-border shadow-sm">
-          {PERIODS.map(p => (
-            <button key={p.key} onClick={() => setPeriod(p.key)}
-              className={'px-4 py-2 text-sm font-medium transition-all first:rounded-l-xl last:rounded-r-xl ' + (period === p.key ? 'bg-primary text-white shadow-sm' : 'hover:bg-gray-50 text-muted')}>
-              {p.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <input type="month" value={dashboardMonth} onChange={e => { const v = e.target.value; setDashboardMonth(v); }}
+            className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
+          <input type="date" value={dashboardDate} onChange={e => setDashboardDate(e.target.value)}
+            className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none" />
         </div>
       </div>
 
       {/* 6 Daily KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: 'Đơn hàng', val: o.todayOrders, unit: '', icon: ShoppingCart, color: 'indigo' },
-          { label: 'Chi phí', val: o.todayCost, unit: 'đ', icon: DollarSign, color: 'amber', fmt: true },
+          { label: 'Đơn hàng', val: dashboardDate ? o.todayOrders : o.actualOrders, unit: '', icon: ShoppingCart, color: 'indigo' },
+          { label: 'Chi phí', val: dashboardDate ? o.todayCost : o.actualCosts, unit: 'đ', icon: DollarSign, color: 'amber', fmt: true },
           { label: 'Tin nhắn', val: o.todayMessages, unit: '', icon: Activity, color: 'blue' },
           { label: 'Reach', val: o.todayReach, unit: '', icon: Users, color: 'purple' },
           { label: 'Click', val: o.todayClicks, unit: '', icon: Target, color: 'emerald' },
@@ -82,20 +72,20 @@ export default function Dashboard() {
                 <span>{c.label}</span>
               </div>
               <p className="text-xl font-bold text-ink truncate">{v}</p>
-              <p className="text-xs text-muted mt-0.5">Hôm nay</p>
+              <p className="text-xs text-muted mt-0.5">{cardLabel}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Per-Team Performance — modern redesign */}
+      {/* Per-Team Performance */}
       {data.teams?.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center"><Target size={16} className="text-white" /></div>
             <div>
               <h2 className="text-lg font-bold text-ink">Tình hình Kinh doanh</h2>
-              <p className="text-xs text-muted">Dữ liệu Bảng B2 — Mục tiêu vs Thực tế</p>
+              <p className="text-xs text-muted">Dữ liệu Bảng B2 · {cardLabel}</p>
             </div>
           </div>
 
@@ -106,17 +96,13 @@ export default function Dashboard() {
               const gap = t.kpiOrders - t.actualOrders;
               const barWidth = Math.min(pct, 100);
               const barColor = pct >= 80 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-rose-500';
-              const gradientId = 'grad-' + t.id?.slice(0,6);
               return (
                 <div key={t.id} className="relative bg-white rounded-2xl border border-border shadow-sm overflow-hidden group hover:shadow-lg transition-all duration-300">
-                  {/* Top accent bar */}
                   <div className={'h-1 w-full ' + (pct >= 80 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-rose-500')} />
-
                   <div className="px-6 py-5">
-                    {/* Header row */}
                     <div className="flex items-center justify-between mb-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl grid place-items-center text-white font-bold text-sm shadow-md transition-transform group-hover:scale-105" 
+                        <div className="w-11 h-11 rounded-xl grid place-items-center text-white font-bold text-sm shadow-md transition-transform group-hover:scale-105"
                           style={{backgroundColor: t.color || '#4f46e5'}}>
                           {t.name.charAt(0)}
                         </div>
@@ -127,17 +113,15 @@ export default function Dashboard() {
                           </p>
                         </div>
                       </div>
-                      {/* KPI badge */}
-                      <div className={'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border shadow-sm ' + 
-                        (pct >= 80 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 
-                         pct >= 40 ? 'bg-amber-50 border-amber-200 text-amber-700' : 
+                      <div className={'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border shadow-sm ' +
+                        (pct >= 80 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                         pct >= 40 ? 'bg-amber-50 border-amber-200 text-amber-700' :
                          'bg-rose-50 border-rose-200 text-rose-700')}>
                         <div className={'w-2 h-2 rounded-full ' + (pct >= 80 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-rose-500')} />
                         {pct}%
                       </div>
                     </div>
 
-                    {/* Progress bar */}
                     <div className="mb-5">
                       <div className="flex items-center justify-between text-xs mb-1.5">
                         <span className="text-muted">Tiến độ KPI</span>
@@ -151,7 +135,6 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Metrics grid */}
                     <div className="grid grid-cols-3 gap-4">
                       <div className="bg-gray-50/80 rounded-xl p-3 text-center">
                         <p className="text-xs text-muted mb-1">Mục tiêu</p>
@@ -170,7 +153,6 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Bottom details row */}
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50 text-xs">
                       <div className="flex items-center gap-4">
                         <span className="text-muted">CP/Đơn: <b className="text-ink">{cpOrder > 0 ? cpOrder.toLocaleString('vi-VN') + 'đ' : '—'}</b></span>
@@ -185,8 +167,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-      
-      {/* Charts      {/* Charts Row */}
+
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
           <div className="flex items-center gap-2 mb-4">

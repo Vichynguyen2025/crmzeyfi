@@ -6,8 +6,16 @@ import { eq, between, and, sql } from 'drizzle-orm';
 export default async function (app: FastifyInstance) {
   app.get('/dashboard', async (req, reply) => {
     const q = req.query as any;
-    const from = q.from || '2024-01-01';
-    const to = q.to || '2099-12-31';
+    const month = q.month || new Date().toISOString().slice(0, 7);
+    const date = q.date || '';
+    // Derive from/to from month or date
+    const from = date ? date : month + '-01';
+    const to = date ? date : (() => {
+      const d = new Date(month + '-01');
+      d.setMonth(d.getMonth() + 1);
+      d.setDate(d.getDate() - 1);
+      return d.toISOString().slice(0,10);
+    })();
 
     // Total users
     const [totalUsers] = await pool.execute("SELECT COUNT(*) as c FROM users");
@@ -26,10 +34,10 @@ export default async function (app: FastifyInstance) {
         .where(and(eq(adCosts.teamId, team.id), between(adCosts.date, from, to)));
       const [mc] = await db.select({ count: sql`COUNT(*)`.mapWith(Number) }).from(teamMembers).where(eq(teamMembers.teamId, team.id));
       // Actual orders from team_actuals
-      const [actualOrders] = await pool.execute("SELECT COALESCE(SUM(actual_orders),0) as o FROM team_actuals WHERE team_id = ? AND actual_orders > 0", [team.id]);
-      const [actualCosts] = await pool.execute("SELECT COALESCE(SUM(fixed_cost),0) as c FROM team_actuals WHERE team_id = ?", [team.id]);
+      const [actualOrders] = await pool.execute("SELECT COALESCE(SUM(actual_orders),0) as o FROM team_actuals WHERE team_id = ? AND actual_orders > 0 AND month = ?", [team.id, month]);
+      const [actualCosts] = await pool.execute("SELECT COALESCE(SUM(fixed_cost),0) as c FROM team_actuals WHERE team_id = ? AND month = ?", [team.id, month]);
       // KPI target orders
-      const [kpiOrders] = await pool.execute("SELECT COALESCE(SUM(monthly_orders),0) as o FROM team_kpis WHERE team_id = ?", [team.id]);
+      const [kpiOrders] = await pool.execute("SELECT COALESCE(SUM(monthly_orders),0) as o FROM team_kpis WHERE team_id = ? AND month = ?", [team.id, month]);
       result.push({
         id: team.id, name: team.name, color: team.color,
         reportCount: (rc as any).count,
@@ -47,18 +55,22 @@ export default async function (app: FastifyInstance) {
     const [tr] = await db.select({ count: sql`COUNT(*)`.mapWith(Number) }).from(dailyReports).where(between(dailyReports.date, from, to));
     const [tc] = await db.select({ count: sql`COUNT(*)`.mapWith(Number) }).from(customers);
     const [ta] = await db.select({ total: sql`COALESCE(SUM(amount),0)`.mapWith(Number) }).from(adCosts).where(between(adCosts.date, from, to));
-    const [totalActualOrders] = await pool.execute("SELECT COALESCE(SUM(actual_orders),0) as o FROM team_actuals WHERE actual_orders > 0");
-    const [totalKpi] = await pool.execute("SELECT COALESCE(SUM(monthly_orders),0) as o FROM team_kpis");
+    const [totalActualOrders] = await pool.execute("SELECT COALESCE(SUM(actual_orders),0) as o FROM team_actuals WHERE actual_orders > 0 AND month = ?", [month]);
+    const [totalKpi] = await pool.execute("SELECT COALESCE(SUM(monthly_orders),0) as o FROM team_kpis WHERE month = ?", [month]);
     const [productCount] = await pool.execute("SELECT COUNT(*) as c FROM products");
     const [channelCount] = await pool.execute("SELECT COUNT(*) as c FROM media_channels");
-    const [totalCostActual] = await pool.execute("SELECT COALESCE(SUM(fixed_cost),0) as c FROM team_actuals");
+    const [totalCostActual] = await pool.execute("SELECT COALESCE(SUM(fixed_cost),0) as c FROM team_actuals WHERE month = ?", [month]);
 
-    // Today's daily-perf totals
-    const today = new Date().toISOString().slice(0,10);
-    const [tdOrders] = await pool.execute(
-      "SELECT COALESCE(SUM(orders),0) as o, COALESCE(SUM(total_cost),0) as c, COALESCE(SUM(messages),0) as m, COALESCE(SUM(reach),0) as r, COALESCE(SUM(clicks),0) as cl, COALESCE(SUM(cancelled_orders),0) as co FROM team_daily_perf WHERE date = ?",
-      [today]
-    );
+    // Daily-perf totals for selected date or month
+    let cardQuery, cardParams: any[];
+    if (date) {
+      cardQuery = "SELECT COALESCE(SUM(orders),0) as o, COALESCE(SUM(total_cost),0) as c, COALESCE(SUM(messages),0) as m, COALESCE(SUM(reach),0) as r, COALESCE(SUM(clicks),0) as cl, COALESCE(SUM(cancelled_orders),0) as co FROM team_daily_perf WHERE date = ?";
+      cardParams = [date];
+    } else {
+      cardQuery = "SELECT COALESCE(SUM(orders),0) as o, COALESCE(SUM(total_cost),0) as c, COALESCE(SUM(messages),0) as m, COALESCE(SUM(reach),0) as r, COALESCE(SUM(clicks),0) as cl, COALESCE(SUM(cancelled_orders),0) as co FROM team_daily_perf WHERE month = ?";
+      cardParams = [month];
+    }
+    const [tdOrders] = await pool.execute(cardQuery, cardParams);
     // Activity log (last 10)
     const [logs] = await pool.execute("SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 10");
 
