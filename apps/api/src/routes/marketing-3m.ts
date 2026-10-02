@@ -75,6 +75,8 @@ export default async function (app: FastifyInstance) {
     if (!req.user || req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const { userId } = req.body as any;
     await pool.execute('INSERT IGNORE INTO marketing_3m_members (user_id) VALUES (?)', [userId]);
+    // Grant module access for this user
+    await pool.execute('INSERT IGNORE INTO user_modules (user_id, module_key) VALUES (?, ?)', [userId, 'marketing3m']);
     const [rows] = await pool.execute('SELECT u.id, u.name, u.email FROM marketing_3m_members mm JOIN users u ON u.id = mm.user_id WHERE u.id = ?', [userId]);
     if (io) io.emit('marketing3m:member', { action: 'add', data: rows[0] });
     reply.send({ success: true });
@@ -85,6 +87,8 @@ export default async function (app: FastifyInstance) {
     if (!req.user || req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
     const { userId } = req.params as any;
     await pool.execute('DELETE FROM marketing_3m_members WHERE user_id=?', [userId]);
+    // Remove module access
+    await pool.execute('DELETE FROM user_modules WHERE user_id=? AND module_key=?', [userId, 'marketing3m']);
     if (io) io.emit('marketing3m:member', { action: 'remove', userId });
     reply.send({ success: true });
   });

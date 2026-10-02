@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { v4 as uuid } from 'uuid';
 import { pool } from '../db/index';
 
-const MODULES = ['dashboard', 'users', 'teams', 'drive', 'channels', 'products', 'marketing', 'reports', 'customers', 'seo'];
+const MODULES = ['dashboard', 'users', 'teams', 'drive', 'channels', 'products', 'marketing', 'marketing3m', 'reports', 'customers', 'seo'];
 const ALL_TABLES = ['b1','b2','b3','b4'];
 
 export default async function (app: FastifyInstance) {

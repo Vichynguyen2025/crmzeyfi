@@ -178,7 +178,7 @@ export default function Marketing3M() {
               <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Người TH</th>
               <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Trạng thái</th>
               <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-left">Link hoàn thiện</th>
-              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-center" />
+              <th className="text-[13px] font-semibold leading-[18px] text-[#667085] px-4 py-3 text-center">Tác vụ</th>
             </tr>
           </thead>
           <tbody>
@@ -272,8 +272,8 @@ export default function Marketing3M() {
                     )}
                   </td>
                   {/* Action */}
-                  <td className="flex items-center justify-center">
-                    {currentUser?.role === 'admin' && <button onClick={() => deleteTask(r.id)} className="p-1.5 rounded-lg text-muted hover:bg-red-50 hover:text-red-500 transition-all" title="Xóa công việc"><Trash2 size={14} /></button>}
+                  <td className="px-4 py-[11px] text-center">
+                    {currentUser?.role === 'admin' && <button onClick={() => deleteTask(r.id)} className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-muted hover:bg-red-50 hover:text-red-500 transition-all" title="Xóa công việc"><Trash2 size={14} /></button>}
                   </td>
                 </tr>
               );
@@ -290,7 +290,7 @@ export default function Marketing3M() {
                 <td className="px-4 py-[11px]"><select value={newTask.assignee_id||''} onChange={e => setNewTask({...newTask, assignee_id: e.target.value})} className="h-9 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full"><option value="">Chọn</option>{members.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></td>
                 <td className="px-4 py-[11px]"><select value={newTask.status||'pending'} onChange={e => setNewTask({...newTask, status: e.target.value})} className="h-9 border border-[#E5E7EB] rounded-lg px-2.5 text-sm outline-none bg-white w-full bg-amber-50 text-amber-700">{Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></td>
                 <td className="px-4 py-[11px]"><input value={newTask.completion_link||''} onChange={e => setNewTask({...newTask, completion_link: e.target.value})} className={inputCls} placeholder="Link" /></td>
-                <td className="flex items-center justify-center gap-1"><button onClick={addTask} className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-all" title="Thêm"><Check size={14} /></button><button onClick={() => { setAdding(false); setNewTask({}); }} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 transition-all" title="Hủy"><X size={14} /></button></td>
+                <td className="px-4 py-[11px] text-center"><div className="flex items-center justify-center gap-1.5"><button onClick={addTask} className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-green-50 text-green-600 transition-all" title="Thêm"><Check size={14} /></button><button onClick={() => { setAdding(false); setNewTask({}); }} className="inline-flex items-center justify-center w-8 h-8 rounded-lg hover:bg-red-50 text-red-400 transition-all" title="Hủy"><X size={14} /></button></div></td>
               </tr>
             )}
           </tbody>
