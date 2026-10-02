@@ -19,9 +19,20 @@ import Profile from './pages/Profile';
 import Marketing3M from './pages/Marketing3M';
 import AppLayout from './components/layout/AppLayout';
 
+function isTokenValid(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 > Date.now();
+  } catch { return false; }
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('zeyfi_token') : null;
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token || !isTokenValid(token)) {
+    localStorage.removeItem('zeyfi_token');
+    localStorage.removeItem('zeyfi_user');
+    return <Navigate to="/login" replace />;
+  }
   return <>{children}</>;
 }
 
