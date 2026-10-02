@@ -909,7 +909,7 @@ export default function Teams() {
                       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-muted font-medium text-xs">{team.memberCount || 0}</span>
                     </td>
                     <td className="px-4 py-3 text-table-body text-right font-bold">
-                      {(() => { const totalAllTarget = planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0); return team.totalActual > 0 && totalAllTarget > 0 ? <span className="text-[#4f46e5]">{Math.round(team.totalActual / totalAllTarget * 100)}%</span> : <span className="text-muted italic">—</span>; })()}
+                      {(() => { return team.totalActual > 0 && team.totalTarget > 0 ? <span className="text-[#4f46e5]">{Math.round(team.totalActual / team.totalTarget * 100)}%</span> : <span className="text-muted italic">—</span>; })()}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {currentUser?.role === 'admin' && <button onClick={() => { if (confirm('Xoá team khỏi bảng B5?')) api('/teams/' + team.id + '/visibility', { method:'PATCH', body:JSON.stringify({table:'b5'}) }).then(() => loadPlan(planMonth)); }} className="p-1 rounded hover:bg-red-50 text-muted hover:text-red-500 transition-all" title="Xoá khỏi bảng"><X size={13} /></button>}
@@ -918,17 +918,25 @@ export default function Teams() {
                 );
               })}
               {/* Total row */}
-              {planData.length > 0 && (
-                <tr className="bg-[#f8f9fc] font-semibold border-t-2 border-[#e2e4e7]">
-                  <td colSpan={2} className="px-4 py-3 text-table-body font-bold text-primary">Tổng cộng</td>
-                  <td className="px-4 py-3 text-table-body text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0).toLocaleString('vi-VN')}</td>
-                  <td className="px-4 py-3 text-table-body text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0).toLocaleString('vi-VN') + 'đ'}</td>
-                  <td className="px-4 py-3 text-table-body text-right font-semibold">{planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0) > 0 ? Math.round(planData.reduce((s: number, t: any) => s + (t.totalBudget || 0) * 30, 0) / planData.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0)).toLocaleString('vi-VN') + 'đ' : ''}</td>
-                  <td className="px-4 py-3 text-table-body text-center font-semibold">{planData.reduce((s: number, t: any) => s + (t.member_count || 0), 0)}</td>
-                  <td className="px-4 py-3 text-table-body text-right font-bold text-[#4f46e5]">{(()=>{const a=planData.reduce((s:number,t:any)=>s+(t.totalActual||0),0);const b=planData.reduce((s:number,t:any)=>s+(t.totalTarget||0),0);return a>0&&b>0?Math.round(a/b*100)+'%':'—';})()}</td>
-                  <td className="px-4 py-3"></td>
-                </tr>
-              )}
+              {(() => {
+                if (planData.length === 0) return null;
+                const visible = planData.filter((t: any) => !t.hide_from_b5);
+                const totTarget = visible.reduce((s: number, t: any) => s + (t.totalTarget || 0), 0);
+                const totBudget = visible.reduce((s: number, t: any) => s + (t.totalBudget || 0), 0);
+                const totActual = visible.reduce((s: number, t: any) => s + (t.totalActual || 0), 0);
+                const totMembers = visible.reduce((s: number, t: any) => s + (t.memberCount || 0), 0);
+                return (
+                  <tr className="bg-[#f8f9fc] font-semibold border-t-2 border-[#e2e4e7]">
+                    <td colSpan={2} className="px-4 py-3 text-table-body font-bold text-primary">Tổng cộng</td>
+                    <td className="px-4 py-3 text-table-body text-right font-semibold">{totTarget > 0 ? totTarget.toLocaleString('vi-VN') : ''}</td>
+                    <td className="px-4 py-3 text-table-body text-right font-semibold">{totBudget > 0 ? (totBudget * 30).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    <td className="px-4 py-3 text-table-body text-right font-semibold">{totTarget > 0 ? Math.round(totBudget * 30 / totTarget).toLocaleString('vi-VN') + 'đ' : ''}</td>
+                    <td className="px-4 py-3 text-table-body text-center font-semibold">{totMembers}</td>
+                    <td className="px-4 py-3 text-table-body text-right font-bold text-[#4f46e5]">{totActual > 0 && totTarget > 0 ? Math.round(totActual / totTarget * 100) + '%' : '—'}</td>
+                    <td className="px-4 py-3"></td>
+                  </tr>
+                );
+              })()}
               {planData.length === 0 && (
                 <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted">
                   <div className="flex flex-col items-center gap-2">
