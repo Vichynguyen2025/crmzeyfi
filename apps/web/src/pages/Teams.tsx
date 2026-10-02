@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Users, Plus, X, Phone, Mail, Shield, Edit3, Trash2, BarChart3, Globe, ExternalLink, User, CheckCircle, AlertCircle, Target , Lock} from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
-import DateRangeFilter from '../components/DateRangeFilter';
-import DateRangeFilter from '../components/DateRangeFilter';
 import { slugify } from '../lib/utils';
 import { getSocket } from '../lib/socket';
 
@@ -40,8 +38,7 @@ const [b6Dater, setB6Dater] = useState({ from: '', to: '', key: 'month' });
   const { teamSlug } = useParams();
   const nav = useNavigate();
   const [actualMonth, setActualMonth] = useState(new Date().toISOString().slice(0, 7));
-  const [actualDateFrom, setActualDateFrom] = useState('');
-  const [actualView, setActualView] = useState<'day'|'week'|'month'>('month');
+  const [actualDate, setActualDate] = useState('');
   const [dailyUser, setDailyUser] = useState<any>(null);
   const [dailyRows, setDailyRows] = useState<any[]>([]);
   const [dailyProduct, setDailyProduct] = useState('');
@@ -161,7 +158,15 @@ const [b6Dater, setB6Dater] = useState({ from: '', to: '', key: 'month' });
 
   const loadActuals = async (teamId: string, month: string, memberList?: any[]) => {
     try {
-      const p = new URLSearchParams({month, groupBy: actualView}); if (actualDateFrom) p.set('dateFrom', actualDateFrom); const saved = await api('/actuals/' + teamId + '?' + p.toString());
+      const p = new URLSearchParams({month});
+      if (actualDate) {
+        p.set('groupBy','day');
+        p.set('dateFrom', actualDate);
+        p.set('dateTo', actualDate);
+      } else {
+        p.set('groupBy','month');
+      }
+      const saved = await api('/actuals/' + teamId + '?' + p.toString());
       if (saved && saved.length > 0) {
         const filtered = saved.filter((s: any) => s.product && s.product.trim() !== '');
         const merged = [...filtered.map((s: any) => ({name: s.userName || s.name, userId: s.user_id || s.userId, product: s.product || '', period: s.periodLabel || '', actualOrders: Number(s.actualOrders || s.actual_orders || 0), fixedCost: Number(s.fixedCost || s.fixed_cost || 0), totalMessages: Number(s.totalMessages || 0), messCost: Number(s.totalMessages || 0) > 0 ? Math.round((Number(s.fixedCost || s.fixed_cost || 0)) / Number(s.totalMessages || 1)) : 0, costPerOrder: Number(s.costPerOrder || s.cost_per_order || 0)}))];
@@ -561,32 +566,11 @@ const [b6Dater, setB6Dater] = useState({ from: '', to: '', key: 'month' });
           <div className="px-5 py-4 border-b border-border bg-gray-50/50">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-[#171717]">Tình hình Thực tế ({actualMonth}) {!canEdit('b2') && <span className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-[10px] font-medium ml-2"><Lock size={10} /> Chỉ đọc</span>}</h2>
-              <div className="flex items-center gap-1 bg-white rounded-lg border border-border p-0.5">
-                {['day','week','month'].map(v => (
-                  <button key={v} onClick={() => { 
-                        const p = new URLSearchParams({month: actualMonth, groupBy: v});
-                        if (actualDateFrom) p.set('dateFrom', actualDateFrom);
-                       
-                        api('/actuals/' + selectedTeam.id + '?' + p.toString()).then(saved => {
-                          if (saved && saved.length > 0) {
-                            const filtered = saved.filter((s: any) => s.product && s.product.trim() !== '');
-                            setActualRows([...filtered.map((s: any) => ({name: s.userName || s.name, userId: s.user_id || s.userId, product: s.product || '', period: s.periodLabel || '', actualOrders: Number(s.actualOrders || s.actual_orders || 0), fixedCost: Number(s.fixedCost || s.fixed_cost || 0), costPerOrder: Number(s.costPerOrder || s.cost_per_order || 0)})), {type: 'total'}]);
-                          }
-                        }).catch(() => {});
-                        setActualView(v as any);
-                        setActualDateFrom('');
-                        
-                      }}
-                    className={'px-3 py-1.5 rounded-md text-xs font-medium transition-all ' + (actualView === v ? 'bg-[#4f46e5] text-white shadow-sm' : 'text-muted hover:bg-gray-50')}>{v === 'day' ? 'Ngày' : v === 'week' ? 'Tuần' : 'Tháng'}</button>
-                ))}
-              </div>
               <div className="flex items-center gap-2">
                 <input type="month" value={actualMonth} onChange={e => { const v = e.target.value; setActualMonth(v); if (selectedTeam) loadActuals(selectedTeam.id, v, members); }}
                   className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs text-ink outline-none cursor-pointer transition-all focus:ring-2 focus:ring-[#4f46e5]/25" />
-                <>
-                <input type="date" value={actualDateFrom} onChange={e=>setActualDateFrom(e.target.value)} className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none" />
-                <button onClick={()=>{if(!selectedTeam)return;const v=actualView;const d=actualDateFrom;const p='month='+actualMonth+'&groupBy='+v+(d?'&dateFrom='+d:'');api('/actuals/'+selectedTeam.id+'?'+p).then((s:any)=>{if(s&&s.length>0){const f=s.filter((x:any)=>x.product&&x.product.trim()!=='');setActualRows([...f.map((x:any)=>({name:x.userName||x.name,userId:x.user_id||x.userId,product:x.product||'',period:x.periodLabel||'',actualOrders:Number(x.actualOrders||x.actual_orders||0),fixedCost:Number(x.fixedCost||x.fixed_cost||0),costPerOrder:Number(x.costPerOrder||x.cost_per_order||0)})),{type:'total'}]);}else{const list=members||[];if(list.length>0){setActualRows([...list.map((m:any)=>({name:m.name,userId:m.id,product:'',period:'',actualOrders:0,fixedCost:0,costPerOrder:0})),{type:'total'}]);}else{setActualRows([{type:'total'}]);}}}).catch(()=>{setActualRows([{type:'total'}]);});}} className="px-3 py-1.5 bg-[#4f46e5] text-white rounded-xl text-xs font-medium">Áp dụng</button>
-                </>
+                <input type="date" value={actualDate} onChange={e => { const d = e.target.value; setActualDate(d); if (selectedTeam) { const p = new URLSearchParams({month: actualMonth, groupBy: 'day', dateFrom: d, dateTo: d}); api('/actuals/' + selectedTeam.id + '?' + p.toString()).then(saved => { if (saved && saved.length > 0) { const filtered = saved.filter((x: any) => x.product && x.product.trim() !== ''); setActualRows([...filtered.map((x: any) => ({name: x.userName || x.name, userId: x.user_id || x.userId, product: x.product || '', period: x.periodLabel || '', actualOrders: Number(x.actualOrders || x.actual_orders || 0), fixedCost: Number(x.fixedCost || x.fixed_cost || 0), costPerOrder: Number(x.costPerOrder || x.cost_per_order || 0)})), {type: 'total'}]); } else { const list = members || []; setActualRows(list.length > 0 ? [...list.map((m: any) => ({name: m.name, userId: m.id, product: '', period: '', actualOrders: 0, fixedCost: 0, costPerOrder: 0})), {type: 'total'}] : [{type: 'total'}]); } }).catch(() => { setActualRows([{type: 'total'}]); }); }}}
+                  className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none" />
                 <input value={actualFilter?.search||''} onChange={e=>setActualFilter(p=>({...p,search:e.target.value}))} placeholder="Lọc nhân sự..." className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none w-36" />
                 <input value={actualFilter?.product||''} onChange={e=>setActualFilter(p=>({...p,product:e.target.value}))} placeholder="Lọc sản phẩm..." className="px-3 py-1.5 bg-white border border-border rounded-xl text-xs outline-none w-36" />
               </div>
@@ -598,7 +582,6 @@ const [b6Dater, setB6Dater] = useState({ from: '', to: '', key: 'month' });
                 <tr className="border-b border-border bg-gray-50">
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-36">Nhân sự</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-left w-40">Sản phẩm</th>
-                  <th className="p-3 text-xs font-semibold text-muted uppercase text-center w-20" style={{display: actualView==='month'?'none':''}}>Kỳ</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Tổng đơn</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">Chi phí QC</th>
                   <th className="p-3 text-xs font-semibold text-muted uppercase text-right w-24">CP/đơn</th>
@@ -640,7 +623,6 @@ const [b6Dater, setB6Dater] = useState({ from: '', to: '', key: 'month' });
                           </div>
                         ) : ''}
                       </td>
-                      <td className="p-3 text-center w-28" style={{display: actualView==='month'?'none':''}}><span className="text-xs text-muted">{actualView==='day' ? (r.period||'').split('-').reverse().join('/') : r.period || ''}</span></td>
                       <td className="p-3 w-24">
                         {isTotal ? <span className="block text-right font-semibold">{actualRows.filter((r2: any) => r2.type !== 'total').reduce((s: number, r2: any) => s + (r2.actualOrders || 0), 0).toLocaleString('vi-VN')}</span> : <span className="block px-2 py-1.5 text-xs font-medium text-right">{Number(r.actualOrders || 0).toLocaleString('vi-VN')}</span>}
                       </td>

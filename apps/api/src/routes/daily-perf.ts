@@ -44,17 +44,18 @@ export default async function (app: FastifyInstance) {
 async function recalcActuals(teamId: string, month: string) {
   await pool.execute("DELETE FROM team_actuals WHERE team_id = ? AND month = ?", [teamId, month]);
   const [summary] = await pool.execute(
-    "SELECT user_id, product, SUM(orders) as total_orders, SUM(total_cost) as total_cost FROM team_daily_perf WHERE team_id = ? AND month = ? GROUP BY user_id, product",
+    "SELECT user_id, product, SUM(orders) as total_orders, SUM(total_cost) as total_cost, SUM(messages) as total_messages FROM team_daily_perf WHERE team_id = ? AND month = ? GROUP BY user_id, product",
     [teamId, month]
   );
   for (const row of (summary as any[])) {
     const id = uuid();
     const totalOrders = row.total_orders || 0;
     const totalCost = row.total_cost || 0;
+    const totalMessages = row.total_messages || 0;
     const costPerOrder = totalOrders > 0 ? Math.round(totalCost / totalOrders) : 0;
     await pool.execute(
-      "INSERT INTO team_actuals (id, team_id, user_id, product, actual_orders, fixed_cost, cost_per_order, month) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [id, teamId, row.user_id, row.product || '', totalOrders, totalCost, costPerOrder, month]
+      "INSERT INTO team_actuals (id, team_id, user_id, product, actual_orders, fixed_cost, total_messages, cost_per_order, month) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [id, teamId, row.user_id, row.product || '', totalOrders, totalCost, totalMessages, costPerOrder, month]
     );
   }
 }
