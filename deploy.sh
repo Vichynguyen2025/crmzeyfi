@@ -25,16 +25,20 @@ echo "▸ Step 1/5: Backend API"
 # Copy all backend source files
 $SCP_CMD \
   "$PROJECT_DIR/apps/api/src/index.ts" \
+  "$SSH_HOST:$VPS_DIR/apps/api/src/index.ts" 2>/dev/null
+
+# Copy db files separately (don't overwrite index.ts)
+$SCP_CMD \
   "$PROJECT_DIR/apps/api/src/db/schema.ts" \
   "$PROJECT_DIR/apps/api/src/db/index.ts" \
-  "$SSH_HOST:$VPS_DIR/apps/api/src/" 2>/dev/null
+  "$SSH_HOST:$VPS_DIR/apps/api/src/db/" 2>/dev/null
 
 $SCP_CMD \
   "$PROJECT_DIR/apps/api/src/routes/"*.ts \
   "$SSH_HOST:$VPS_DIR/apps/api/src/routes/" 2>/dev/null
 
 echo "  ✓ Backend files copied"
-$SSH_CMD "pm2 restart crmzeyfi-ts" 2>/dev/null
+$SSH_CMD $SSH_HOST "pm2 restart crmzeyfi-ts" 2>/dev/null
 sleep 5
 echo "  ✓ API restarted"
 
@@ -61,7 +65,7 @@ echo "  ✓ Frontend files copied"
 
 # ─── Step 3: Build ───────────────────────────────────
 echo "▸ Step 3/5: Build frontend"
-$SSH_CMD "cd $VPS_DIR/apps/web && npx vite build 2>&1 | tail -5" 2>/dev/null
+$SSH_CMD $SSH_HOST "cd $VPS_DIR/apps/web && npx vite build 2>&1 | tail -5" 2>/dev/null
 echo "  ✓ Build complete"
 
 # ─── Step 4: Verify API ─────────────────────────────
@@ -69,7 +73,7 @@ echo "▸ Step 4/5: Verify"
 sleep 3
 
 # Login test
-TOKEN=$($SSH_CMD "curl -s --max-time 5 http://127.0.0.1:4000/api/auth/login -X POST -H 'Content-Type: application/json' -d '{\"email\":\"admin@zeyfi.com\",\"password\":\"admin123\"}' 2>/dev/null" 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('accessToken',''))")
+TOKEN=$($SSH_CMD $SSH_HOST "curl -s --max-time 5 http://127.0.0.1:4000/api/auth/login -X POST -H 'Content-Type: application/json' -d '{\"email\":\"admin@zeyfi.com\",\"password\":\"admin123\"}' 2>/dev/null" 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('accessToken',''))")
 
 if [ -z "$TOKEN" ]; then
   echo "  ✗ Login FAILED!"
@@ -80,7 +84,7 @@ echo "  ✓ Login OK"
 # Test all APIs
 APIS=("teams" "users" "drive" "channels" "reports/columns" "customers" "tasks" "ad-costs")
 for api in "${APIS[@]}"; do
-  RESPONSE=$($SSH_CMD "curl -s --max-time 5 http://127.0.0.1:4000/api/$api -H 'Authorization: Bearer $TOKEN' 2>/dev/null" 2>/dev/null)
+  RESPONSE=$($SSH_CMD $SSH_HOST "curl -s --max-time 5 http://127.0.0.1:4000/api/$api -H 'Authorization: Bearer ***' 2>/dev/null" 2>/dev/null)
   LEN=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d) if isinstance(d,(list,tuple,set)) else 1)" 2>/dev/null)
   echo "  ✓ $api ($LEN items)"
 done
