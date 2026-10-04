@@ -5,18 +5,6 @@ import { api } from '../lib/api';
 const ROLE_LABELS: Record<string,string> = {admin:'Quản trị',manager:'Quản lý',member:'Nhân sự'};
 const ROLE_COLORS: Record<string,string> = {admin:'bg-purple-50 text-purple-600',manager:'bg-blue-50 text-blue-600',member:'bg-green-50 text-green-600'};
 
-function timeAgo(dateStr: string): string {
-  if (!dateStr) return 'Chưa hoạt động';
-  const now = Date.now();
-  const d = new Date(dateStr).getTime();
-  const diff = Math.floor((now - d) / 1000);
-  if (diff < 60) return 'Online';
-  if (diff < 300) return Math.floor(diff / 60) + ' phút trước';
-  if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
-  if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
-  if (diff < 604800) return Math.floor(diff / 86400) + ' ngày trước';
-  return new Date(dateStr).toLocaleDateString('vi-VN');
-}
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -28,6 +16,12 @@ export default function UsersPage() {
 
   const load = () => { api('/users').then(setUsers).catch(() => {}); };
   useEffect(load, []);
+
+  // Refresh user list every 30s to keep last_seen accurate
+  useEffect(() => {
+    const t = setInterval(() => load(), 30000);
+    return () => clearInterval(t);
+  }, []);
 
   // Update time labels every 30s
   useEffect(() => {
@@ -179,21 +173,38 @@ export default function UsersPage() {
                 <td className="px-4 py-3 text-xs">
                   {u.is_blocked ? (
                     <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-medium"><Ban size={11} />Bị khoá</span>
-                  ) : (
-                    <span className={'inline-flex items-center gap-1.5 text-xs font-medium ' + (
-                      !u.last_seen ? 'text-muted' :
-                      (Date.now() - new Date(u.last_seen).getTime() < 60000) ? 'text-green-600' :
-                      'text-amber-600'
-                    )}>
-                      <span className={'w-1.5 h-1.5 rounded-full ' + (
-                        !u.last_seen ? 'bg-gray-300' :
-                        (Date.now() - new Date(u.last_seen).getTime() < 60000) ? 'bg-green-500' :
-                        (Date.now() - new Date(u.last_seen).getTime() < 300000) ? 'bg-amber-400' :
-                        'bg-gray-300'
-                      )} />
-                      {timeAgo(u.last_seen)}
+                  ) : !u.last_seen ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-muted">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                      Chưa hoạt động
                     </span>
-                  )}
+                  ) : (() => {
+                    const diff = Date.now() - new Date(u.last_seen).getTime();
+                    if (diff < 60000) return (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-sm shadow-green-400" />
+                        Online
+                      </span>
+                    );
+                    if (diff < 300000) return (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-amber-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        Vắng mặt · {Math.floor(diff / 60000)}p
+                      </span>
+                    );
+                    if (diff < 86400000) return (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-muted">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                        {Math.floor(diff / 3600000)}h trước
+                      </span>
+                    );
+                    return (
+                      <span className="inline-flex items-center gap-1.5 text-xs text-muted">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                        {new Date(u.last_seen).toLocaleDateString('vi-VN')}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-4 py-3 text-xs">
                   <select value={u.role} onChange={e => changeRole(u.id, e.target.value)}
