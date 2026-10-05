@@ -92,4 +92,62 @@ export default async function (app: FastifyInstance) {
     if (io) io.emit('marketing3m:member', { action: 'remove', userId });
     reply.send({ success: true });
   });
+
+// ─── Content Fanpage ─────────────────────────────
+  app.get('/marketing-3m/fanpage', async (req, reply) => {
+    try {
+      const q = req.query as any;
+      let sql = 'SELECT fp.*, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE 1=1';
+      const params: any[] = [];
+      if (q.status) { sql += ' AND fp.status = ?'; params.push(q.status); }
+      if (q.dateFrom) { sql += ' AND fp.day >= ?'; params.push(q.dateFrom); }
+      if (q.dateTo) { sql += ' AND fp.day <= ?'; params.push(q.dateTo); }
+      sql += ' ORDER BY fp.day ASC, fp.time ASC';
+      const [rows] = await pool.execute(sql, params);
+      reply.send(rows);
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.post('/marketing-3m/fanpage', async (req, reply) => {
+    try {
+      const b = req.body as any;
+      if (!b.day && !b.key_message) return reply.status(400).send({ error: 'Missing day or content' });
+      const id = uuid();
+      await pool.execute(
+        'INSERT INTO marketing_3m_fanpage (id, day, time, format, channel_id, pillar, key_message, content_text, media_url, media_name, status, completion_link) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+        [id, b.day||null, b.time||'', b.format||'', b.channel_id||null, b.pillar||'', b.key_message||'', b.content_text||'', b.media_url||'', b.media_name||'', b.status||'pending', b.completion_link||'']
+      );
+      const [rows] = await pool.execute('SELECT fp.*, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE fp.id = ?', [id]);
+      if (io) io.emit('marketing3m:update', { action: 'create', data: rows[0] });
+      reply.send({ success: true, id });
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.put('/marketing-3m/fanpage/:id', async (req, reply) => {
+    try {
+      const { id } = req.params as any;
+      const b = req.body as any;
+      const allowed = ['day','time','format','channel_id','pillar','key_message','content_text','media_url','media_name','status','completion_link'];
+      const fields: string[] = [];
+      const params: any[] = [];
+      for (const k of allowed) {
+        if (k in b) { fields.push(k + ' = ?'); params.push(b[k] === undefined ? null : b[k]); }
+      }
+      if (!fields.length) return reply.send({ success: true });
+      params.push(id);
+      await pool.execute('UPDATE marketing_3m_fanpage SET ' + fields.join(',') + ' WHERE id=?', params);
+      const [rows] = await pool.execute('SELECT fp.*, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE fp.id = ?', [id]);
+      if (io) io.emit('marketing3m:update', { action: 'update', data: rows[0] });
+      reply.send({ success: true });
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.delete('/marketing-3m/fanpage/:id', async (req, reply) => {
+    try {
+      const { id } = req.params as any;
+      await pool.execute('DELETE FROM marketing_3m_fanpage WHERE id=?', [id]);
+      if (io) io.emit('marketing3m:update', { action: 'delete', id });
+      reply.send({ success: true });
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
 }

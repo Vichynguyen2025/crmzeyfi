@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { Plus, Trash2, Edit3, Check, X, List, Clock, ExternalLink } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import Marketing3MFanpage from './Marketing3MFanpage';
 
 export default function Marketing3M() {
   const { tab: urlTab } = useParams();
@@ -9,7 +10,7 @@ export default function Marketing3M() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
-  const [tab, setTab] = useState<string>(urlTab === 'daily' ? 'content_daily' : 'content_website');
+  const [tab, setTab] = useState<string>(urlTab === 'daily' ? 'content_daily' : urlTab === 'fanpage' ? 'content_fanpage' : 'content_website');
   const [filterAssignee, setFilterAssignee] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
@@ -24,7 +25,7 @@ export default function Marketing3M() {
   // Sync tab from URL
   useEffect(() => {
     if (urlTab) {
-      const mapped = urlTab === 'daily' ? 'content_daily' : 'content_website';
+      const mapped = urlTab === 'daily' ? 'content_daily' : urlTab === 'fanpage' ? 'content_fanpage' : 'content_website';
       if (mapped !== tab) setTab(mapped);
     }
   }, [urlTab]);
@@ -144,9 +145,9 @@ export default function Marketing3M() {
 
       {/* Tabs */}
       <div className="flex items-center gap-px border-b border-[#E5E7EB] mt-4">
-        {['content_website', 'content_daily'].map((t) => (
-          <button key={t} onClick={() => { setTab(t as any); nav('/crm/marketing3m/' + (t === 'content_website' ? 'website' : 'daily')); }} className={'px-5 py-2 text-sm font-medium transition-all ' + (tab === t ? 'bg-[#4f46e5] text-white rounded-t-lg' : 'text-[#667085] hover:text-[#1F2937] bg-white border border-[#E5E7EB] border-b-0 rounded-t-lg')}>
-            {t === 'content_website' ? 'Content Website' : 'Content Daily'}
+        {['content_website', 'content_daily', 'content_fanpage'].map((t) => (
+          <button key={t} onClick={() => { setTab(t as any); nav('/crm/marketing3m/' + (t === 'content_website' ? 'website' : t === 'content_daily' ? 'daily' : 'fanpage')); }} className={'px-5 py-2 text-sm font-medium transition-all ' + (tab === t ? 'bg-[#4f46e5] text-white rounded-t-lg' : 'text-[#667085] hover:text-[#1F2937] bg-white border border-[#E5E7EB] border-b-0 rounded-t-lg')}>
+            {t === 'content_website' ? 'Content Website' : t === 'content_daily' ? 'Content Daily' : 'Content Fanpage'}
           </button>
         ))}
         <div className="flex items-center gap-2 ml-auto">
@@ -159,6 +160,10 @@ export default function Marketing3M() {
         </div>
       </div>
 
+      {tab === 'content_fanpage' ? (
+        <Marketing3MFanpage />
+      ) : (
+      <>
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2.5 mt-3 mb-4 bg-white rounded-[12px] border border-[#E5E7EB] px-4 py-2.5 shadow-sm">
         <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} className="h-10 border border-[#E5E7EB] rounded-lg px-3 text-sm outline-none w-36" />
@@ -311,6 +316,8 @@ export default function Marketing3M() {
           </tbody>
         </table>
       </div>
+      </>
+      )}
     </div>
   );
 }
