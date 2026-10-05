@@ -42,7 +42,7 @@ export default async function (app: FastifyInstance) {
     if (!req.user || req.user?.role !== "admin") return reply.status(403).send({ error: "Only admin" });
     try {
       const { userId } = req.body as any;
-      await pool.execute("INSERT IGNORE INTO user_modules (user_id, module_key) VALUES (?, ?)", [userId, "ads"]);
+      await pool.execute("INSERT IGNORE INTO user_modules (id, user_id, module_key) VALUES (?, ?, ?)", [uuid(), userId, "ads"]);
       reply.send({ success: true });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
   });
