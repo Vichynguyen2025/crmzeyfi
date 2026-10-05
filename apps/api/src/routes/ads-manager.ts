@@ -1,3 +1,16 @@
+import { FastifyInstance } from 'fastify';
+import { v4 as uuid } from 'uuid';
+import { pool } from '../db/index';
+
+// Convert Facebook ISO datetime (e.g. 2026-10-05T11:37:14+0700) to MySQL DATETIME
+function fbDate(v: any): string | null {
+  if (!v) return null;
+  const s = String(v).replace('+0700', 'Z').replace('+0000', 'Z');
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return String(v).slice(0, 19).replace('T', ' ');
+  return d.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 export default async function (app: FastifyInstance) {
   // ─── App Config ─────────────────────────────────────
   app.get('/ads-manager/config', async (_req, reply) => {
@@ -131,23 +144,20 @@ export default async function (app: FastifyInstance) {
             for (const camp of campData.data) {
               await pool.execute(
                 "INSERT INTO ads_campaigns (id, account_id, campaign_id, name, status, daily_budget, lifetime_budget, created_time, updated_time, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=VALUES(name), status=VALUES(status), daily_budget=VALUES(daily_budget), lifetime_budget=VALUES(lifetime_budget), updated_time=VALUES(updated_time), end_time=VALUES(end_time), last_synced=NOW()",
-                [uuid(), acc.id, camp.id, camp.name, camp.status||'', Number(camp.daily_budget||0), Number(camp.lifetime_budget||0), camp.created_time||null, camp.updated_time||null, camp.start_time||null, camp.stop_time||null]
+                [uuid(), acc.id, camp.id, camp.name, camp.status||'', Number(camp.daily_budget||0), Number(camp.lifetime_budget||0), fbDate(camp.created_time), fbDate(camp.updated_time), fbDate(camp.start_time), fbDate(camp.stop_time)]
               );
 
-              // 3. Fetch campaign insights
-              const insUrl = `https://graph.facebook.com/v21.0/${camp.id}/insights?metric=spend,impressions,clicks,ctr,cpm,reach,frequency,cpc&period=day&access_token=${accessToken}&limit=90`;
+              // 3. Fetch campaign insights (daily)
+              const insUrl = `https://graph.facebook.com/v21.0/${camp.id}/insights?metric=spend,impressions,clicks,ctr,cpm,reach,frequency,cpc&time_increment=1&access_token=${accessToken}&limit=90`;
               const insRes = await fetch(insUrl);
               const insData = await insRes.json() as any;
               if (!insData.error && insData.data) {
-                const metrics: Record<string, any[]> = {};
-                for (const m of insData.data) metrics[m.name] = m.values || [];
-                const maxLen = Math.max(...Object.values(metrics).map(v=>v?.length||0), 1);
-                for (let i = 0; i < maxLen; i++) {
-                  const dateStr = metrics['spend']?.[i]?.end_time?.split('T')[0] || '';
+                for (const row of insData.data) {
+                  const dateStr = row.date_start || '';
                   if (!dateStr) continue;
                   await pool.execute(
                     "INSERT IGNORE INTO ads_campaign_stats (id, campaign_id, date, spend, impressions, clicks, ctr, cpm, reach, frequency, cpc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    [uuid(), camp.id, dateStr, metrics['spend']?.[i]?.value??0, metrics['impressions']?.[i]?.value??0, metrics['clicks']?.[i]?.value??0, Number(metrics['ctr']?.[i]?.value||0), Number(metrics['cpm']?.[i]?.value||0), metrics['reach']?.[i]?.value??0, Number(metrics['frequency']?.[i]?.value||0), Number(metrics['cpc']?.[i]?.value||0)]
+                    [uuid(), camp.id, dateStr, Number(row.spend||0), Number(row.impressions||0), Number(row.clicks||0), Number(row.ctr||0), Number(row.cpm||0), Number(row.reach||0), Number(row.frequency||0), Number(row.cpc||0)]
                   );
                 }
               }
