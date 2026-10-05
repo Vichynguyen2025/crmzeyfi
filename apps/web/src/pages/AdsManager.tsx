@@ -244,7 +244,6 @@ export default function AdsManager() {
             <col className="w-32" />
             <col className="w-32" />
             <col className="w-28" />
-            <col className="w-28" />
             <col className="w-24" />
             <col className="w-20" />
             <col className="w-20" />
@@ -258,7 +257,6 @@ export default function AdsManager() {
               <th className="px-4 py-3 text-right font-semibold text-muted text-xs uppercase tracking-wider">Số dư</th>
               <th className="px-4 py-3 text-right font-semibold text-muted text-xs uppercase tracking-wider">Đã chi</th>
               <th className="px-4 py-3 text-right font-semibold text-muted text-xs uppercase tracking-wider">Ngưỡng TT</th>
-              <th className="px-4 py-3 text-right font-semibold text-muted text-xs uppercase tracking-wider">Hạn mức</th>
               <th className="px-4 py-3 text-center font-semibold text-muted text-xs uppercase tracking-wider">Trạng thái</th>
               <th className="px-4 py-3 text-center font-semibold text-muted text-xs uppercase tracking-wider">Theo dõi</th>
               <th className="p-4"></th>
@@ -311,11 +309,10 @@ export default function AdsManager() {
                       </div>
                     ) : (
                       <span onClick={() => setEditThreshold({id: acc.id, val: String(acc.billing_threshold || '')})} className="cursor-pointer hover:text-primary transition-all" title="Nhấn để sửa ngưỡng">
-                        {acc.billing_threshold ? formatCurrency(acc.billing_threshold, acc.currency) : <span className="text-muted">Nhập ngưỡng</span>}
+                        {acc.billing_threshold != null && acc.billing_threshold !== 0 ? formatCurrency(acc.billing_threshold, acc.currency) : <span className="text-muted">Nhập ngưỡng</span>}
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right text-xs">{acc.spend_cap ? formatCurrency(acc.spend_cap, acc.currency) : <span className="text-muted">—</span>}</td>
                   <td className="px-4 py-3 text-center">
                     {hasError ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-xs font-medium" title={acc.sync_error}><Ban size={10} />Lỗi</span>
