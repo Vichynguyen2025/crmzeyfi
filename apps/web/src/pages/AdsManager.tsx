@@ -159,8 +159,10 @@ export default function AdsManager() {
               const r = await api('/ads-manager/fetch-accounts');
               if (r?.error) { showMsg('error', r.error); return; }
               if (r?.accounts?.length > 0) {
-                let ok = 0, fail = 0;
+                let ok = 0, dup = 0, fail = 0;
+                const existingIds = new Set(accounts.map((a: any) => 'act_' + a.ad_account_id));
                 for (const acc of r.accounts) {
+                  if (existingIds.has(acc.account_id)) { dup++; continue; }
                   try {
                     await api('/ads-manager/accounts', { method:'POST', body:JSON.stringify({
                       name: acc.name, adAccountId: acc.account_id.replace(/^act_/,''), bmName: acc.business_name
@@ -168,7 +170,7 @@ export default function AdsManager() {
                     ok++;
                   } catch { fail++; }
                 }
-                showMsg('success', `Đã thêm ${ok} tài khoản${fail ? ', lỗi ' + fail : ''}`);
+                showMsg('success', `Đã thêm ${ok} tài khoản${dup ? ', bỏ qua ' + dup + ' trùng' : ''}${fail ? ', lỗi ' + fail : ''}`);
                 load();
               } else {
                 showMsg('error', 'Không tìm thấy tài khoản quảng cáo nào với token này');
