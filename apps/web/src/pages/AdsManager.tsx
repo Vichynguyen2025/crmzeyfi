@@ -36,7 +36,7 @@ export default function AdsManager() {
       await api('/ads-manager/config', { method:'POST', body:JSON.stringify({ app_id: appId, app_secret: appSecret }) });
       setConfigSaved(true);
       showMsg('success', 'Đã lưu cấu hình Facebook App');
-    } catch { showMsg('error', 'Lỗi lưu cấu hình'); }
+    } catch (e: any) { showMsg('error', e?.message || 'Lỗi lưu cấu hình'); }
   };
 
   const addAccount = async () => {
@@ -47,7 +47,7 @@ export default function AdsManager() {
       setNewAccount({ name: '', adAccountId: '', bmName: '' });
       showMsg('success', 'Đã thêm tài khoản quảng cáo');
       load();
-    } catch { showMsg('error', 'Lỗi thêm tài khoản'); }
+    } catch (e: any) { showMsg('error', e?.message || 'Lỗi thêm tài khoản'); }
   };
 
   const deleteAccount = async (id: string) => {
@@ -63,10 +63,9 @@ export default function AdsManager() {
     setSyncing(true);
     try {
       const r = await api('/ads-manager/sync', { method:'POST', body:JSON.stringify({}) });
-      if (r?.error) { showMsg('error', r.error); }
-      else { showMsg('success', 'Đã đồng bộ: ' + (r?.synced || 0) + ' tài khoản' + (r?.errors ? ', lỗi: ' + r.errors : '')); }
+      showMsg('success', 'Đã đồng bộ: ' + (r?.synced || 0) + ' tài khoản' + (r?.errors ? ', lỗi: ' + r.errors : ''));
       load();
-    } catch { showMsg('error', 'Lỗi đồng bộ'); }
+    } catch (e: any) { showMsg('error', e?.message || 'Lỗi đồng bộ'); }
     setSyncing(false);
   };
 
