@@ -140,7 +140,7 @@ export default async function (app: FastifyInstance) {
           await pool.execute(
             `UPDATE ads_accounts SET
               balance = ?, currency = ?, amount_spent = ?, spend_cap = ?,
-              billing_threshold = 0, account_status = ?, sync_error = NULL, last_sync_at = NOW()
+              account_status = ?, sync_error = NULL, last_sync_at = NOW()
             WHERE id = ?`,
             [
               data.balance ?? 0, data.currency || 'VND', data.amount_spent ?? 0,
