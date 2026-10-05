@@ -147,17 +147,29 @@ export default async function (app: FastifyInstance) {
                 [uuid(), acc.id, camp.id, camp.name, camp.status||'', Number(camp.daily_budget||0), Number(camp.lifetime_budget||0), fbDate(camp.created_time), fbDate(camp.updated_time), fbDate(camp.start_time), fbDate(camp.stop_time)]
               );
 
-              // 3. Fetch campaign insights (daily)
-              const insUrl = `https://graph.facebook.com/v21.0/${camp.id}/insights?metric=spend,impressions,clicks,ctr,cpm,reach,frequency,cpc&time_increment=1&access_token=${accessToken}&limit=90`;
+              // 3. Fetch campaign insights (daily) + actions for messages
+              const insUrl = `https://graph.facebook.com/v21.0/${camp.id}/insights?fields=spend,impressions,clicks,ctr,cpm,reach,frequency,cpc,actions&time_increment=1&access_token=${accessToken}&limit=90`;
               const insRes = await fetch(insUrl);
               const insData = await insRes.json() as any;
               if (!insData.error && insData.data) {
                 for (const row of insData.data) {
                   const dateStr = row.date_start || '';
                   if (!dateStr) continue;
+                  // Messages = actions containing conversation/message/messenger
+                  let messages = 0;
+                  if (Array.isArray(row.actions)) {
+                    for (const a of row.actions) {
+                      const t = String(a.action_type || '').toLowerCase();
+                      if (t.includes('conversation') || t.includes('messenger') || t.includes('message_send') || t.includes('chat')) {
+                        messages += Number(a.value || 0);
+                      }
+                    }
+                  }
+                  const spend = Number(row.spend||0);
+                  const costPerMsg = messages > 0 ? Math.round(spend / messages) : 0;
                   await pool.execute(
-                    "INSERT IGNORE INTO ads_campaign_stats (id, campaign_id, date, spend, impressions, clicks, ctr, cpm, reach, frequency, cpc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    [uuid(), camp.id, dateStr, Number(row.spend||0), Number(row.impressions||0), Number(row.clicks||0), Number(row.ctr||0), Number(row.cpm||0), Number(row.reach||0), Number(row.frequency||0), Number(row.cpc||0)]
+                    "INSERT INTO ads_campaign_stats (id, campaign_id, date, spend, impressions, clicks, ctr, cpm, reach, frequency, cpc, messages, cost_per_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE spend=VALUES(spend), impressions=VALUES(impressions), clicks=VALUES(clicks), ctr=VALUES(ctr), cpm=VALUES(cpm), reach=VALUES(reach), frequency=VALUES(frequency), cpc=VALUES(cpc), messages=VALUES(messages), cost_per_message=VALUES(cost_per_message)",
+                    [uuid(), camp.id, dateStr, spend, Number(row.impressions||0), Number(row.clicks||0), Number(row.ctr||0), Number(row.cpm||0), Number(row.reach||0), Number(row.frequency||0), Number(row.cpc||0), messages, costPerMsg]
                   );
                 }
               }
@@ -178,7 +190,7 @@ export default async function (app: FastifyInstance) {
     const { accountId } = req.params as any;
     try {
       const [camps] = await pool.execute(
-        "SELECT c.*, cs.spend as last_spend, cs.impressions as last_impressions, cs.clicks as last_clicks, cs.ctr as last_ctr, cs.cpm as last_cpm, cs.reach as last_reach, cs.frequency as last_frequency, cs.cpc as last_cpc, cs.date as last_stat_date FROM ads_campaigns c LEFT JOIN (SELECT cs1.* FROM ads_campaign_stats cs1 INNER JOIN (SELECT campaign_id, MAX(date) as max_date FROM ads_campaign_stats GROUP BY campaign_id) cs2 ON cs1.campaign_id = cs2.campaign_id AND cs1.date = cs2.max_date) cs ON cs.campaign_id = c.campaign_id WHERE c.account_id = ? ORDER BY c.status, c.name",
+        "SELECT c.*, cs.spend as last_spend, cs.impressions as last_impressions, cs.clicks as last_clicks, cs.ctr as last_ctr, cs.cpm as last_cpm, cs.reach as last_reach, cs.frequency as last_frequency, cs.cpc as last_cpc, cs.messages as last_messages, cs.cost_per_message as last_cost_per_message, cs.date as last_stat_date FROM ads_campaigns c LEFT JOIN (SELECT cs1.* FROM ads_campaign_stats cs1 INNER JOIN (SELECT campaign_id, MAX(date) as max_date FROM ads_campaign_stats GROUP BY campaign_id) cs2 ON cs1.campaign_id = cs2.campaign_id AND cs1.date = cs2.max_date) cs ON cs.campaign_id = c.campaign_id WHERE c.account_id = ? ORDER BY c.status, c.name",
         [accountId]
       );
       reply.send(camps);

@@ -460,7 +460,7 @@ export default function AdsManager() {
               <div className="px-6 py-16 text-center text-[13px] text-[#98A2B3]">Chưa có dữ liệu chiến dịch. Bấm "Đồng bộ chỉ số" để cập nhật.</div>
             ) : (
               <div className="overflow-x-auto" style={{ paddingTop: 16 }}>
-                <table className="w-full border-collapse" style={{ minWidth: 1180 }}>
+                <table className="w-full border-collapse" style={{ minWidth: 1350 }}>
                   <colgroup>
                     <col style={{ width: '1.8fr', minWidth: 210 }} />
                     <col style={{ width: 100 }} />
@@ -468,6 +468,8 @@ export default function AdsManager() {
                     <col style={{ width: 125 }} />
                     <col style={{ width: 112 }} />
                     <col style={{ width: 88 }} />
+                    <col style={{ width: 78 }} />
+                    <col style={{ width: 90 }} />
                     <col style={{ width: 72 }} />
                     <col style={{ width: 78 }} />
                     <col style={{ width: 88 }} />
@@ -485,6 +487,8 @@ export default function AdsManager() {
                       <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Chi phí</th>
                       <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Hiển thị</th>
                       <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Click</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Tin nhắn</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>CP/Tin</th>
                       <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>CTR</th>
                       <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>CPM</th>
                       <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>CPC</th>
@@ -512,6 +516,8 @@ export default function AdsManager() {
                         <td className="px-3 text-right text-[13px] font-medium text-[#1F2937] whitespace-nowrap tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(camp.last_spend)}</td>
                         <td className="px-3 text-right text-[13px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtNum(camp.last_impressions)}</td>
                         <td className="px-3 text-right text-[13px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtNum(camp.last_clicks)}</td>
+                        <td className="px-3 text-right text-[13px] font-medium text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtNum(camp.last_messages)}</td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] whitespace-nowrap tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(camp.last_cost_per_message)}</td>
                         <td className="px-3 text-right text-[13px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtPct(camp.last_ctr)}</td>
                         <td className="px-3 text-right text-[13px] text-[#1F2937] whitespace-nowrap tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(camp.last_cpm)}</td>
                         <td className="px-3 text-right text-[13px] text-[#1F2937] whitespace-nowrap tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(camp.last_cpc)}</td>
