@@ -121,21 +121,58 @@ export default async function (app: FastifyInstance) {
       let errors = 0;
 
       for (const acc of accounts) {
-        try {
-          const adAccountId = 'act_' + acc.ad_account_id;
-          // Fetch balance, spend, threshold via Facebook Marketing API
-          const url = `https://graph.facebook.com/v21.0/${adAccountId}?fields=balance,currency,amount_spent,spend_cap,account_status&access_token=${accessToken}`;
-          const res = await fetch(url);
-          const data = await res.json() as any;
+        // Retry up to 2 times on network errors
+        let lastError = '';
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            const adAccountId = 'act_' + acc.ad_account_id;
+            const url = `https://graph.facebook.com/v21.0/${adAccountId}?fields=balance,currency,amount_spent,spend_cap,account_status&access_token=${encodeURIComponent(accessToken)}`;
+            const res = await fetch(url);
+            
+            if (!res.ok) {
+              lastError = `Facebook API HTTP ${res.status}`;
+              await new Promise(r => setTimeout(r, 1000));
+              continue;
+            }
+            
+            const data = await res.json() as any;
 
-          if (data.error) {
+            if (data.error) {
+              await pool.execute(
+                "UPDATE ads_accounts SET sync_error = ?, last_sync_at = NOW() WHERE id = ?",
+                [data.error.message?.slice(0, 500) || 'Unknown error', acc.id]
+              );
+              errors++;
+              break;
+            }
+
             await pool.execute(
-              "UPDATE ads_accounts SET sync_error = ?, last_sync_at = NOW() WHERE id = ?",
-              [data.error.message?.slice(0, 500) || 'Unknown error', acc.id]
+              `UPDATE ads_accounts SET
+                balance = ?, currency = ?, amount_spent = ?, spend_cap = ?,
+                account_status = ?, sync_error = NULL, last_sync_at = NOW()
+              WHERE id = ?`,
+              [
+                data.balance ?? 0, data.currency || 'VND', data.amount_spent ?? 0,
+                data.spend_cap ?? 0, data.account_status ?? 0, acc.id
+              ]
             );
-            errors++;
-            continue;
+            synced++;
+            break;
+          } catch (e: any) {
+            lastError = e.message?.slice(0, 200) || 'Lỗi kết nối';
+            if (attempt < 2) {
+              await new Promise(r => setTimeout(r, 2000));
+            }
           }
+        }
+        if (lastError) {
+          await pool.execute(
+            "UPDATE ads_accounts SET sync_error = ?, last_sync_at = NOW() WHERE id = ?",
+            [lastError, acc.id]
+          );
+          errors++;
+        }
+      }
 
           await pool.execute(
             `UPDATE ads_accounts SET
