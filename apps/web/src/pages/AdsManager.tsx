@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 export default function AdsManager() {
   const [appId, setAppId] = useState('');
   const [appSecret, setAppSecret] = useState('');
+  const [accessTokenCfg, setAccessTokenCfg] = useState('');
   const [accounts, setAccounts] = useState<any[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [newAccount, setNewAccount] = useState({ name: '', adAccountId: '', bmName: '' });
@@ -22,6 +23,7 @@ export default function AdsManager() {
   const load = async () => {
     try {
       const cfg = await api('/ads-manager/config');
+      if (cfg?.access_token) { setAccessTokenCfg(cfg.access_token); }
       if (cfg?.app_id) { setAppId(cfg.app_id); setAppSecret(cfg.app_secret || ''); setConfigSaved(true); }
       const accs = await api('/ads-manager/accounts');
       setAccounts(accs || []);
@@ -33,7 +35,7 @@ export default function AdsManager() {
   const saveConfig = async () => {
     if (!appId || !appSecret) { showMsg('error', 'Vui lòng nhập App ID và App Secret'); return; }
     try {
-      await api('/ads-manager/config', { method:'POST', body:JSON.stringify({ app_id: appId, app_secret: appSecret }) });
+      await api('/ads-manager/config', { method:'POST', body:JSON.stringify({ app_id: appId, app_secret: appSecret, access_token: accessTokenCfg }) });
       setConfigSaved(true);
       showMsg('success', 'Đã lưu cấu hình Facebook App');
     } catch (e: any) { showMsg('error', e?.message || 'Lỗi lưu cấu hình'); }
@@ -134,7 +136,12 @@ export default function AdsManager() {
                 <input value={appSecret} onChange={e => setAppSecret(e.target.value)} placeholder="Nhập App Secret" type="password"
                   className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm text-ink outline-none transition-all focus:border-[#4f46e5]" />
               </div>
-              <p className="text-xs text-muted flex items-center gap-2"><Shield size={12} />App Secret sẽ được mã hoá và lưu an toàn trong database</p>
+              <div>
+                <label className="text-xs font-medium text-muted block mb-1">Access Token (System User Token từ BM)</label>
+                <input value={accessTokenCfg} onChange={e => setAccessTokenCfg(e.target.value)} placeholder="Nhập Access Token có quyền ads_read" type="password"
+                  className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm text-ink outline-none transition-all focus:border-[#4f46e5]" />
+              </div>
+              <p className="text-xs text-muted flex items-center gap-2"><Shield size={12} />App Secret và Access Token sẽ được mã hoá và lưu an toàn</p>
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={saveConfig} className="px-5 py-2.5 bg-[#4f46e5] text-white font-semibold rounded-xl text-sm hover:shadow-md transition-all">

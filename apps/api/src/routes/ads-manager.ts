@@ -10,19 +10,19 @@ export default async function (app: FastifyInstance) {
       const cfg = (rows as any[])[0];
       if (!cfg) return reply.send(null);
       // Never expose app_secret to frontend in production — send masked
-      reply.send({ app_id: cfg.app_id, app_secret: cfg.app_secret ? cfg.app_secret.slice(0, 4) + '••••' + cfg.app_secret.slice(-4) : '' });
+      reply.send({ app_id: cfg.app_id, app_secret: cfg.app_secret ? cfg.app_secret.slice(0, 4) + '••••' + cfg.app_secret.slice(-4) : '', access_token: cfg.access_token ? cfg.access_token.slice(0, 8) + '••••' + cfg.access_token.slice(-4) : '' });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
   });
 
   app.post('/ads-manager/config', async (req, reply) => {
-    const { app_id, app_secret } = req.body as any;
+    const { app_id, app_secret, access_token } = req.body as any;
     if (!app_id || !app_secret) return reply.status(400).send({ error: 'Missing app_id or app_secret' });
     try {
       const [existing] = await pool.execute("SELECT * FROM ads_app_config LIMIT 1");
       if ((existing as any[]).length > 0) {
-        await pool.execute("UPDATE ads_app_config SET app_id = ?, app_secret = ? WHERE id = ?", [app_id, app_secret, (existing as any[])[0].id]);
+        await pool.execute("UPDATE ads_app_config SET app_id = ?, app_secret = ?, access_token = ? WHERE id = ?", [app_id, app_secret, access_token || null, (existing as any[])[0].id]);
       } else {
-        await pool.execute("INSERT INTO ads_app_config (app_id, app_secret) VALUES (?, ?)", [app_id, app_secret]);
+        await pool.execute("INSERT INTO ads_app_config (app_id, app_secret, access_token) VALUES (?, ?, ?)", [app_id, app_secret, access_token || null]);
       }
       reply.send({ success: true });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
@@ -78,8 +78,8 @@ export default async function (app: FastifyInstance) {
       const cfg = (cfgRows as any[])[0];
       if (!cfg) return reply.status(400).send({ error: 'Chưa cấu hình Facebook App' });
 
-      const { app_id, app_secret } = cfg;
-      const accessToken = app_id + '|' + app_secret; // App Token (short-lived but ok for server-to-server)
+      const { app_id, app_secret, access_token } = cfg;
+      const accessToken = access_token || (app_id + '|' + app_secret);
 
       // Get all active accounts
       const [accRows] = await pool.execute("SELECT id, ad_account_id FROM ads_accounts WHERE active = 1");
