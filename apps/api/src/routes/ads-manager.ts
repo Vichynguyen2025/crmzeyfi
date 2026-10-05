@@ -32,7 +32,7 @@ export default async function (app: FastifyInstance) {
   app.get('/ads-manager/accounts', async (_req, reply) => {
     try {
       const [rows] = await pool.execute(
-        "SELECT id, name, ad_account_id, bm_name, active, balance, amount_spent,  spend_cap, account_status, currency, sync_error, last_sync_at, created_at FROM ads_accounts ORDER BY created_at DESC"
+        "SELECT id, name, ad_account_id, bm_name, active, balance, amount_spent, billing_threshold, spend_cap, account_status, currency, sync_error, last_sync_at, created_at FROM ads_accounts ORDER BY created_at DESC"
       );
       reply.send(rows);
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
