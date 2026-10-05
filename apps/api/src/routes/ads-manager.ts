@@ -28,6 +28,34 @@ export default async function (app: FastifyInstance) {
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
   });
 
+// ─── Members ────────────────────────────────────
+  app.get("/ads-manager/members", async (_req, reply) => {
+    try {
+      const [rows] = await pool.execute(
+        "SELECT u.id, u.name, u.email FROM user_modules um JOIN users u ON u.id = um.user_id WHERE um.module_key = 'ads'"
+      );
+      reply.send(rows);
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.post("/ads-manager/members", async (req, reply) => {
+    if (!req.user || req.user?.role !== "admin") return reply.status(403).send({ error: "Only admin" });
+    try {
+      const { userId } = req.body as any;
+      await pool.execute("INSERT IGNORE INTO user_modules (user_id, module_key) VALUES (?, ?)", [userId, "ads"]);
+      reply.send({ success: true });
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.delete("/ads-manager/members/:userId", async (req, reply) => {
+    if (!req.user || req.user?.role !== "admin") return reply.status(403).send({ error: "Only admin" });
+    try {
+      const { userId } = req.params as any;
+      await pool.execute("DELETE FROM user_modules WHERE user_id = ? AND module_key = ?", [userId, "ads"]);
+      reply.send({ success: true });
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
   // ─── Ad Accounts ──────────────────────────────────
   app.get('/ads-manager/accounts', async (_req, reply) => {
     try {

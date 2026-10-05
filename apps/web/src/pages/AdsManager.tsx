@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, X, RefreshCw, Settings, ExternalLink, Wallet, DollarSign, Target, Activity, Shield, CheckCircle, AlertCircle, Ban, Check } from 'lucide-react';
+import { Plus, Trash2, X, RefreshCw, Settings, ExternalLink, Wallet, DollarSign, Target, Activity, Shield, CheckCircle, AlertCircle, Ban, Check, Users } from 'lucide-react';
 import { api } from '../lib/api';
 
 export default function AdsManager() {
@@ -15,6 +15,10 @@ export default function AdsManager() {
   const [configSaved, setConfigSaved] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
   const [editThreshold, setEditThreshold] = useState<{id:string, val:string}|null>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const currentUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('zeyfi_user')||'{}') : {};
 
   const showMsg = (type: 'success'|'error', msg: string) => {
     setToast({type, message: msg});
@@ -28,6 +32,10 @@ export default function AdsManager() {
       if (cfg?.app_id) { setAppId(cfg.app_id); setAppSecret(cfg.app_secret || ''); setConfigSaved(true); }
       const accs = await api('/ads-manager/accounts');
       setAccounts(accs || []);
+      const m = await api('/ads-manager/members');
+      setMembers(m || []);
+      const u = await api('/users');
+      setAllUsers(u || []);
     } catch {}
   };
 
@@ -60,6 +68,25 @@ export default function AdsManager() {
       showMsg('success', 'Đã xoá tài khoản');
       load();
     } catch { showMsg('error', 'Lỗi xoá'); }
+  };
+
+  const addMember = async (userId: string) => {
+    if (!userId) return;
+    try {
+      await api('/ads-manager/members', { method:'POST', body:JSON.stringify({ userId }) });
+      showMsg('success', 'Đã thêm thành viên');
+      load();
+    } catch (e: any) { showMsg('error', e?.message || 'Lỗi'); }
+    setShowAddMember(false);
+  };
+
+  const removeMember = async (userId: string) => {
+    if (!confirm('Xoá thành viên này khỏi module Quảng cáo?')) return;
+    try {
+      await api('/ads-manager/members/' + userId, { method:'DELETE' });
+      showMsg('success', 'Đã xoá thành viên');
+      load();
+    } catch (e: any) { showMsg('error', e?.message || 'Lỗi'); }
   };
 
   const syncAll = async () => {
@@ -213,6 +240,52 @@ export default function AdsManager() {
               <button onClick={addAccount} className="px-5 py-2.5 bg-[#4f46e5] text-white font-semibold rounded-xl text-sm hover:shadow-md transition-all"><Plus size={14} />Thêm</button>
               <button onClick={() => setShowAdd(false)} className="px-5 py-2.5 bg-gray-100 text-muted rounded-xl text-sm font-medium hover:bg-gray-200 transition-all">Huỷ</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Members section */}
+      {currentUser?.role === 'admin' && (
+        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-gray-50/50">
+            <h2 className="text-sm font-bold text-[#1F2937] flex items-center gap-2"><Users size={16} />Thành viên</h2>
+            <button onClick={() => setShowAddMember(true)} className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-xl text-sm font-medium hover:bg-gray-50 transition-all">
+              <Plus size={14} />Thêm thành viên
+            </button>
+          </div>
+          {members.length === 0 ? (
+            <div className="px-5 py-8 text-center text-sm text-muted">Chưa có thành viên nào</div>
+          ) : (
+            <div className="divide-y divide-border">
+              {members.map((m: any) => (
+                <div key={m.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold">{m.name?.charAt(0) || '?'}</div>
+                    <div>
+                      <p className="text-sm font-medium text-ink">{m.name}</p>
+                      <p className="text-xs text-muted">{m.email}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => removeMember(m.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-all" title="Xoá"><X size={14} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Add member modal */}
+      {showAddMember && (
+        <div className="fixed inset-0 z-50 bg-black/20 flex items-center justify-center" onClick={e => e.target === e.currentTarget && setShowAddMember(false)}>
+          <div className="bg-white rounded-xl shadow-xl p-5 w-96">
+            <p className="text-sm font-semibold text-[#1F2937] mb-3">Thêm thành viên vào module Quảng cáo</p>
+            <select onChange={e => addMember(e.target.value)} className="w-full h-10 border border-[#E5E7EB] rounded-lg px-3 text-sm outline-none">
+              <option value="">Chọn nhân sự...</option>
+              {allUsers.filter((u: any) => !members.find((m: any) => m.id === u.id)).map((u: any) => (
+                <option key={u.id} value={u.id}>{u.name} - {u.email}</option>
+              ))}
+            </select>
+            <button onClick={() => setShowAddMember(false)} className="mt-3 px-4 py-2 text-sm text-muted rounded-lg hover:bg-gray-100 transition-all">Đóng</button>
           </div>
         </div>
       )}
