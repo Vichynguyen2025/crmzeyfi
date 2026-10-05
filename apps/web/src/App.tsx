@@ -17,6 +17,7 @@ import AdminPermissions from './pages/AdminPermissions';
 import AdminSettings, { applySettings } from './pages/AdminSettings';
 import Profile from './pages/Profile';
 import Marketing3M from './pages/Marketing3M';
+import AdsManager from './pages/AdsManager';
 import AppLayout from './components/layout/AppLayout';
 
 function isTokenValid(token: string): boolean {
@@ -74,6 +75,7 @@ export default function App() {
         <Route path="/crm/marketing/:tab" element={<ProtectedRoute><AppLayout><MarketingESim /></AppLayout></ProtectedRoute>} />
           <Route path="/crm/marketing3m" element={<ProtectedRoute><AppLayout><Marketing3M /></AppLayout></ProtectedRoute>} />
           <Route path="/crm/marketing3m/:tab" element={<ProtectedRoute><AppLayout><Marketing3M /></AppLayout></ProtectedRoute>} />
+          <Route path="/crm/ads-manager" element={<ProtectedRoute><AppLayout><AdsManager /></AppLayout></ProtectedRoute>} />
           <Route path="/crm/profile" element={<ProtectedRoute><AppLayout><Profile /></AppLayout></ProtectedRoute>} />
         <Route path="/crm/admin" element={<ProtectedRoute><AppLayout><AdminPermissions /></AppLayout></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute><AppLayout><AdminSettings /></AppLayout></ProtectedRoute>} />

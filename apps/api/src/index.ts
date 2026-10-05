@@ -24,6 +24,7 @@ import teamModulesRoutes from './routes/team-modules';
 import marketing3mRoutes from './routes/marketing-3m';
 import socialContentRoutes from './routes/social-content';
 import seoRevenueRoutes from './routes/seo-revenue';
+import adsManagerRoutes from './routes/ads-manager';
 import mysql from 'mysql2/promise';
 
 const pool = mysql.createPool({ socketPath: '/tmp/mysql.sock', user: 'root', password: '8ffcb61af33a11f0', database: 'crmzeyfi', waitForConnections: true, connectionLimit: 5 });
@@ -74,6 +75,7 @@ async function start() {
   await app.register(seoRevenueRoutes, { prefix: '/api' });
   await app.register(teamModulesRoutes, { prefix: '/api' });
     await app.register(marketing3mRoutes, { prefix: '/api' });
+  await app.register(adsManagerRoutes, { prefix: '/api' });
   await app.register(seoRoutes, { prefix: '/api' });
   await app.listen({ port: PORT, host: '0.0.0.0' });
   console.log('[CRM Zeyfi] API running on port ' + PORT);

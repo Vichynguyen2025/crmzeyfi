@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../../lib/api';
-import { Settings, LayoutDashboard, UserCog, Users, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3, ClipboardList, PhoneCall, Shield, Lock, User } from 'lucide-react';
+import { Settings, LayoutDashboard, UserCog, Users, HardDrive, Globe, LogOut, ChevronLeft, ChevronRight, Package, BarChart3, ClipboardList, PhoneCall, Shield, Lock, User, DollarSign } from 'lucide-react';
 
 const NAV = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/crm/dashboard', module: 'dashboard' },
@@ -10,6 +10,7 @@ const NAV = [
   { label: 'Kho dữ liệu', icon: HardDrive, path: '/crm/drive', module: 'drive' },
   { label: 'Kênh Marketing', icon: Globe, path: '/crm/channels', module: 'channels' },
   { label: 'Marketing 3M', icon: BarChart3, path: '/crm/marketing3m', module: 'marketing3m' },
+  { label: 'Quảng cáo', icon: DollarSign, path: '/crm/ads-manager', module: 'ads' },
   { label: 'Sản phẩm', icon: Package, path: '/crm/products', module: 'products' },
   { label: 'Marketing eSim', icon: BarChart3, path: '/crm/marketing', module: 'marketing' },
   { label: 'Báo cáo', icon: ClipboardList, path: '/crm/reports', module: 'reports' },
