@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, X, RefreshCw, Settings, ExternalLink, Wallet, DollarSign, Target, Activity, Shield, CheckCircle, AlertCircle, Ban, Check, Users } from 'lucide-react';
+import { Plus, Trash2, X, RefreshCw, Settings, ExternalLink, Wallet, DollarSign, Target, Activity, Shield, CheckCircle, AlertCircle, Ban, Check, Users, BarChart3 } from 'lucide-react';
 import { api } from '../lib/api';
 
 export default function AdsManager() {
@@ -141,6 +141,20 @@ export default function AdsManager() {
     if (!val && val !== 0) return '—';
     if (cur === 'VND') return Number(val).toLocaleString('vi-VN') + 'đ';
     return (val / 100).toLocaleString('vi-VN') + 'đ';
+  };
+
+  // Campaign money: raw VND value, tabular, no division
+  const fmtMoney = (val: any) => {
+    if (val === null || val === undefined || val === 0) return '—';
+    return Number(val).toLocaleString('vi-VN') + ' ₫';
+  };
+  const fmtNum = (val: any) => {
+    if (val === null || val === undefined || val === 0) return '—';
+    return Number(val).toLocaleString('vi-VN');
+  };
+  const fmtPct = (val: any) => {
+    if (val === null || val === undefined || val === 0) return '—';
+    return Number(val).toFixed(2) + '%';
   };
 
   return (
@@ -437,52 +451,78 @@ export default function AdsManager() {
       {/* Campaign modal */}
       {showCampaigns && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowCampaigns(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-6xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-white z-10">
-              <h3 className="font-bold text-base flex items-center gap-2"><Activity size={18} />Chiến dịch của <strong>{showCampaigns.name}</strong></h3>
-              <button onClick={() => setShowCampaigns(null)} className="p-2 rounded-lg hover:bg-gray-100 transition-all"><X size={20} /></button>
+          <div className="bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto" style={{ width: 'min(94vw, 1400px)', maxWidth: 1400 }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#EAECF0] sticky top-0 bg-white z-10">
+              <h3 className="font-bold text-[15px] text-[#101828] flex items-center gap-2.5"><Activity size={17} className="text-[#4f46e5]" />Chiến dịch của <strong>{showCampaigns.name}</strong></h3>
+              <button onClick={() => setShowCampaigns(null)} className="p-2 rounded-lg hover:bg-gray-100 transition-all text-[#98A2B3] hover:text-[#1F2937]"><X size={19} /></button>
             </div>
             {campaigns.length === 0 ? (
-              <div className="px-6 py-16 text-center text-muted text-sm">Chưa có dữ liệu chiến dịch. Bấm "Đồng bộ chỉ số" để cập nhật.</div>
+              <div className="px-6 py-16 text-center text-[13px] text-[#98A2B3]">Chưa có dữ liệu chiến dịch. Bấm "Đồng bộ chỉ số" để cập nhật.</div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs border-collapse">
+              <div className="overflow-x-auto" style={{ paddingTop: 16 }}>
+                <table className="w-full border-collapse" style={{ minWidth: 1180 }}>
+                  <colgroup>
+                    <col style={{ width: '1.8fr', minWidth: 210 }} />
+                    <col style={{ width: 100 }} />
+                    <col style={{ width: 115 }} />
+                    <col style={{ width: 125 }} />
+                    <col style={{ width: 112 }} />
+                    <col style={{ width: 88 }} />
+                    <col style={{ width: 72 }} />
+                    <col style={{ width: 78 }} />
+                    <col style={{ width: 88 }} />
+                    <col style={{ width: 88 }} />
+                    <col style={{ width: 92 }} />
+                    <col style={{ width: 86 }} />
+                    <col style={{ width: 76 }} />
+                  </colgroup>
                   <thead>
-                    <tr className="bg-gray-50 border-b border-border sticky top-[57px]">
-                      <th className="px-3 py-2.5 text-left font-semibold text-muted uppercase tracking-wider">Chiến dịch</th>
-                      <th className="px-3 py-2.5 text-center font-semibold text-muted uppercase tracking-wider">Trạng thái</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Budget/ngày</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Budget trọn đời</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Chi phí</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Hiển thị</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Click</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">CTR</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">CPM</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">CPC</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Tiếp cận</th>
-                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Tần suất</th>
-                      <th className="px-3 py-2.5 text-center font-semibold text-muted uppercase tracking-wider">Xem chart</th>
+                    <tr style={{ height: 44, background: '#F9FAFB', borderBottom: '1px solid #EAECF0' }}>
+                      <th className="px-4 text-left font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Chiến dịch</th>
+                      <th className="px-3 text-center font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Trạng thái</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Budget/ngày</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Budget trọn đời</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Chi phí</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Hiển thị</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Click</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>CTR</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>CPM</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>CPC</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Tiếp cận</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Tần suất</th>
+                      <th className="px-3 text-center font-semibold uppercase tracking-wide" style={{ fontSize: 12, lineHeight: '16px', color: '#667085', whiteSpace: 'nowrap' }}>Chart</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/50">
+                  <tbody>
                     {campaigns.map((camp: any) => (
-                      <tr key={camp.campaign_id} className={'hover:bg-gray-50 transition-all ' + (camp.status === 'ACTIVE' ? 'bg-green-50/30' : camp.status === 'PAUSED' ? 'bg-amber-50/20' : '')}>
-                        <td className="px-3 py-2.5 font-medium text-ink">{camp.name}</td>
-                        <td className="px-3 py-2.5 text-center">
-                          <span className={'inline-flex px-2 py-0.5 rounded-full text-xs font-medium ' + (camp.status === 'ACTIVE' ? 'bg-green-50 text-green-600' : camp.status === 'PAUSED' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-muted')}>{camp.status || '—'}</span>
+                      <tr key={camp.campaign_id} style={{ height: 50, borderBottom: '1px solid #EAECF0', transition: 'background .15s' }} className="hover:bg-[#F9FAFB]">
+                        <td className="px-4" style={{ maxWidth: 0 }}>
+                          <p className="font-medium text-[13px] text-[#1F2937] truncate" style={{ lineHeight: '18px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={camp.name}>{camp.name}</p>
                         </td>
-                        <td className="px-3 py-2.5 text-right font-mono">{camp.daily_budget ? (Number(camp.daily_budget)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
-                        <td className="px-3 py-2.5 text-right font-mono">{camp.lifetime_budget ? (Number(camp.lifetime_budget)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
-                        <td className="px-3 py-2.5 text-right font-mono">{camp.last_spend ? (Number(camp.last_spend)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
-                        <td className="px-3 py-2.5 text-right">{camp.last_impressions ? Number(camp.last_impressions).toLocaleString('vi-VN') : '—'}</td>
-                        <td className="px-3 py-2.5 text-right">{camp.last_clicks ? Number(camp.last_clicks).toLocaleString('vi-VN') : '—'}</td>
-                        <td className="px-3 py-2.5 text-right">{camp.last_ctr ? Number(camp.last_ctr).toFixed(2) + '%' : '—'}</td>
-                        <td className="px-3 py-2.5 text-right font-mono">{camp.last_cpm ? (Number(camp.last_cpm)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
-                        <td className="px-3 py-2.5 text-right font-mono">{camp.last_cpc ? (Number(camp.last_cpc)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
-                        <td className="px-3 py-2.5 text-right">{camp.last_reach ? Number(camp.last_reach).toLocaleString('vi-VN') : '—'}</td>
-                        <td className="px-3 py-2.5 text-right">{camp.last_frequency ? Number(camp.last_frequency).toFixed(1) : '—'}</td>
-                        <td className="px-3 py-2.5 text-center">
-                          <button onClick={() => loadCampaignStats(camp.campaign_id)} className="text-xs text-primary underline decoration-dotted hover:brightness-110" title="Xem biểu đồ">{showChart === camp.campaign_id ? 'Đang xem' : 'Chart'}</button>
+                        <td className="px-3 text-center">
+                          <span className="inline-flex items-center justify-center rounded-full text-[11px] font-semibold"
+                            style={{ height: 24, padding: '0 8px', whiteSpace: 'nowrap',
+                              background: camp.status === 'ACTIVE' ? '#ECFDF3' : camp.status === 'PAUSED' ? '#FFFAEB' : '#F2F4F7',
+                              color: camp.status === 'ACTIVE' ? '#027A48' : camp.status === 'PAUSED' ? '#B54708' : '#475467' }}>
+                            {camp.status || '—'}
+                          </span>
+                        </td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] whitespace-nowrap tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(camp.daily_budget)}</td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] whitespace-nowrap tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(camp.lifetime_budget)}</td>
+                        <td className="px-3 text-right text-[13px] font-medium text-[#1F2937] whitespace-nowrap tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(camp.last_spend)}</td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtNum(camp.last_impressions)}</td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtNum(camp.last_clicks)}</td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtPct(camp.last_ctr)}</td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] whitespace-nowrap tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(camp.last_cpm)}</td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] whitespace-nowrap tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(camp.last_cpc)}</td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtNum(camp.last_reach)}</td>
+                        <td className="px-3 text-right text-[13px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{camp.last_frequency ? Number(camp.last_frequency).toFixed(1) : <span className="text-[#98A2B3]">—</span>}</td>
+                        <td className="px-3 text-center">
+                          <button onClick={() => loadCampaignStats(camp.campaign_id)} title="Xem biểu đồ"
+                            className="inline-flex items-center justify-center rounded-md text-xs font-semibold text-[#4f46e5] hover:bg-[#EEF2FF] transition-all"
+                            style={{ height: 28, padding: '0 8px' }}>
+                            <BarChart3 size={15} />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -491,31 +531,41 @@ export default function AdsManager() {
               </div>
             )}
             {showChart && campaignHistory.length > 0 && (
-              <div className="px-6 py-4 border-t border-border">
-                <h4 className="text-sm font-bold text-[#1F2937] mb-2">Biểu đồ chiến dịch (90 ngày)</h4>
+              <div className="px-6 py-4 border-t border-[#EAECF0]">
+                <h4 className="text-sm font-bold text-[#1F2937] mb-2.5">Biểu đồ chiến dịch (30 ngày)</h4>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs border-collapse">
-                    <thead><tr className="bg-gray-50 border-b border-border">
-                      <th className="px-2 py-1.5 text-left">Ngày</th>
-                      <th className="px-2 py-1.5 text-right">Chi phí</th>
-                      <th className="px-2 py-1.5 text-right">Hiển thị</th>
-                      <th className="px-2 py-1.5 text-right">Click</th>
-                      <th className="px-2 py-1.5 text-right">CTR</th>
-                      <th className="px-2 py-1.5 text-right">CPM</th>
-                      <th className="px-2 py-1.5 text-right">CPC</th>
-                      <th className="px-2 py-1.5 text-right">Tiếp cận</th>
+                  <table className="w-full text-xs border-collapse" style={{ minWidth: 760 }}>
+                    <colgroup>
+                      <col style={{ width: 110 }} />
+                      <col style={{ width: 110 }} />
+                      <col style={{ width: 100 }} />
+                      <col style={{ width: 80 }} />
+                      <col style={{ width: 80 }} />
+                      <col style={{ width: 100 }} />
+                      <col style={{ width: 100 }} />
+                      <col style={{ width: 100 }} />
+                    </colgroup>
+                    <thead><tr style={{ background: '#F9FAFB', borderBottom: '1px solid #EAECF0', height: 36 }}>
+                      <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{ fontSize: 11, color: '#667085', whiteSpace: 'nowrap' }}>Ngày</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 11, color: '#667085', whiteSpace: 'nowrap' }}>Chi phí</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 11, color: '#667085', whiteSpace: 'nowrap' }}>Hiển thị</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 11, color: '#667085', whiteSpace: 'nowrap' }}>Click</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 11, color: '#667085', whiteSpace: 'nowrap' }}>CTR</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 11, color: '#667085', whiteSpace: 'nowrap' }}>CPM</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 11, color: '#667085', whiteSpace: 'nowrap' }}>CPC</th>
+                      <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{ fontSize: 11, color: '#667085', whiteSpace: 'nowrap' }}>Tiếp cận</th>
                     </tr></thead>
-                    <tbody className="divide-y divide-border/50">
+                    <tbody>
                       {campaignHistory.slice(-30).map((s: any) => (
-                        <tr key={s.id} className="hover:bg-gray-50">
-                          <td className="px-2 py-1.5 text-xs">{s.date}</td>
-                          <td className="px-2 py-1.5 text-right font-mono">{(Number(s.spend)/100).toLocaleString('vi-VN')}đ</td>
-                          <td className="px-2 py-1.5 text-right">{Number(s.impressions).toLocaleString('vi-VN')}</td>
-                          <td className="px-2 py-1.5 text-right">{Number(s.clicks).toLocaleString('vi-VN')}</td>
-                          <td className="px-2 py-1.5 text-right">{Number(s.ctr).toFixed(2)}%</td>
-                          <td className="px-2 py-1.5 text-right font-mono">{(Number(s.cpm)/100).toLocaleString('vi-VN')}đ</td>
-                          <td className="px-2 py-1.5 text-right font-mono">{(Number(s.cpc)/100).toLocaleString('vi-VN')}đ</td>
-                          <td className="px-2 py-1.5 text-right">{Number(s.reach).toLocaleString('vi-VN')}</td>
+                        <tr key={s.id} style={{ borderBottom: '1px solid #EAECF0', height: 34 }} className="hover:bg-[#F9FAFB]">
+                          <td className="px-3 text-[12px] text-[#475467] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{s.date}</td>
+                          <td className="px-3 text-right text-[12px] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(s.spend)}</td>
+                          <td className="px-3 text-right text-[12px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtNum(s.impressions)}</td>
+                          <td className="px-3 text-right text-[12px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtNum(s.clicks)}</td>
+                          <td className="px-3 text-right text-[12px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtPct(s.ctr)}</td>
+                          <td className="px-3 text-right text-[12px] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(s.cpm)}</td>
+                          <td className="px-3 text-right text-[12px] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtMoney(s.cpc)}</td>
+                          <td className="px-3 text-right text-[12px] text-[#1F2937] tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtNum(s.reach)}</td>
                         </tr>
                       ))}
                     </tbody>
