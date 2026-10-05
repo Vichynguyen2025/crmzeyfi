@@ -86,7 +86,7 @@ export default async function (app: FastifyInstance) {
       const cfg = (cfgRows as any[])[0];
       if (!cfg?.access_token) return reply.status(400).send({ error: 'Chưa cấu hình Access Token' });
 
-      const url = `https://graph.facebook.com/v21.0/me/adaccounts?fields=name,account_id,currency,balance,amount_spent,business_name,account_status&access_token=${cfg.access_token}&limit=100`;
+      const url = `https://graph.facebook.com/v21.0/me/adaccounts?fields=name,account_id,currency,balance,amount_spent,business_name,account_status&access_token=${(cfg.access_token||'').trim()}&limit=100`;
       const res = await fetch(url);
       const data = await res.json() as any;
 
@@ -112,7 +112,7 @@ export default async function (app: FastifyInstance) {
       if (!cfg) return reply.status(400).send({ error: 'Chưa cấu hình Facebook App' });
 
       const { app_id, app_secret, access_token } = cfg;
-      const accessToken = access_token || (app_id + '|' + app_secret);
+      const accessToken = (access_token || '').trim() || (app_id + '|' + app_secret);
 
       // Get all active accounts
       const [accRows] = await pool.execute("SELECT id, ad_account_id FROM ads_accounts WHERE active = 1");
