@@ -15,6 +15,10 @@ export default function AdsManager() {
   const [configSaved, setConfigSaved] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
   const [editThreshold, setEditThreshold] = useState<{id:string, val:string}|null>(null);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [showCampaigns, setShowCampaigns] = useState<any>(null);
+  const [campaignHistory, setCampaignHistory] = useState<any[]>([]);
+  const [showChart, setShowChart] = useState<string | null>(null);
   const [members, setMembers] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [showAddMember, setShowAddMember] = useState(false);
@@ -116,6 +120,21 @@ export default function AdsManager() {
       showMsg('success', 'Đã lưu ngưỡng thanh toán');
       load();
     } catch (e: any) { showMsg('error', e?.message || 'Lỗi lưu ngưỡng'); }
+  };
+
+  const loadCampaigns = async (accountId: string) => {
+    try {
+      const d = await api('/ads-manager/campaigns/' + accountId);
+      setCampaigns(d || []);
+    } catch {}
+  };
+
+  const loadCampaignStats = async (campaignId: string) => {
+    try {
+      const d = await api('/ads-manager/campaign-stats/' + campaignId);
+      setCampaignHistory(d || []);
+      setShowChart(campaignId);
+    } catch {}
   };
 
   const formatCurrency = (val: number, cur?: string) => {
@@ -352,13 +371,13 @@ export default function AdsManager() {
               const hasError = acc.sync_error ? true : false;
               return (
                 <tr key={acc.id} className={'border-b border-border hover:bg-gray-50 transition-all' + (isActive ? '' : ' opacity-50')}>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 cursor-pointer hover:text-primary transition-all" onClick={() => { loadCampaigns(acc.id); setShowCampaigns(acc); }}>
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shrink-0">
                         <DollarSign size={14} />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-medium text-sm text-ink truncate">{acc.name}</p>
+                        <p className="font-medium text-sm text-ink truncate underline decoration-dotted">{acc.name}</p>
                         {acc.last_sync_at && <p className="text-xs text-muted">Đồng bộ: {new Date(acc.last_sync_at).toLocaleString('vi-VN')}</p>}
                       </div>
                     </div>
@@ -414,6 +433,99 @@ export default function AdsManager() {
           </tbody>
         </table>
       </div>
+
+      {/* Campaign modal */}
+      {showCampaigns && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowCampaigns(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-[95%] max-w-6xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-white z-10">
+              <h3 className="font-bold text-base flex items-center gap-2"><Activity size={18} />Chiến dịch của <strong>{showCampaigns.name}</strong></h3>
+              <button onClick={() => setShowCampaigns(null)} className="p-2 rounded-lg hover:bg-gray-100 transition-all"><X size={20} /></button>
+            </div>
+            {campaigns.length === 0 ? (
+              <div className="px-6 py-16 text-center text-muted text-sm">Chưa có dữ liệu chiến dịch. Bấm "Đồng bộ chỉ số" để cập nhật.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-border sticky top-[57px]">
+                      <th className="px-3 py-2.5 text-left font-semibold text-muted uppercase tracking-wider">Chiến dịch</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-muted uppercase tracking-wider">Trạng thái</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Budget/ngày</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Budget trọn đời</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Chi phí</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Hiển thị</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Click</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">CTR</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">CPM</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">CPC</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Tiếp cận</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-muted uppercase tracking-wider">Tần suất</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-muted uppercase tracking-wider">Xem chart</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {campaigns.map((camp: any) => (
+                      <tr key={camp.campaign_id} className={'hover:bg-gray-50 transition-all ' + (camp.status === 'ACTIVE' ? 'bg-green-50/30' : camp.status === 'PAUSED' ? 'bg-amber-50/20' : '')}>
+                        <td className="px-3 py-2.5 font-medium text-ink">{camp.name}</td>
+                        <td className="px-3 py-2.5 text-center">
+                          <span className={'inline-flex px-2 py-0.5 rounded-full text-xs font-medium ' + (camp.status === 'ACTIVE' ? 'bg-green-50 text-green-600' : camp.status === 'PAUSED' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-muted')}>{camp.status || '—'}</span>
+                        </td>
+                        <td className="px-3 py-2.5 text-right font-mono">{camp.daily_budget ? (Number(camp.daily_budget)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
+                        <td className="px-3 py-2.5 text-right font-mono">{camp.lifetime_budget ? (Number(camp.lifetime_budget)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
+                        <td className="px-3 py-2.5 text-right font-mono">{camp.last_spend ? (Number(camp.last_spend)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
+                        <td className="px-3 py-2.5 text-right">{camp.last_impressions ? Number(camp.last_impressions).toLocaleString('vi-VN') : '—'}</td>
+                        <td className="px-3 py-2.5 text-right">{camp.last_clicks ? Number(camp.last_clicks).toLocaleString('vi-VN') : '—'}</td>
+                        <td className="px-3 py-2.5 text-right">{camp.last_ctr ? Number(camp.last_ctr).toFixed(2) + '%' : '—'}</td>
+                        <td className="px-3 py-2.5 text-right font-mono">{camp.last_cpm ? (Number(camp.last_cpm)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
+                        <td className="px-3 py-2.5 text-right font-mono">{camp.last_cpc ? (Number(camp.last_cpc)/100).toLocaleString('vi-VN') + 'đ' : '—'}</td>
+                        <td className="px-3 py-2.5 text-right">{camp.last_reach ? Number(camp.last_reach).toLocaleString('vi-VN') : '—'}</td>
+                        <td className="px-3 py-2.5 text-right">{camp.last_frequency ? Number(camp.last_frequency).toFixed(1) : '—'}</td>
+                        <td className="px-3 py-2.5 text-center">
+                          <button onClick={() => loadCampaignStats(camp.campaign_id)} className="text-xs text-primary underline decoration-dotted hover:brightness-110" title="Xem biểu đồ">{showChart === camp.campaign_id ? 'Đang xem' : 'Chart'}</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {showChart && campaignHistory.length > 0 && (
+              <div className="px-6 py-4 border-t border-border">
+                <h4 className="text-sm font-bold text-[#1F2937] mb-2">Biểu đồ chiến dịch (90 ngày)</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead><tr className="bg-gray-50 border-b border-border">
+                      <th className="px-2 py-1.5 text-left">Ngày</th>
+                      <th className="px-2 py-1.5 text-right">Chi phí</th>
+                      <th className="px-2 py-1.5 text-right">Hiển thị</th>
+                      <th className="px-2 py-1.5 text-right">Click</th>
+                      <th className="px-2 py-1.5 text-right">CTR</th>
+                      <th className="px-2 py-1.5 text-right">CPM</th>
+                      <th className="px-2 py-1.5 text-right">CPC</th>
+                      <th className="px-2 py-1.5 text-right">Tiếp cận</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/50">
+                      {campaignHistory.slice(-30).map((s: any) => (
+                        <tr key={s.id} className="hover:bg-gray-50">
+                          <td className="px-2 py-1.5 text-xs">{s.date}</td>
+                          <td className="px-2 py-1.5 text-right font-mono">{(Number(s.spend)/100).toLocaleString('vi-VN')}đ</td>
+                          <td className="px-2 py-1.5 text-right">{Number(s.impressions).toLocaleString('vi-VN')}</td>
+                          <td className="px-2 py-1.5 text-right">{Number(s.clicks).toLocaleString('vi-VN')}</td>
+                          <td className="px-2 py-1.5 text-right">{Number(s.ctr).toFixed(2)}%</td>
+                          <td className="px-2 py-1.5 text-right font-mono">{(Number(s.cpm)/100).toLocaleString('vi-VN')}đ</td>
+                          <td className="px-2 py-1.5 text-right font-mono">{(Number(s.cpc)/100).toLocaleString('vi-VN')}đ</td>
+                          <td className="px-2 py-1.5 text-right">{Number(s.reach).toLocaleString('vi-VN')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Info card */}
       <div className="bg-gradient-to-r from-indigo-50/50 to-transparent border border-indigo-100 rounded-xl p-4">
