@@ -115,6 +115,9 @@ export default function Channels() {
         </div>
       </div>
 
+      {/* Add channel form + channels table */}
+      {tab === 'channels' ? (
+        <>
       {(showAdd || edit) && (
         <div className="bg-white rounded-2xl border border-border shadow-sm p-6 space-y-4">
           <h3 className="font-semibold text-sm text-muted uppercase tracking-wider">{edit ? 'Sửa kênh' : 'Thêm kênh mới'}</h3>
@@ -235,7 +238,7 @@ export default function Channels() {
           </tbody>
         </table>
       </div>
-    </div>
+      </>
       ) : null}
 
       {/* Fanpage tab */}
