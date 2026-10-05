@@ -62,8 +62,9 @@ export default function AdsManager() {
   const syncAll = async () => {
     setSyncing(true);
     try {
-      const r = await api('/ads-manager/sync', { method:'POST' });
-      showMsg('success', 'Đã đồng bộ: ' + (r?.synced || 0) + ' tài khoản');
+      const r = await api('/ads-manager/sync', { method:'POST', body:JSON.stringify({}) });
+      if (r?.error) { showMsg('error', r.error); }
+      else { showMsg('success', 'Đã đồng bộ: ' + (r?.synced || 0) + ' tài khoản' + (r?.errors ? ', lỗi: ' + r.errors : '')); }
       load();
     } catch { showMsg('error', 'Lỗi đồng bộ'); }
     setSyncing(false);
