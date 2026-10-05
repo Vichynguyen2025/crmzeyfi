@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, X, Edit3, Trash2, Globe, ExternalLink, Users, User, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, X, Edit3, Trash2, Globe, ExternalLink, Users, User, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { api } from '../lib/api';
 import { getSocket } from '../lib/socket';
 
@@ -25,6 +25,9 @@ export default function Channels() {
   const [filterPlatform, setFilterPlatform] = useState('');
   const [filterUser, setFilterUser] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [tab, setTab] = useState('channels');
+  const [fanpages, setFanpages] = useState<any[]>([]);
+  const [syncingPages, setSyncingPages] = useState(false);
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({type, message});
@@ -38,6 +41,7 @@ export default function Channels() {
     api('/teams').then(setTeams);
     api('/users').then(setUsers).catch(() => {});
   };
+  const loadFanpages = () => { api('/channels/pages').then(setFanpages).catch(() => {}); };
   useEffect(load, []);
 
   // Realtime
@@ -76,6 +80,17 @@ export default function Channels() {
     } catch { showToast('error', 'Lỗi xoá'); }
   };
 
+  const syncFanpages = async () => {
+    setSyncingPages(true);
+    try {
+      const r = await api('/channels/pages/sync', { method:'POST', body:JSON.stringify({}) });
+      if (r?.error) { showToast('error', r.error); }
+      else { showToast('success', 'Đã đồng bộ ' + (r?.synced||0) + ' fanpage'); }
+      loadFanpages();
+    } catch (e: any) { showToast('error', e?.message || 'Lỗi đồng bộ'); }
+    setSyncingPages(false);
+  };
+
   const openEdit = (c: any) => {
     setEdit(c);
     setForm({ name: c.name, platform: c.platform, url: c.url || '', teamId: c.team_id || '', assignedTo: c.assigned_to || '', notes: c.notes || '' });
@@ -93,11 +108,11 @@ export default function Channels() {
       )}
 
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-ink">Kênh Marketing</h1><p className="text-sm text-muted mt-1">Quản lý kênh truyền thông, phân công team & người phụ trách</p></div>
-        <button onClick={() => { setEdit(null); setForm({name:'',platform:'Facebook',url:'',teamId:'',assignedTo:'',notes:''}); setShowAdd(true); }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all">
-          <Plus size={18} />Thêm kênh
-        </button>
+        <div><h1 className="text-2xl font-bold text-ink">Kênh Marketing</h1><p className="text-sm text-muted mt-1">Quản lý kênh truyền thông & theo dõi tăng trưởng Fanpage</p></div>
+        <div className="flex gap-2">
+          <button onClick={() => setTab('channels')} className={"px-4 py-2 rounded-xl text-sm font-medium transition-all " + (tab === 'channels' ? 'bg-[#4f46e5] text-white shadow-md' : 'bg-white border border-border text-muted hover:bg-gray-50')}>Kênh</button>
+          <button onClick={() => { setTab('fanpages'); loadFanpages(); }} className={"px-4 py-2 rounded-xl text-sm font-medium transition-all " + (tab === 'fanpages' ? 'bg-[#4f46e5] text-white shadow-md' : 'bg-white border border-border text-muted hover:bg-gray-50')}>Fanpage</button>
+        </div>
       </div>
 
       {(showAdd || edit) && (
@@ -220,6 +235,63 @@ export default function Channels() {
           </tbody>
         </table>
       </div>
+    </div>
+      ) : null}
+
+      {/* Fanpage tab */}
+      {tab === 'fanpages' && (
+        <div className="space-y-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-[#1F2937]">Tăng trưởng Fanpage</h2>
+            <button onClick={syncFanpages} disabled={syncingPages}
+              className="flex items-center gap-2 px-4 py-2 bg-[#4f46e5] text-white rounded-xl text-sm font-semibold hover:bg-[#4338ca] transition-all disabled:opacity-40">
+              <RefreshCw size={14} />{syncingPages ? 'Đang đồng bộ...' : 'Đồng bộ từ Facebook'}
+            </button>
+          </div>
+
+          {fanpages.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-border shadow-sm p-12 text-center">
+              <Users size={48} className="mx-auto mb-3 opacity-20 text-muted" />
+              <p className="font-medium text-muted">Chưa có dữ liệu fanpage</p>
+              <p className="text-xs text-muted mt-1">Bấm "Đồng bộ từ Facebook" để lấy dữ liệu</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {fanpages.map((p: any) => (
+                <div key={p.id} className="bg-white rounded-2xl border border-border shadow-sm p-5 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center">
+                      <Users size={18} className="text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-ink truncate">{p.name}</p>
+                      {p.last_stat_date && <p className="text-xs text-muted">Cập nhật: {new Date(p.last_stat_date).toLocaleDateString('vi-VN')}</p>}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="bg-gradient-to-br from-indigo-50 to-transparent rounded-xl p-3">
+                      <p className="text-xs text-muted">Người theo dõi</p>
+                      <p className="text-lg font-bold text-ink mt-0.5">{(p.fans_total || 0).toLocaleString('vi-VN')}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-50 to-transparent rounded-xl p-3">
+                      <p className="text-xs text-muted">Tăng mới</p>
+                      <p className="text-lg font-bold text-green-600 mt-0.5">{p.fans_added > 0 ? '+' : ''}{(p.fans_added || 0).toLocaleString('vi-VN')}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-transparent rounded-xl p-3">
+                      <p className="text-xs text-muted">Lượt tiếp cận</p>
+                      <p className="text-lg font-bold text-ink mt-0.5">{(p.impressions || 0).toLocaleString('vi-VN')}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-amber-50 to-transparent rounded-xl p-3">
+                      <p className="text-xs text-muted">Tương tác</p>
+                      <p className="text-lg font-bold text-amber-600 mt-0.5">{(p.engaged_users || 0).toLocaleString('vi-VN')}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
