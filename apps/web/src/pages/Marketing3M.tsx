@@ -119,7 +119,7 @@ export default function Marketing3M() {
   const GRID = '180px 90px 220px 70px minmax(260px,1.5fr) 180px 180px 150px 190px 64px';
 
   return (
-    <div className="p-6 max-w-[1440px] mx-auto">
+    <div className="p-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
