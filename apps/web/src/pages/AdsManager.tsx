@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, X, RefreshCw, Settings, ExternalLink, Wallet, DollarSign, Target, Activity, Shield, CheckCircle, AlertCircle, Ban } from 'lucide-react';
+import { Plus, Trash2, X, RefreshCw, Settings, ExternalLink, Wallet, DollarSign, Target, Activity, Shield, CheckCircle, AlertCircle, Ban, Check } from 'lucide-react';
 import { api } from '../lib/api';
 
 export default function AdsManager() {
@@ -14,6 +14,7 @@ export default function AdsManager() {
   const [showConfig, setShowConfig] = useState(false);
   const [configSaved, setConfigSaved] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [editThreshold, setEditThreshold] = useState<{id:string, val:string}|null>(null);
 
   const showMsg = (type: 'success'|'error', msg: string) => {
     setToast({type, message: msg});
@@ -80,8 +81,19 @@ export default function AdsManager() {
     setToggling(null);
   };
 
-  const formatCurrency = (val: number) => {
-    if (!val) return '—';
+  const saveThreshold = async (id: string) => {
+    if (!editThreshold) return;
+    try {
+      await api('/ads-manager/accounts/' + id + '/threshold', { method:'PUT', body:JSON.stringify({ billing_threshold: Number(editThreshold.val) || 0 }) });
+      setEditThreshold(null);
+      showMsg('success', 'Đã lưu ngưỡng thanh toán');
+      load();
+    } catch (e: any) { showMsg('error', e?.message || 'Lỗi lưu ngưỡng'); }
+  };
+
+  const formatCurrency = (val: number, cur?: string) => {
+    if (!val && val !== 0) return '—';
+    if (cur === 'VND') return Number(val).toLocaleString('vi-VN') + 'đ';
     return (val / 100).toLocaleString('vi-VN') + 'đ';
   };
 
@@ -112,7 +124,32 @@ export default function AdsManager() {
           </button>
           <button onClick={syncAll} disabled={syncing || !configSaved}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#4f46e5] text-white rounded-xl text-sm font-semibold hover:bg-[#4338ca] transition-all disabled:opacity-40">
-            <RefreshCw size={14} />{syncing ? 'Đang đồng bộ...' : 'Đồng bộ từ Facebook'}
+            <RefreshCw size={14} />{syncing ? 'Đang đồng bộ...' : 'Đồng bộ chỉ số'}
+          </button>
+          <button onClick={async () => {
+            if (!confirm('Lấy danh sách tài khoản quảng cáo từ Meta và thêm vào CRM?')) return;
+            try {
+              const r = await api('/ads-manager/fetch-accounts');
+              if (r?.error) { showMsg('error', r.error); return; }
+              if (r?.accounts?.length > 0) {
+                let ok = 0, fail = 0;
+                for (const acc of r.accounts) {
+                  try {
+                    await api('/ads-manager/accounts', { method:'POST', body:JSON.stringify({
+                      name: acc.name, adAccountId: acc.account_id.replace(/^act_/,''), bmName: acc.business_name
+                    }) });
+                    ok++;
+                  } catch { fail++; }
+                }
+                showMsg('success', `Đã thêm ${ok} tài khoản${fail ? ', lỗi ' + fail : ''}`);
+                load();
+              } else {
+                showMsg('error', 'Không tìm thấy tài khoản quảng cáo nào với token này');
+              }
+            } catch (e: any) { showMsg('error', e?.message || 'Lỗi lấy danh sách'); }
+          }} disabled={!configSaved}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-xl text-sm font-medium hover:bg-gray-50 transition-all disabled:opacity-40">
+            <ExternalLink size={14} />Lấy từ Meta
           </button>
         </div>
       </div>
@@ -259,12 +296,26 @@ export default function AdsManager() {
                   <td className="px-4 py-3 text-xs text-muted">{acc.bm_name || '—'}</td>
                   <td className="px-4 py-3 text-right text-xs font-medium">
                     {acc.balance !== null ? (
-                      <span className={acc.balance > 0 ? 'text-green-600' : 'text-muted'}>{formatCurrency(acc.balance)}</span>
+                      <span className={acc.balance > 0 ? 'text-green-600' : 'text-muted'}>{formatCurrency(acc.balance, acc.currency)}</span>
                     ) : <span className="text-muted">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-right text-xs">{acc.amount_spent ? formatCurrency(acc.amount_spent) : <span className="text-muted">—</span>}</td>
-                  <td className="px-4 py-3 text-right text-xs">{acc.billing_threshold ? formatCurrency(acc.billing_threshold) : <span className="text-muted">—</span>}</td>
-                  <td className="px-4 py-3 text-right text-xs">{acc.spend_cap ? formatCurrency(acc.spend_cap) : <span className="text-muted">—</span>}</td>
+                  <td className="px-4 py-3 text-right text-xs">{acc.amount_spent ? formatCurrency(acc.amount_spent, acc.currency) : <span className="text-muted">—</span>}</td>
+                  <td className="px-4 py-3 text-right text-xs">
+                    {editThreshold?.id === acc.id ? (
+                      <div className="flex items-center gap-1 justify-end">
+                        <input type="number" value={editThreshold.val}
+                          onChange={e => setEditThreshold({...editThreshold, val: e.target.value})}
+                          className="w-24 px-2 py-1 border border-border rounded-lg text-xs text-right outline-none" />
+                        <button onClick={() => saveThreshold(acc.id)} className="p-1 rounded hover:text-green-600"><Check size={12} /></button>
+                        <button onClick={() => setEditThreshold(null)} className="p-1 rounded hover:text-red-400"><X size={12} /></button>
+                      </div>
+                    ) : (
+                      <span onClick={() => setEditThreshold({id: acc.id, val: String(acc.billing_threshold || '')})} className="cursor-pointer hover:text-primary transition-all" title="Nhấn để sửa ngưỡng">
+                        {acc.billing_threshold ? formatCurrency(acc.billing_threshold, acc.currency) : <span className="text-muted">Nhập ngưỡng</span>}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right text-xs">{acc.spend_cap ? formatCurrency(acc.spend_cap, acc.currency) : <span className="text-muted">—</span>}</td>
                   <td className="px-4 py-3 text-center">
                     {hasError ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-xs font-medium" title={acc.sync_error}><Ban size={10} />Lỗi</span>
