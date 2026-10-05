@@ -112,7 +112,7 @@ export default async function (app: FastifyInstance) {
     try {
       const b = req.body as any;
       if (!b.day && !b.key_message) return reply.status(400).send({ error: 'Missing day or content' });
-      const id = uuid();
+      const id = crypto.randomUUID();
       await pool.execute(
         'INSERT INTO marketing_3m_fanpage (id, day, time, format, channel_id, pillar, key_message, content_text, media_url, media_name, status, completion_link) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
         [id, b.day||null, b.time||'', b.format||'', b.channel_id||null, b.pillar||'', b.key_message||'', b.content_text||'', b.media_url||'', b.media_name||'', b.status||'pending', b.completion_link||'']
