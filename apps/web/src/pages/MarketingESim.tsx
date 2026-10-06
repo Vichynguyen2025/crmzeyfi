@@ -814,10 +814,10 @@ const addAdRow = async () => {
                       <td className="px-3 cursor-pointer text-[13px]" style={{color:'#1F2937',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px'}} onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'platform'});}}>
                         {edited('platform') ? <select value={r.platform||''} onBlur={()=>setEditCell(null)} onChange={e=>{saveField(r.id,'platform',e.target.value);setEditCell(null);}} className="w-full h-9 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none"><option value="">—</option>{PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}</select> : <span>{r.platform||'—'}</span>}
                       </td>
-                      <td className="px-3 cursor-pointer text-[13px] font-medium" style={{color:'#1F2937',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px'}} onClick={e=>{e.stopPropagation();setWordEditor({id:r.id,title:r.title||'',summary:r.summary||''});}}>
+                      <td className="px-3 cursor-pointer text-[13px] font-medium" style={{color:'#1F2937',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px',maxWidth:300}} onClick={e=>{e.stopPropagation();setWordEditor({id:r.id,title:r.title||'',summary:r.summary||''});}}>
                         {r.title||<span className="text-[#98A2B3]">—</span>}
                       </td>
-                      <td className="px-3 cursor-pointer text-[13px]" style={{color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px'}} onClick={e=>{e.stopPropagation();setWordEditor({id:r.id,title:r.title||'',summary:r.summary||''});}}>
+                      <td className="px-3 cursor-pointer text-[13px]" style={{color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px',maxWidth:400}} onClick={e=>{e.stopPropagation();setWordEditor({id:r.id,title:r.title||'',summary:r.summary||''});}}>
                         {r.summary||<span className="text-[#98A2B3]">Soạn nội dung</span>}
                       </td>
                       <td className="px-3" style={{lineHeight:'46px'}}>
