@@ -50,13 +50,13 @@ export default function Marketing3MFanpage() {
   useEffect(() => { load(); }, []);
 
   const openAdd = () => {
-    setForm({ day: '', time: '', format: 'Photo', channel_id: '', pillar: '', key_message: '', content_text: '', media_url: '', media_name: '', status: 'pending', completion_link: '' });
+    setForm({ day: new Date().toLocaleDateString('fr-CA',{timeZone:'Asia/Ho_Chi_Minh'}), time: '', format: 'Photo', channel_id: '', pillar: '', key_message: '', content_text: '', media_url: '', media_name: '', status: 'pending', completion_link: '' });
     setShowModal({});
   };
 
   const openEdit = (r: any) => {
     setForm({
-      day: r.day ? String(r.day).slice(0,10) : '',
+      day: r.day ? r.day.slice(0,10).split("-").reverse().join("/") : '',
       time: r.time || '',
       format: r.format || 'Photo',
       channel_id: r.channel_id || '',
@@ -148,7 +148,7 @@ export default function Marketing3MFanpage() {
               <tr key={r.id} onClick={() => openEdit(r)} className="hover:bg-[#F8FAFC] transition-all cursor-pointer"
                 style={{ display: 'grid', gridTemplateColumns: GRID, borderBottom: '1px solid #E5E7EB', alignItems: 'center' }}>
                 <td className="px-3 py-[11px] text-center text-sm text-[#667085]">{idx + 1}</td>
-                <td className="px-3 py-[11px] text-sm text-[#1F2937] whitespace-nowrap">{r.day ? String(r.day).slice(0,10) : '—'}</td>
+                <td className="px-3 py-[11px] text-sm text-[#1F2937] whitespace-nowrap">{r.day ? r.day.slice(0,10).split("-").reverse().join("/") : '—'}</td>
                 <td className="px-3 py-[11px] text-sm text-[#1F2937]">{r.time || '—'}</td>
                 <td className="px-3 py-[11px]">
                   <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-[#EEF2FF] text-[#4f46e5] rounded-md text-xs font-medium">{formatIcon(r.format)}{r.format || '—'}</span>

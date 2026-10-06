@@ -97,7 +97,7 @@ export default async function (app: FastifyInstance) {
   app.get('/marketing-3m/fanpage', async (req, reply) => {
     try {
       const q = req.query as any;
-      let sql = 'SELECT fp.*, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE 1=1';
+      let sql = 'SELECT fp.id, DATE_FORMAT(fp.day, '%Y-%m-%d') as day, fp.time, fp.format, fp.channel_id, fp.pillar, fp.key_message, fp.content_text, fp.media_url, fp.media_name, fp.status, fp.completion_link, fp.created_at, fp.updated_at, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE 1=1';
       const params: any[] = [];
       if (q.status) { sql += ' AND fp.status = ?'; params.push(q.status); }
       if (q.dateFrom) { sql += ' AND fp.day >= ?'; params.push(q.dateFrom); }
@@ -117,7 +117,7 @@ export default async function (app: FastifyInstance) {
         'INSERT INTO marketing_3m_fanpage (id, day, time, format, channel_id, pillar, key_message, content_text, media_url, media_name, status, completion_link) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
         [id, b.day||null, b.time||'', b.format||'', b.channel_id||null, b.pillar||'', b.key_message||'', b.content_text||'', b.media_url||'', b.media_name||'', b.status||'pending', b.completion_link||'']
       );
-      const [rows] = await pool.execute('SELECT fp.*, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE fp.id = ?', [id]);
+      const [rows] = await pool.execute('SELECT fp.id, DATE_FORMAT(fp.day, '%Y-%m-%d') as day, fp.time, fp.format, fp.channel_id, fp.pillar, fp.key_message, fp.content_text, fp.media_url, fp.media_name, fp.status, fp.completion_link, fp.created_at, fp.updated_at, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE fp.id = ?', [id]);
       if (io) io.emit('marketing3m:update', { action: 'create', data: rows[0] });
       reply.send({ success: true, id });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
@@ -136,7 +136,7 @@ export default async function (app: FastifyInstance) {
       if (!fields.length) return reply.send({ success: true });
       params.push(id);
       await pool.execute('UPDATE marketing_3m_fanpage SET ' + fields.join(',') + ' WHERE id=?', params);
-      const [rows] = await pool.execute('SELECT fp.*, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE fp.id = ?', [id]);
+      const [rows] = await pool.execute('SELECT fp.id, DATE_FORMAT(fp.day, '%Y-%m-%d') as day, fp.time, fp.format, fp.channel_id, fp.pillar, fp.key_message, fp.content_text, fp.media_url, fp.media_name, fp.status, fp.completion_link, fp.created_at, fp.updated_at, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE fp.id = ?', [id]);
       if (io) io.emit('marketing3m:update', { action: 'update', data: rows[0] });
       reply.send({ success: true });
     } catch (e: any) { reply.status(500).send({ error: e.message }); }
