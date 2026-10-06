@@ -759,7 +759,9 @@ export default function Reports() {
                 });
                 setAnalysisProgress(45);
                 setAnalysisStage('Đang gửi tới DeepSeek AI...');
+                const pTimer = setInterval(() => { setAnalysisProgress(p => Math.min(p + Math.random() * 4, 68)); }, 2500);
                 const result = await api('/reports/analyze', { method:'POST', body:JSON.stringify({ reports: payload }) });
+                clearInterval(pTimer);
                 setAnalysisProgress(75);
                 setAnalysisStage('AI đang phân tích & tổng hợp...');
                 const summary = result?.summary || '_Không nhận được phân tích._';
