@@ -56,7 +56,7 @@ export default function Marketing3MFanpage() {
 
   const openEdit = (r: any) => {
     setForm({
-      day: r.day ? r.day.slice(0,10).split("-").reverse().join("/") : '',
+      day: r.day ? r.day.slice(0,10) : '',
       time: r.time || '',
       format: r.format || 'Photo',
       channel_id: r.channel_id || '',
