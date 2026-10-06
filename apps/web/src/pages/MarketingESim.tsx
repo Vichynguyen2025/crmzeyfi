@@ -31,6 +31,7 @@ export default function MarketingESim() {
   const [filterAssignee, setFilterAssignee] = useState('');
   const [filterPlatform, setFilterPlatform] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [editCell, setEditCell] = useState<{id:string, field:string}|null>(null);
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<{type:string, msg:string}|null>(null);
   const [wordEditor, setWordEditor] = useState<any>(null);
