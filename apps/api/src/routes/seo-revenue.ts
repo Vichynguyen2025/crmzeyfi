@@ -11,8 +11,14 @@ export default async function (app: FastifyInstance) {
     const dateFrom = q.dateFrom || '';
     const dateTo = q.dateTo || '';
 
-    let sql = "SELECT id, user_id, DATE_FORMAT(date, '%Y-%m-%d') as date, channel, orders, revenue, cost, impressions, clicks, month, created_at FROM seo_revenue WHERE user_id = ?";
-    const params: any[] = [userId];
+    let sql, params: any[];
+    if (userId === 'all') {
+      sql = "SELECT r.id, r.user_id, u.name as userName, DATE_FORMAT(r.date, '%Y-%m-%d') as date, r.channel, r.orders, r.revenue, r.cost, r.impressions, r.clicks, r.month FROM seo_revenue r JOIN users u ON u.id = r.user_id";
+      params = [];
+    } else {
+      sql = "SELECT id, user_id, DATE_FORMAT(date, '%Y-%m-%d') as date, channel, orders, revenue, cost, impressions, clicks, month, created_at FROM seo_revenue WHERE user_id = ?";
+      params = [userId];
+    }
     // Use month filter only when no specific date range is provided
     if (!dateFrom && !dateTo) {
       sql += " AND month = ?";

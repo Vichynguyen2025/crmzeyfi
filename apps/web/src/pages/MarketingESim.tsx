@@ -138,7 +138,7 @@ const addAdRow = async () => {
     const loadSeo = async () => {
       try {
         const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
-        const r = await api('/seo-revenue/'+(u.id||'all')+'?month='+seoMonth);
+        const r = await api('/seo-revenue/all?month='+seoMonth);
         setSeoRows(r||[]);
       } catch { setSeoRows([]); }
     };
@@ -150,7 +150,7 @@ const addAdRow = async () => {
       const timer = setTimeout(async () => {
         try {
           const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
-          await api('/seo-revenue/'+(u.id||'all'), { method:'POST', body:JSON.stringify({rows: seoRows, month: seoMonth}) });
+          await api('/seo-revenue/'+u.id, { method:'POST', body:JSON.stringify({rows: seoRows.filter((r:any)=>(!r.user_id||r.user_id===u.id)), month: seoMonth}) });
         } catch {}
       }, 1500);
       return () => clearTimeout(timer);
@@ -667,6 +667,7 @@ const addAdRow = async () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead><tr className="bg-gray-50/80 border-b border-border">
+                  <th className="px-4 py-3 text-xs font-semibold text-muted text-left w-24">Người nhập</th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted text-left w-28">Ngày</th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted text-left w-24">Kênh</th>
                   <th className="px-4 py-3 text-xs font-semibold text-muted text-right w-16">Đơn</th>
@@ -677,9 +678,10 @@ const addAdRow = async () => {
                   <th className="px-4 py-3 w-8"></th>
                 </tr></thead>
                 <tbody>
-                  {(!seoRows||seoRows.length===0)?<tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-muted">Chưa có dữ liệu</td></tr>
+                  {(!seoRows||seoRows.length===0)?<tr><td colSpan={9} className="px-6 py-12 text-center text-sm text-muted">Chưa có dữ liệu</td></tr>
                   :seoRows.map((r,i)=>(
-                    <tr key={i} className="border-b border-border/50 hover:bg-gray-50/60 transition-all">
+                    <tr key={i} className={'border-b border-border/50 ' + ((!r.user_id||r.user_id===u.id) ? 'hover:bg-gray-50/60' : 'opacity-70') + ' transition-all'}>
+                      <td className="px-4 py-2.5 text-xs text-muted">{r.userName || (r.user_id === u.id ? 'Tôi' : '—')}</td>
                       <td className="px-4 py-2.5 text-xs"><input type="date" value={r.dateStr||(r.date?new Date(r.date).toLocaleDateString('fr-CA',{timeZone:'Asia/Ho_Chi_Minh'}):'')} onChange={e=>{const v=e.target.value;setSeoRows((prev)=>prev.map(x=>x.id===r.id?{...x,date:v,dateStr:v}:x))}} className="w-full bg-transparent border-none outline-none text-xs cursor-pointer" /></td>
                       <td className="px-4 py-2.5">
                         <select value={r.channel||''} onChange={e=>{const x=[...seoRows];x[i]={...x[i],channel:e.target.value};setSeoRows(x);}} className="w-full px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none">
@@ -711,7 +713,7 @@ const addAdRow = async () => {
                   </tr>}
                   {/* Add row */}
                   <tr className="border-t-2 border-dashed border-border/50">
-                    <td colSpan={8} className="px-4 py-3">
+                    <td colSpan={9} className="px-4 py-3">
                       <button onClick={()=>setSeoRows([...seoRows,{date:seoGroupBy==='day'?(seoDateFrom||new Date().toISOString().slice(0,10)):new Date().toISOString().slice(0,10),channel:'',orders:0,revenue:0,cost:0,impressions:0,clicks:0}])} className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted hover:text-primary transition-all">
                         <span className="w-5 h-5 rounded-full border-2 border-dashed border-current grid place-items-center text-xs">+</span> Thêm dòng</button>
                     </td>
@@ -726,7 +728,7 @@ const addAdRow = async () => {
                 setSeoSaving(true);
                 try{
                   const u=JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
-                  await api('/seo-revenue/'+(u.id||'all'),{method:'POST',body:JSON.stringify({rows:seoRows,month:seoMonth})});
+                  await api('/seo-revenue/'+u.id,{method:'POST',body:JSON.stringify({rows:seoRows.filter((r:any)=>(!r.user_id||r.user_id===u.id)),month:seoMonth})});
                   showToast('success','Đã lưu');
                 }catch(e:any){showToast('error',e.message);}setSeoSaving(false);
               }} disabled={seoSaving} className="px-5 py-2 bg-primary text-white text-sm font-medium rounded-xl hover:shadow-md transition-all disabled:opacity-40">
