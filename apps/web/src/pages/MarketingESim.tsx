@@ -768,12 +768,11 @@ const addAdRow = async () => {
           </div>
 <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full" style={{borderCollapse:'separate',borderSpacing:0,minWidth:1304}}>
+              <table className="w-full" style={{borderCollapse:'separate',borderSpacing:0,minWidth:1400}}>
                 <colgroup>
                   <col style={{width:110}} /><col style={{width:160}} />
                   <col style={{width:110}} />
-                  <col style={{flex:'1.2',minWidth:240}} />
-                  <col style={{flex:'1.8',minWidth:320}} />
+                  <col style={{width:300}} /><col style={{width:400}} />
                   <col style={{width:110}} /><col style={{width:110}} />
                   <col style={{width:60}} /><col style={{width:44}} />
                 </colgroup>
