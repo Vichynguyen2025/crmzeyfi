@@ -73,6 +73,17 @@ export default function Reports() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string|null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [selectedReports, setSelectedReports] = useState<Set<string>>(new Set());
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [analysisStage, setAnalysisStage] = useState('');
+  const [analysisCount, setAnalysisCount] = useState<number|null>(null);
+  const [analysisStats, setAnalysisStats] = useState<any>(null);
+  const [analysisPeriod, setAnalysisPeriod] = useState('');
+  const [analysisHtml, setAnalysisHtml] = useState('');
+  const [analysisHistory, setAnalysisHistory] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [viewingHistory, setViewingHistory] = useState<any>(null);
+  const [showHistoryDetail, setShowHistoryDetail] = useState(false);
 
   const calcDate = (dr: string) => {
     const d = new Date();
@@ -275,6 +286,7 @@ export default function Reports() {
   }).sort((a: any, b: any) => (b.date || '').localeCompare(a.date || ''));
 
   return (
+    <>
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -535,7 +547,92 @@ export default function Reports() {
                   {dr.label}
                 </button>
               ))}
+              <button onClick={() => setReceivedDateRangeKey('custom')}
+                className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (receivedDateRangeKey === 'custom' ? 'bg-[#171717] text-white' : 'text-muted hover:text-ink')}>Tùy chọn</button>
             </div>
+            <button onClick={async () => {
+              let data: any[] = [];
+              if (selectedReports.size > 0) {
+                data = receivedReports.filter((x:any) => selectedReports.has(x.id));
+              } else {
+                try {
+                  const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
+                  const dt = receivedDateRangeKey==='custom' ? {from:recvDateFrom,to:recvDateTo} : calcDate(receivedDateRangeKey);
+                  const r = await api('/reports/received?userId='+u.id+'&from='+dt.from+'&to='+dt.to);
+                  data = r || [];
+                } catch {}
+              }
+              setAnalyzing(true);
+              setShowAnalysis(true);
+              setAnalysisResult(null);
+              setAnalysisProgress(8);
+              setAnalysisStage('Thu thập dữ liệu báo cáo...');
+              if (data.length === 0) {
+                setAnalysisResult('_Không có báo cáo nào trong kỳ để phân tích._ Vui lòng chọn báo cáo bằng checkbox hoặc chọn kỳ khác.');
+                setAnalysisHtml('<p class="text-sm text-[#374151] leading-relaxed">Không có báo cáo nào trong kỳ để phân tích. Vui lòng chọn báo cáo bằng checkbox hoặc chọn kỳ khác.</p>');
+                setAnalysisProgress(100);
+                setAnalysisStage('Không có dữ liệu');
+                setAnalyzing(false);
+                return;
+              }
+              try {
+                setAnalysisProgress(25);
+                setAnalysisStage('Xử lý & chuẩn bị dữ liệu cho AI...');
+                const payload = data.map((r:any) => {
+                  const parsed = (() => { try { return JSON.parse(r.data || '{}'); } catch { return {}; } })();
+                  return { id:r.id, userName:getUserName(r.user_id) || r.userName || 'Ai đó', date:r.date, content:parsed.content || r.content || '', difficulties:parsed.difficulties || '', suggestions:parsed.suggestions || '', status:r.status };
+                });
+                setAnalysisProgress(45);
+                setAnalysisStage('Đang gửi tới DeepSeek AI...');
+                const result = await api('/reports/analyze', { method:'POST', body:JSON.stringify({ reports: payload }) });
+                setAnalysisProgress(75);
+                setAnalysisStage('AI đang phân tích & tổng hợp...');
+                const summary = result?.summary || '_Không nhận được phân tích._';
+                setAnalysisResult(summary);
+                setAnalysisCount(data.length);
+                const pc = data.filter((x:any)=>x.status==='pending').length;
+                const ac = data.filter((x:any)=>x.status==='approved').length;
+                const rc = data.filter((x:any)=>x.status==='rejected').length;
+                setAnalysisStats({ pending: pc, approved: ac, rejected: rc });
+                setAnalysisPeriod(receivedDateRangeKey==='today' ? 'Hôm nay' : receivedDateRangeKey==='custom' ? 'Tùy chọn' : receivedDateRangeKey==='week' ? '7 ngày' : '30 ngày');
+                setAnalysisHtml(
+                  summary
+                    .replace(/### (.+)/g, '<h3 class="text-sm font-bold text-[#1F2937] mt-5 mb-2">$1</h3>')
+                    .replace(/## (.+)/g, '<h2 class="text-base font-bold text-[#1F2937] mt-5 mb-2">$1</h2>')
+                    .replace(/# (.+)/g, '<h1 class="text-lg font-bold text-[#1F2937] mt-5 mb-2">$1</h1>')
+                    .replace(/^\s*- (.+)$/gm, '<li class="text-sm text-[#374151] leading-relaxed ml-4 mb-1">$1</li>')
+                    .replace(/^\s*1\. (.+)$/gm, '<li class="text-sm text-[#374151] leading-relaxed ml-4 mb-1">$1</li>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-[#1F2937]">$1</strong>')
+                    .replace(/_([^_]+)_/g, '<em>$1</em>')
+                    .replace(/\n\n/g, '<div class="h-2"></div>')
+                    .split('\n').filter((l:string)=>l.trim()).map((l:string)=>l.startsWith('<') ? l : '<p class="text-sm text-[#374151] leading-relaxed mb-1">'+l+'</p>').join('')
+                );
+                setAnalysisProgress(100);
+                setAnalysisStage('Hoàn tất');
+                // Auto-save to history
+                try {
+                  const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
+                  const dt = receivedDateRangeKey==='custom' ? {from:recvDateFrom,to:recvDateTo} : calcDate(receivedDateRangeKey);
+                  await api('/reports/analysis-history', { method:'POST', body:JSON.stringify({
+                    reportCount: data.length,
+                    periodLabel: receivedDateRangeKey==='today' ? 'Hôm nay' : receivedDateRangeKey==='custom' ? 'Tùy chọn' : receivedDateRangeKey==='week' ? '7 ngày' : '30 ngày',
+                    dateFrom: dt.from, dateTo: dt.to,
+                    summaryMd: summary
+                  })});
+                } catch {}
+              } catch(e:any) {
+                setAnalysisResult('_Lỗi: ' + (e?.message||'không xác định') + '_');
+                setAnalysisHtml('<p class="text-sm text-[#DC2626] leading-relaxed">Lỗi: ' + (e?.message||'không xác định') + '</p>');
+                setAnalysisProgress(100);
+                setAnalysisStage('Lỗi');
+              }
+              setAnalyzing(false);
+            }} disabled={analyzing} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all bg-[#4f46e5]/10 text-[#4f46e5] hover:bg-[#4f46e5]/20" style={{whiteSpace:'nowrap'}}>
+              <BarChart3 size={15} /> {analyzing ? 'Đang phân tích...' : selectedReports.size > 0 ? `Phân tích AI (${selectedReports.size})` : 'Phân tích AI'}
+            </button>
+            <button onClick={async () => { try { const h = await api('/reports/analysis-history'); setAnalysisHistory(h || []); } catch {}; setShowHistory(true); }} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all bg-[#4f46e5]/10 text-[#4f46e5] hover:bg-[#4f46e5]/20" style={{whiteSpace:'nowrap'}}>
+              <Clock size={15} /> Lịch sử
+            </button>
           </div>
 
           <div className="overflow-hidden rounded-xl" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 2px, rgba(0,0,0,0.04) 0px 8px 8px -8px, #fafafa 0px 0px 0px 1px'}}>
@@ -548,12 +645,13 @@ export default function Reports() {
                   <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Chỉ số</th>
                   <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Tình trạng</th>
                   <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Người nhận</th>
+                  <th className="px-6 py-3 bg-[#fafafa]"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ebebeb]">
                 {filteredReports.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-16 text-center">
+                    <td colSpan={7} className="px-6 py-16 text-center">
                       <p className="text-sm font-medium text-[#666]">Chưa có báo cáo nào trong khoảng thời gian này</p>
                     </td>
                   </tr>
@@ -612,13 +710,99 @@ export default function Reports() {
                   {dr.label}
                 </button>
               ))}
+              <button onClick={() => setReceivedDateRangeKey('custom')}
+                className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (receivedDateRangeKey === 'custom' ? 'bg-[#171717] text-white' : 'text-muted hover:text-ink')}>Tùy chọn</button>
             </div>
+            <button onClick={async () => {
+              let data: any[] = [];
+              if (selectedReports.size > 0) {
+                data = receivedReports.filter((x:any) => selectedReports.has(x.id));
+              } else {
+                try {
+                  const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
+                  const dt = receivedDateRangeKey==='custom' ? {from:recvDateFrom,to:recvDateTo} : calcDate(receivedDateRangeKey);
+                  const r = await api('/reports/received?userId='+u.id+'&from='+dt.from+'&to='+dt.to);
+                  data = r || [];
+                } catch {}
+              }
+              setAnalyzing(true);
+              setShowAnalysis(true);
+              setAnalysisResult(null);
+              setAnalysisProgress(8);
+              setAnalysisStage('Thu thập dữ liệu báo cáo...');
+              if (data.length === 0) {
+                setAnalysisResult('_Không có báo cáo nào trong kỳ để phân tích._ Vui lòng chọn báo cáo bằng checkbox hoặc chọn kỳ khác.');
+                setAnalysisHtml('<p class="text-sm text-[#374151] leading-relaxed">Không có báo cáo nào trong kỳ để phân tích. Vui lòng chọn báo cáo bằng checkbox hoặc chọn kỳ khác.</p>');
+                setAnalysisProgress(100);
+                setAnalysisStage('Không có dữ liệu');
+                setAnalyzing(false);
+                return;
+              }
+              try {
+                setAnalysisProgress(25);
+                setAnalysisStage('Xử lý & chuẩn bị dữ liệu cho AI...');
+                const payload = data.map((r:any) => {
+                  const parsed = (() => { try { return JSON.parse(r.data || '{}'); } catch { return {}; } })();
+                  return { id:r.id, userName:getUserName(r.user_id) || r.userName || 'Ai đó', date:r.date, content:parsed.content || r.content || '', difficulties:parsed.difficulties || '', suggestions:parsed.suggestions || '', status:r.status };
+                });
+                setAnalysisProgress(45);
+                setAnalysisStage('Đang gửi tới DeepSeek AI...');
+                const result = await api('/reports/analyze', { method:'POST', body:JSON.stringify({ reports: payload }) });
+                setAnalysisProgress(75);
+                setAnalysisStage('AI đang phân tích & tổng hợp...');
+                const summary = result?.summary || '_Không nhận được phân tích._';
+                setAnalysisResult(summary);
+                setAnalysisCount(data.length);
+                const pc = data.filter((x:any)=>x.status==='pending').length;
+                const ac = data.filter((x:any)=>x.status==='approved').length;
+                const rc = data.filter((x:any)=>x.status==='rejected').length;
+                setAnalysisStats({ pending: pc, approved: ac, rejected: rc });
+                setAnalysisPeriod(receivedDateRangeKey==='today' ? 'Hôm nay' : receivedDateRangeKey==='custom' ? 'Tùy chọn' : receivedDateRangeKey==='week' ? '7 ngày' : '30 ngày');
+                setAnalysisHtml(
+                  summary
+                    .replace(/### (.+)/g, '<h3 class="text-sm font-bold text-[#1F2937] mt-5 mb-2">$1</h3>')
+                    .replace(/## (.+)/g, '<h2 class="text-base font-bold text-[#1F2937] mt-5 mb-2">$1</h2>')
+                    .replace(/# (.+)/g, '<h1 class="text-lg font-bold text-[#1F2937] mt-5 mb-2">$1</h1>')
+                    .replace(/^\s*- (.+)$/gm, '<li class="text-sm text-[#374151] leading-relaxed ml-4 mb-1">$1</li>')
+                    .replace(/^\s*1\. (.+)$/gm, '<li class="text-sm text-[#374151] leading-relaxed ml-4 mb-1">$1</li>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-[#1F2937]">$1</strong>')
+                    .replace(/_([^_]+)_/g, '<em>$1</em>')
+                    .replace(/\n\n/g, '<div class="h-2"></div>')
+                    .split('\n').filter((l:string)=>l.trim()).map((l:string)=>l.startsWith('<') ? l : '<p class="text-sm text-[#374151] leading-relaxed mb-1">'+l+'</p>').join('')
+                );
+                setAnalysisProgress(100);
+                setAnalysisStage('Hoàn tất');
+                // Auto-save to history
+                try {
+                  const u = JSON.parse(localStorage.getItem('zeyfi_user')||'{}');
+                  const dt = receivedDateRangeKey==='custom' ? {from:recvDateFrom,to:recvDateTo} : calcDate(receivedDateRangeKey);
+                  await api('/reports/analysis-history', { method:'POST', body:JSON.stringify({
+                    reportCount: data.length,
+                    periodLabel: receivedDateRangeKey==='today' ? 'Hôm nay' : receivedDateRangeKey==='custom' ? 'Tùy chọn' : receivedDateRangeKey==='week' ? '7 ngày' : '30 ngày',
+                    dateFrom: dt.from, dateTo: dt.to,
+                    summaryMd: summary
+                  })});
+                } catch {}
+              } catch(e:any) {
+                setAnalysisResult('_Lỗi: ' + (e?.message||'không xác định') + '_');
+                setAnalysisHtml('<p class="text-sm text-[#DC2626] leading-relaxed">Lỗi: ' + (e?.message||'không xác định') + '</p>');
+                setAnalysisProgress(100);
+                setAnalysisStage('Lỗi');
+              }
+              setAnalyzing(false);
+            }} disabled={analyzing} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all bg-[#4f46e5]/10 text-[#4f46e5] hover:bg-[#4f46e5]/20" style={{whiteSpace:'nowrap'}}>
+              <BarChart3 size={15} /> {analyzing ? 'Đang phân tích...' : selectedReports.size > 0 ? `Phân tích AI (${selectedReports.size})` : 'Phân tích AI'}
+            </button>
+            <button onClick={async () => { try { const h = await api('/reports/analysis-history'); setAnalysisHistory(h || []); } catch {}; setShowHistory(true); }} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl transition-all bg-[#4f46e5]/10 text-[#4f46e5] hover:bg-[#4f46e5]/20" style={{whiteSpace:'nowrap'}}>
+              <Clock size={15} /> Lịch sử
+            </button>
           </div>
 
           <div className="overflow-hidden rounded-xl" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 2px, rgba(0,0,0,0.04) 0px 8px 8px -8px, #fafafa 0px 0px 0px 1px'}}>
             <table className="w-full border-collapse bg-white">
               <thead>
                 <tr className="text-left">
+                  <th className="px-3 py-3 w-10 bg-[#fafafa]"><input type="checkbox" checked={receivedReports.length>0 && selectedReports.size===receivedReports.length} onChange={e=>{if(e.target.checked){setSelectedReports(new Set(receivedReports.map((x:any)=>x.id)));}else{setSelectedReports(new Set());}}} className="w-4 h-4 rounded cursor-pointer" /></th>
                   <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Người gửi</th>
                   <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Ngày</th>
                   <th className="px-6 py-3 text-xs font-semibold text-muted uppercase tracking-wider bg-[#fafafa]">Nội dung</th>
@@ -629,7 +813,7 @@ export default function Reports() {
               <tbody className="divide-y divide-[#ebebeb]">
                 {receivedReports.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-16 text-center">
+                    <td colSpan={6} className="px-6 py-16 text-center">
                       <div className="w-12 h-12 rounded-full bg-[#f5f5f5] flex items-center justify-center mx-auto mb-3">
                         <Inbox size={22} className="text-muted" />
                       </div>
@@ -644,7 +828,10 @@ export default function Reports() {
                   const fmtTime = formatTime(r.created_at);
                   return (
                     <tr key={r.id} onClick={async () => { setHistoryDetail(r); try { const c = await api('/reports/' + r.id + '/comments'); setReportComments(c || []); } catch { setReportComments([]); } }}
-                      className="cursor-pointer transition-all duration-150 hover:bg-[#fafafa]">
+                      className={"cursor-pointer transition-all duration-150 hover:bg-[#fafafa] " + (selectedReports.has(r.id) ? "bg-[#f5f3ff]" : "")}>
+                      <td className="px-3 py-4 w-10" onClick={e => e.stopPropagation()}>
+                        <input type="checkbox" checked={selectedReports.has(r.id)} onChange={e => { const s = new Set(selectedReports); if (e.target.checked) { s.add(r.id); } else { s.delete(r.id); } setSelectedReports(s); }} className="w-4 h-4 rounded cursor-pointer" />
+                      </td>
                       <td className="px-6 py-4">
                         <p className="text-sm font-semibold text-ink">{senderName}</p>
                         <p className="text-xs text-muted mt-0.5">{fmtTime}</p>
@@ -667,6 +854,90 @@ export default function Reports() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* History List Modal */}
+      {showHistory && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowHistory(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-[#FAFBFC]">
+              <h2 className="font-bold text-sm text-[#1F2937] flex items-center gap-2"><Clock size={18} className="text-[#4f46e5]" /> Lịch sử phân tích AI</h2>
+              <button onClick={() => setShowHistory(false)} className="px-4 py-2 rounded-lg text-sm text-muted hover:bg-gray-100 transition-all">Đóng</button>
+            </div>
+            <div className="flex-1 overflow-auto">
+              <table className="w-full border-collapse" style={{borderCollapse:'separate',borderSpacing:0}}>
+                <thead>
+                  <tr style={{height:42,background:'#F8FAFC',borderBottom:'1px solid #EEF0F3'}}>
+                    <th className="px-4 py-3 text-xs font-semibold text-[#667085] uppercase tracking-wide text-left">Thời gian</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-[#667085] uppercase tracking-wide text-left">Kỳ</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-[#667085] uppercase tracking-wide text-right">Số báo cáo</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-[#667085] uppercase tracking-wide text-left">Tóm tắt</th>
+                    <th className="px-4 py-3 w-20"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EEF0F3]">
+                  {analysisHistory.length === 0 ? (
+                    <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Chưa có lịch sử phân tích</td></tr>
+                  ) : analysisHistory.map((h: any) => (
+                    <tr key={h.id} className="hover:bg-[#F8FAFC] transition-all cursor-pointer" onClick={async () => { try { const d = await api('/reports/analysis-history/'+h.id); setViewingHistory(d); setShowHistoryDetail(true); } catch {} }}>
+                      <td className="px-4 py-3 text-sm text-[#475467]">{h.created_at ? new Date(h.created_at).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}) : '—'}</td>
+                      <td className="px-4 py-3 text-sm text-[#1F2937]">{h.period_label || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-[#1F2937] text-right font-semibold">{h.report_count}</td>
+                      <td className="px-4 py-3 text-sm text-[#667085] max-w-[300px] truncate">{h.preview ? h.preview.slice(0,120).replace(/[*_#]/g,'') : '—'}</td>
+                      <td className="px-4 py-3 text-center"><span className="text-xs text-[#4f46e5] font-medium">Xem</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* History Detail Modal */}
+      {showHistoryDetail && viewingHistory && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowHistoryDetail(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[88vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-[#FAFBFC]">
+              <h2 className="font-bold text-sm text-[#1F2937] flex items-center gap-2"><Clock size={18} className="text-[#4f46e5]" /> Phân tích <span className="text-xs text-[#667085] font-normal">({viewingHistory.period_label || '—'} · {viewingHistory.report_count} báo cáo)</span></h2>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { if (typeof window !== 'undefined') window.print(); }} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#4f46e5]/10 text-[#4f46e5] hover:bg-[#4f46e5]/20 transition-all"><Download size={15} /> PDF</button>
+                <button onClick={() => setShowHistoryDetail(false)} className="px-4 py-2 rounded-lg text-sm text-muted hover:bg-gray-100 transition-all">Đóng</button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-auto p-8" id="analysis-print-area">
+              <div className="grid grid-cols-4 gap-3 mb-6">
+                <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#EEF0F3]">
+                  <p className="text-xs text-[#98A2B3] mb-1">Tổng báo cáo</p>
+                  <p className="text-xl font-bold text-[#1F2937]">{viewingHistory.report_count}</p>
+                </div>
+                <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#EEF0F3]">
+                  <p className="text-xs text-[#98A2B3] mb-1">Kỳ</p>
+                  <p className="text-sm font-bold text-[#1F2937] mt-1.5">{viewingHistory.period_label || '—'}</p>
+                </div>
+                <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#EEF0F3]">
+                  <p className="text-xs text-[#98A2B3] mb-1">Từ</p>
+                  <p className="text-sm font-bold text-[#1F2937] mt-1.5">{viewingHistory.date_from || '—'}</p>
+                </div>
+                <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#EEF0F3]">
+                  <p className="text-xs text-[#98A2B3] mb-1">Đến</p>
+                  <p className="text-sm font-bold text-[#1F2937] mt-1.5">{viewingHistory.date_to || '—'}</p>
+                </div>
+              </div>
+              <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{__html: viewingHistory.summary_md
+                .replace(/### (.+)/g, '<h3 class="text-sm font-bold text-[#1F2937] mt-5 mb-2">$1</h3>')
+                .replace(/## (.+)/g, '<h2 class="text-base font-bold text-[#1F2937] mt-5 mb-2">$1</h2>')
+                .replace(/# (.+)/g, '<h1 class="text-lg font-bold text-[#1F2937] mt-5 mb-2">$1</h1>')
+                .replace(/^\s*- (.+)$/gm, '<li class="text-sm text-[#374151] leading-relaxed ml-4 mb-1">$1</li>')
+                .replace(/^\s*1\. (.+)$/gm, '<li class="text-sm text-[#374151] leading-relaxed ml-4 mb-1">$1</li>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-[#1F2937]">$1</strong>')
+                .replace(/_([^_]+)_/g, '<em>$1</em>')
+                .replace(/\n\n/g, '<div class="h-2"></div>')
+                .split('\n').filter((l:string)=>l.trim()).map((l:string)=>l.startsWith('<') ? l : '<p class="text-sm text-[#374151] leading-relaxed mb-1">'+l+'</p>').join('')
+              }} />
+            </div>
           </div>
         </div>
       )}
@@ -1067,8 +1338,6 @@ export default function Reports() {
         </div>
       )}
 </div>
-  );
-
       {/* AI Analysis Modal */}
       {showAnalysis && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAnalysis(false)}>
@@ -1102,4 +1371,6 @@ export default function Reports() {
           </div>
         </div>
       )}
+    </>
+  );
 }

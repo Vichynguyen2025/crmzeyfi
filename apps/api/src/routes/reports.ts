@@ -180,5 +180,49 @@ Dữ liệu báo cáo:\n${reportText}`;
       reply.status(500).send({ error: e.message });
     }
   });
+  // ─── AI Analysis History ──────────────────────────
+  app.post('/reports/analysis-history', async (req, reply) => {
+    try {
+      if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
+      const { reportCount, periodLabel, dateFrom, dateTo, summaryMd } = req.body as any;
+      const id = crypto.randomUUID();
+      await pool.execute(
+        "INSERT INTO report_analysis_history (id, user_id, report_count, period_label, date_from, date_to, summary_md) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [id, req.user.id, reportCount || 0, periodLabel || '', dateFrom || null, dateTo || null, summaryMd || '']
+      );
+      reply.send({ success: true, id });
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.get('/reports/analysis-history', async (req, reply) => {
+    try {
+      if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
+      const q = req.query as any;
+      const [rows] = await pool.execute(
+        "SELECT id, report_count, period_label, date_from, date_to, LEFT(summary_md, 200) as preview, created_at FROM report_analysis_history WHERE user_id = ? ORDER BY created_at DESC LIMIT ?",
+        [req.user.id, Math.min(parseInt(q.limit||'50'), 200)]
+      );
+      reply.send(rows);
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.get('/reports/analysis-history/:id', async (req, reply) => {
+    try {
+      if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
+      const { id } = req.params as any;
+      const [rows] = await pool.execute("SELECT * FROM report_analysis_history WHERE id = ? AND user_id = ?", [id, req.user.id]);
+      if (!(rows as any[]).length) return reply.status(404).send({ error: 'Not found' });
+      reply.send((rows as any[])[0]);
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.delete('/reports/analysis-history/:id', async (req, reply) => {
+    try {
+      if (!req.user) return reply.status(401).send({ error: 'Unauthorized' });
+      const { id } = req.params as any;
+      await pool.execute("DELETE FROM report_analysis_history WHERE id = ? AND user_id = ?", [id, req.user.id]);
+      reply.send({ success: true });
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
 
 }
