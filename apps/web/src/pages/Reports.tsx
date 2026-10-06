@@ -858,84 +858,101 @@ export default function Reports() {
         </div>
       )}
 
-      {/* History List Modal */}
+            {/* History List Modal */}
       {showHistory && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowHistory(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-[#FAFBFC]">
-              <h2 className="font-bold text-sm text-[#1F2937] flex items-center gap-2"><Clock size={18} className="text-[#4f46e5]" /> Lịch sử phân tích AI</h2>
-              <button onClick={() => setShowHistory(false)} className="px-4 py-2 rounded-lg text-sm text-muted hover:bg-gray-100 transition-all">Đóng</button>
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border" onClick={e => e.stopPropagation()} style={{width:'min(90vw,1000px)',maxHeight:'75vh'}}>
+            <div className="flex items-center justify-between px-6" style={{height:64}}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#F4F3FF] flex items-center justify-center text-[#4F46E5]"><Clock size={18} /></div>
+                <h2 className="text-lg font-semibold text-[#101828]">Lịch sử phân tích AI</h2>
+              </div>
+              <button onClick={() => setShowHistory(false)} className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[#F2F4F7] transition-all text-[#98A2B3]"><X size={16} /></button>
             </div>
-            <div className="flex-1 overflow-auto">
-              <table className="w-full border-collapse" style={{borderCollapse:'separate',borderSpacing:0}}>
-                <thead>
-                  <tr style={{height:42,background:'#F8FAFC',borderBottom:'1px solid #EEF0F3'}}>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#667085] uppercase tracking-wide text-left">Thời gian</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#667085] uppercase tracking-wide text-left">Kỳ</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#667085] uppercase tracking-wide text-right">Số báo cáo</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-[#667085] uppercase tracking-wide text-left">Tóm tắt</th>
-                    <th className="px-4 py-3 w-20"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#EEF0F3]">
-                  {analysisHistory.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-muted">Chưa có lịch sử phân tích</td></tr>
-                  ) : analysisHistory.map((h: any) => (
-                    <tr key={h.id} className="hover:bg-[#F8FAFC] transition-all cursor-pointer" onClick={async () => { try { const d = await api('/reports/analysis-history/'+h.id); setViewingHistory(d); setShowHistoryDetail(true); } catch {} }}>
-                      <td className="px-4 py-3 text-sm text-[#475467]">{h.created_at ? new Date(h.created_at).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}) : '—'}</td>
-                      <td className="px-4 py-3 text-sm text-[#1F2937]">{h.period_label || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-[#1F2937] text-right font-semibold">{h.report_count}</td>
-                      <td className="px-4 py-3 text-sm text-[#667085] max-w-[300px] truncate">{h.preview ? h.preview.slice(0,120).replace(/[*_#]/g,'') : '—'}</td>
-                      <td className="px-4 py-3 text-center"><span className="text-xs text-[#4f46e5] font-medium">Xem</span></td>
+            <div className="max-h-[55vh] overflow-y-auto" style={{borderTop:'1px solid #EAECF0'}}>
+              {analysisHistory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#F8FAFC] flex items-center justify-center text-[#98A2B3]"><Clock size={24} className="opacity-40" /></div>
+                  <p className="text-sm font-medium text-[#475467]">Chưa có lịch sử phân tích</p>
+                  <p className="text-xs text-[#98A2B3]">Các lần phân tích AI sẽ xuất hiện tại đây</p>
+                </div>
+              ) : (
+                <table className="w-full" style={{borderCollapse:'separate',borderSpacing:0,minWidth:820}}>
+                  <colgroup>
+                    <col style={{width:190}} /><col style={{width:140}} /><col style={{width:110}} /><col style={{flex:'1',minWidth:300}} /><col style={{width:80}} />
+                  </colgroup>
+                  <thead>
+                    <tr style={{height:40,background:'#F8FAFC',borderBottom:'1px solid #EAECF0',position:'sticky',top:0,zIndex:2}}>
+                      <th className="px-4 text-left font-semibold uppercase tracking-wider" style={{fontSize:11,lineHeight:'16px',color:'#667085',letterSpacing:'0.03em',whiteSpace:'nowrap'}}>Thời gian</th>
+                      <th className="px-4 text-left font-semibold uppercase tracking-wider" style={{fontSize:11,lineHeight:'16px',color:'#667085',letterSpacing:'0.03em',whiteSpace:'nowrap'}}>Kỳ</th>
+                      <th className="px-4 text-right font-semibold uppercase tracking-wider" style={{fontSize:11,lineHeight:'16px',color:'#667085',letterSpacing:'0.03em',whiteSpace:'nowrap'}}>Báo cáo</th>
+                      <th className="px-4 text-left font-semibold uppercase tracking-wider" style={{fontSize:11,lineHeight:'16px',color:'#667085',letterSpacing:'0.03em',whiteSpace:'nowrap'}}>Tóm tắt</th>
+                      <th style={{width:80}}></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-[#F2F4F7]">
+                    {analysisHistory.map((h: any) => (
+                      <tr key={h.id} onClick={async () => { try { const d = await api('/reports/analysis-history/'+h.id); setViewingHistory(d); setShowHistoryDetail(true); } catch {}} } className="hover:bg-[#FAFBFC] cursor-pointer transition-all" style={{height:56}}>
+                        <td className="px-4" style={{color:'#344054',fontSize:14,lineHeight:'18px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                          <span style={{fontSize:14,fontWeight:500,color:'#101828'}}>{h.created_at ? new Date(h.created_at).toLocaleDateString('fr-CA',{timeZone:'Asia/Ho_Chi_Minh'}) : '—'}</span>
+                          <span style={{fontSize:12,color:'#98A2B3',marginLeft:4}}>· {h.created_at ? new Date(h.created_at).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Ho_Chi_Minh'}) : ''}</span>
+                        </td>
+                        <td className="px-4"><span className="inline-flex items-center justify-center rounded-md px-2" style={{height:24,fontSize:12,fontWeight:500,background:'#F2F4F7',color:'#475467',whiteSpace:'nowrap'}}>{h.period_label || '—'}</span></td>
+                        <td className="px-4 text-right" style={{color:'#475467',fontSize:13,fontWeight:500,whiteSpace:'nowrap'}}><FileText size={13} className="mr-1 text-[#98A2B3]" />{h.report_count}</td>
+                        <td className="px-4" style={{color:'#475467',fontSize:14,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:0}} title={h.preview || ''}>{h.preview ? h.preview.replace(/[*_#]/g,'').slice(0,100) : '—'}</td>
+                        <td className="px-4 text-center" style={{width:80}}><span className="text-[#98A2B3]" style={{fontSize:16}}>›</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
       )}
-
       {/* History Detail Modal */}
       {showHistoryDetail && viewingHistory && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowHistoryDetail(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[88vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-[#FAFBFC]">
-              <h2 className="font-bold text-sm text-[#1F2937] flex items-center gap-2"><Clock size={18} className="text-[#4f46e5]" /> Phân tích <span className="text-xs text-[#667085] font-normal">({viewingHistory.period_label || '—'} · {viewingHistory.report_count} báo cáo)</span></h2>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAECF0] bg-[#FAFBFC]">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#F4F3FF] flex items-center justify-center text-[#4F46E5]"><Clock size={18} /></div>
+                <h2 className="text-base font-semibold text-[#101828]">Phân tích <span className="text-xs text-[#475467] font-normal">({viewingHistory.period_label || '—'} · {viewingHistory.report_count} báo cáo)</span></h2>
+              </div>
               <div className="flex items-center gap-2">
-                <button onClick={() => { if (typeof window !== 'undefined') window.print(); }} className="px-4 py-2 rounded-lg text-sm font-medium bg-[#4f46e5]/10 text-[#4f46e5] hover:bg-[#4f46e5]/20 transition-all"><Download size={15} /> PDF</button>
-                <button onClick={() => setShowHistoryDetail(false)} className="px-4 py-2 rounded-lg text-sm text-muted hover:bg-gray-100 transition-all">Đóng</button>
+                <button onClick={() => { if (typeof window !== 'undefined') window.print(); }} className="px-3 py-2 rounded-lg text-xs font-medium bg-[#F4F3FF] text-[#4F46E5] hover:bg-[#EDE9FE] transition-all"><Download size={14} /> PDF</button>
+                <button onClick={() => setShowHistoryDetail(false)} className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[#F2F4F7] transition-all text-[#98A2B3]"><X size={16} /></button>
               </div>
             </div>
-            <div className="flex-1 overflow-auto p-8" id="analysis-print-area">
-              <div className="grid grid-cols-4 gap-3 mb-6">
-                <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#EEF0F3]">
-                  <p className="text-xs text-[#98A2B3] mb-1">Tổng báo cáo</p>
-                  <p className="text-xl font-bold text-[#1F2937]">{viewingHistory.report_count}</p>
+            <div className="flex-1 overflow-auto p-6">
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                <div className="bg-[#F8FAFC] rounded-lg p-3" style={{border:'1px solid #EAECF0'}}>
+                  <p className="text-xs text-[#98A2B3]">Báo cáo</p>
+                  <p className="text-xl font-bold text-[#101828]">{viewingHistory.report_count}</p>
                 </div>
-                <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#EEF0F3]">
-                  <p className="text-xs text-[#98A2B3] mb-1">Kỳ</p>
-                  <p className="text-sm font-bold text-[#1F2937] mt-1.5">{viewingHistory.period_label || '—'}</p>
+                <div className="bg-[#F8FAFC] rounded-lg p-3" style={{border:'1px solid #EAECF0'}}>
+                  <p className="text-xs text-[#98A2B3]">Kỳ</p>
+                  <p className="text-sm font-bold text-[#101828] mt-1.5">{viewingHistory.period_label || '—'}</p>
                 </div>
-                <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#EEF0F3]">
-                  <p className="text-xs text-[#98A2B3] mb-1">Từ</p>
-                  <p className="text-sm font-bold text-[#1F2937] mt-1.5">{viewingHistory.date_from || '—'}</p>
+                <div className="bg-[#F8FAFC] rounded-lg p-3" style={{border:'1px solid #EAECF0'}}>
+                  <p className="text-xs text-[#98A2B3]">Từ</p>
+                  <p className="text-sm font-bold text-[#101828] mt-1.5">{viewingHistory.date_from || '—'}</p>
                 </div>
-                <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#EEF0F3]">
-                  <p className="text-xs text-[#98A2B3] mb-1">Đến</p>
-                  <p className="text-sm font-bold text-[#1F2937] mt-1.5">{viewingHistory.date_to || '—'}</p>
+                <div className="bg-[#F8FAFC] rounded-lg p-3" style={{border:'1px solid #EAECF0'}}>
+                  <p className="text-xs text-[#98A2B3]">Đến</p>
+                  <p className="text-sm font-bold text-[#101828] mt-1.5">{viewingHistory.date_to || '—'}</p>
                 </div>
               </div>
               <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{__html: viewingHistory.summary_md
-                .replace(/### (.+)/g, '<h3 class="text-sm font-bold text-[#1F2937] mt-5 mb-2">$1</h3>')
-                .replace(/## (.+)/g, '<h2 class="text-base font-bold text-[#1F2937] mt-5 mb-2">$1</h2>')
-                .replace(/# (.+)/g, '<h1 class="text-lg font-bold text-[#1F2937] mt-5 mb-2">$1</h1>')
-                .replace(/^\s*- (.+)$/gm, '<li class="text-sm text-[#374151] leading-relaxed ml-4 mb-1">$1</li>')
-                .replace(/^\s*1\. (.+)$/gm, '<li class="text-sm text-[#374151] leading-relaxed ml-4 mb-1">$1</li>')
-                .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-[#1F2937]">$1</strong>')
+                .replace(/### (.+)/g, '<h3 class="text-sm font-bold text-[#101828] mt-4 mb-1.5">$1</h3>')
+                .replace(/## (.+)/g, '<h2 class="text-base font-bold text-[#101828] mt-4 mb-1.5">$1</h2>')
+                .replace(/# (.+)/g, '<h1 class="text-lg font-bold text-[#101828] mt-5 mb-2">$1</h1>')
+                .replace(/^\s*- (.+)$/gm, '<li class="text-sm text-[#344054] leading-relaxed ml-3 mb-0.5">$1</li>')
+                .replace(/^\s*1\. (.+)$/gm, '<li class="text-sm text-[#344054] leading-relaxed ml-3 mb-0.5">$1</li>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-[#101828]">$1</strong>')
                 .replace(/_([^_]+)_/g, '<em>$1</em>')
-                .replace(/\n\n/g, '<div class="h-2"></div>')
-                .split('\n').filter((l:string)=>l.trim()).map((l:string)=>l.startsWith('<') ? l : '<p class="text-sm text-[#374151] leading-relaxed mb-1">'+l+'</p>').join('')
+                .replace(/\n\n/g, '<div class="h-1.5"></div>')
+                .split('\n').filter((l:string)=>l.trim()).map((l:string)=>l.startsWith('<') ? l : '<p class="text-sm text-[#344054] leading-relaxed mb-0.5">'+l+'</p>').join('')
               }} />
             </div>
           </div>
