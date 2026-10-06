@@ -4,6 +4,18 @@ import { api } from '../lib/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getSocket } from '../lib/socket';
 
+
+const CardSection = ({ title, type, borderColor, bgColor, icon, iconBg, iconColor, children }: { title: string; type: string; borderColor: string; bgColor: string; icon: any; iconBg: string; iconColor: string; children: any }) => (
+  <div className="rounded-xl border overflow-hidden" style={{borderColor, background: bgColor}}>
+    <div style={{borderLeft:'4px solid '+borderColor}} className="p-4">
+      <div className="flex items-center gap-2.5 mb-2.5">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{background: iconBg}}><span style={{color: iconColor}}>{icon}</span></div>
+        <h3 className="text-sm font-semibold text-[#101828]">{title}</h3>
+      </div>
+      {children}
+    </div>
+  </div>
+);
 export default function Reports() {
   const [reports, setReports] = useState<any[]>([]);
   const [reportDate, setReportDate] = useState(new Date().toISOString().slice(0, 10));
@@ -858,7 +870,609 @@ export default function Reports() {
         </div>
       )}
 
-            {/* History List Modal */}
+            {detailReport && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDetailReport(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+            style={{boxShadow:'rgba(0,0,0,0.12) 0px 0px 0px 1px, rgba(0,0,0,0.08) 0px 4px 12px, rgba(0,0,0,0.04) 0px 20px 40px -8px'}}
+            onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#ebebeb] bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-sm font-bold">{getUserName(detailReport.user_id)[0]}</div>
+                <div>
+                  <h3 className="text-sm font-semibold text-ink">{getUserName(detailReport.user_id)}</h3>
+                  <p className="text-xs text-muted">{formatDate(detailReport.date)} · {formatTime(detailReport.created_at)}</p>
+                </div>
+              </div>
+              <button onClick={() => setDetailReport(null)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#f5f5f5] transition-all"><X size={16} className="text-muted" /></button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+              {(() => {
+                const dd = (() => { try { return JSON.parse(detailReport.data || '{}'); } catch { return {}; } })();
+                return (
+                  <>
+                    {/* Nội dung c\u00f4ng vi\u1ec7c */}
+                    <div>
+                      <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Nội dung</h4>
+                      <p className="text-sm text-ink leading-relaxed whitespace-pre-wrap">{dd.content || '—'}</p>
+                    </div>
+
+                    {/* Lý do / Khó khăn / Đề xuất */}
+                    <div className="grid grid-cols-3 gap-4">
+                      {dd.reason && (
+                        <div className="bg-[#fafafa] rounded-xl p-4" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                          <p className="text-xs font-semibold text-[#0068d6] mb-1">Lý do</p>
+                          <p className="text-xs text-[#4d4d4d] leading-relaxed">{dd.reason}</p>
+                        </div>
+                      )}
+                      {dd.difficulties && (
+                        <div className="bg-[#fafafa] rounded-xl p-4" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                          <p className="text-xs font-semibold text-[#dc2626] mb-1">Khó khăn</p>
+                          <p className="text-xs text-[#4d4d4d] leading-relaxed">{dd.difficulties}</p>
+                        </div>
+                      )}
+                      {dd.suggestions && (
+                        <div className="bg-[#fafafa] rounded-xl p-4" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                          <p className="text-xs font-semibold text-[#b8860b] mb-1">Đề xuất</p>
+                          <p className="text-xs text-[#4d4d4d] leading-relaxed">{dd.suggestions}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Công việc liên quan */}
+                    {dd.extraTasks && dd.extraTasks.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Công việc liên quan</h4>
+                        <div className="space-y-2">
+                          {dd.extraTasks.filter((t:string) => t.trim()).map((t:string, i:number) => (
+                            <div key={i} className="flex items-center gap-3 px-4 py-3 bg-[#fafafa] rounded-xl" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                              <span className="text-sm text-ink">{t}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Chỉ số */}
+                    {dd.metrics && (
+                      <div>
+                        <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Chỉ số kinh doanh</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {dd.metrics.todayOrders > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-ink">{dd.metrics.todayOrders}</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Đơn hàng</p>
+                            </div>
+                          )}
+                          {dd.metrics.todayCost > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-ink">{Number(dd.metrics.todayCost).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Chi phí</p>
+                            </div>
+                          )}
+                          {dd.metrics.todayMessages > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-ink">{dd.metrics.todayMessages}</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Tin nhắn</p>
+                            </div>
+                          )}
+                          {dd.metrics.avgMessCost > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#d97706]">{Number(dd.metrics.avgMessCost).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-xs text-muted mt-1 font-medium">CP/Mess</p>
+                            </div>
+                          )}
+                          {dd.metrics.adsTotal > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#0068d6]">{Number(dd.metrics.adsTotal).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-xs text-muted mt-1 font-medium">CP QC</p>
+                            </div>
+                          )}
+                          {dd.metrics.adsRevenue > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#16a34a]">{Number(dd.metrics.adsRevenue).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Doanh thu QC</p>
+                            </div>
+                          )}
+                          {dd.metrics.adsOrders > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-ink">{dd.metrics.adsOrders}</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Đơn QC</p>
+                            </div>
+                          )}
+                          {dd.metrics.roas !== '—' && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#7c3aed]">{dd.metrics.roas}x</p>
+                              <p className="text-xs text-muted mt-1 font-medium">ROAS</p>
+                            </div>
+                          )}
+                          {dd.metrics.seoOrders > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#16a34a]">{dd.metrics.seoOrders}</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Đơn SEO</p>
+                            </div>
+                          )}
+                          {dd.metrics.seoRevenue > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-[#16a34a]">{Number(dd.metrics.seoRevenue).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Doanh thu SEO</p>
+                            </div>
+                          )}
+                          {dd.metrics.publishedPosts > 0 && (
+                            <div className="bg-[#fafafa] rounded-xl p-4 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-xl font-bold text-ink">{dd.metrics.publishedPosts}</p>
+                              <p className="text-xs text-muted mt-1 font-medium">Bài đã đăng</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* File đính kèm */}
+                    {dd.attachments && dd.attachments.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">File đính kèm</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {dd.attachments.map((url:string, i:number) => (
+                            <a key={i} href={url} target="_blank" rel="noreferrer"
+                              className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] rounded-xl text-xs text-[#4d4d4d] hover:text-primary transition-all"
+                              style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1={12} y1={15} x2={12} y2={3}/></svg>
+                              {url.split('/').pop() || ('File ' + (i+1))}
+                            </a>
+                          ))}
+                        </div>
+                                            {/* Link đính kèm */}
+                      {dd.links && dd.links.length > 0 && (
+                        <div className="mt-3">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Link đính kèm</h4>
+                          <div className="space-y-1.5">
+                            {dd.links.map((link: string, i: number) => (
+                              <a key={i} href={link} target="_blank" rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-3 py-2 bg-[#fafafa] border border-border rounded-lg text-xs text-primary hover:bg-blue-50 transition-all">
+                                <Link size={12} />
+                                <span className="truncate">{link}</span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+</div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Drive picker modal */}
+      {showDrivePicker && (
+        <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDrivePicker(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[70vh] flex flex-col overflow-hidden" style={{boxShadow:'rgba(0,0,0,0.12) 0px 0px 0px 1px, rgba(0,0,0,0.08) 0px 4px 12px'}} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#ebebeb]">
+              <h3 className="text-sm font-semibold text-ink">Chọn file từ Kho dữ liệu</h3>
+              <button onClick={() => setShowDrivePicker(false)} className="p-1.5 rounded-lg hover:bg-[#f5f5f5] transition-all"><X size={16} className="text-muted" /></button>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-[#ebebeb] bg-[#fafafa]">
+              {driveFolderId && <button onClick={async()=>{const r=await api('/drive');setDriveFiles(r||[]);setDriveFolderId(null);setDriveSearch('');}} className="flex items-center gap-1 text-xs text-muted hover:text-ink transition-all"><svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="15 18 9 12 15 6"/></svg>Kho dữ liệu</button>}
+              <input value={driveSearch} onChange={e => setDriveSearch(e.target.value)} placeholder="Tìm kiếm..." autoFocus
+                className="flex-1 px-3 py-1.5 bg-white border border-[#ebebeb] rounded-lg text-xs text-ink outline-none focus:border-[#4f46e5]/40 transition-all" />
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {driveFiles.length === 0 ? (
+                <div className="text-center py-12">
+                  <Folder size={36} className="mx-auto mb-3 text-[#d4d4d4]" />
+                  <p className="text-sm text-muted">Chưa có file nào</p>
+                </div>
+              ) : (
+                <div>
+                  {driveFiles.filter((f:any) => !driveSearch || f.name.toLowerCase().includes(driveSearch.toLowerCase())).map((f:any) => { const isF = f.type === 'folder'; return (
+                    <div key={f.id} onClick={async () => { if (isF) { const r2 = await api('/drive?parentId=' + f.id); setDriveFiles(r2 || []); setDriveFolderId(f.id); setDriveSearch(''); return; } setAttachments(prev => [...prev, f.url]); setShowDrivePicker(false); }}
+                      className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#fafafa] cursor-pointer transition-all border-b border-[#ebebeb]/50 last:border-0">
+                      {isF ? <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center"><svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="text-amber-500"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div> : f.mime_type?.startsWith('image/') ? (
+                        <img src={f.url} alt={f.name} className="w-10 h-10 rounded-lg object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-[#f5f5f5] flex items-center justify-center"><FileText size={18} className="text-muted" /></div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-ink truncate">{f.name}</p>
+                        <p className="text-xs text-muted">{isF ? 'Thư mục' : (f.uploadedByName || 'File')}</p>
+                      </div>
+                      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-[#d4d4d4] shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>
+                  )})}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+    
+      {/* History detail modal */}
+      {historyDetail && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setHistoryDetail(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl border border-border overflow-hidden max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="px-5 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between sticky top-0 z-10">
+              <h3 className="font-bold text-sm text-ink">Chi tiết báo cáo</h3>
+              <button onClick={() => setHistoryDetail(null)} className="p-1 rounded hover:bg-gray-200 text-muted"><X size={16} /></button>
+            </div>
+            <div className="p-6 flex gap-6">
+              {/* Left: Report Details */}
+              <div className="flex-1 min-w-0 space-y-5">
+                {/* Sender header */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shadow-lg shadow-indigo-200">{getUserName(historyDetail.user_id)?.charAt(0) || '?'}</div>
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{getUserName(historyDetail.user_id)}</p>
+                    <p className="text-xs text-muted">{formatDate(historyDetail.date)} · {formatTime(historyDetail.created_at)}</p>
+                  </div>
+                </div>
+                {/* Content */}
+                <div className="rounded-xl p-5 bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Nội dung báo cáo</p>
+                  <p className="text-sm text-ink leading-relaxed whitespace-pre-wrap">{(JSON.parse(historyDetail.data||'{}')).content||'—'}</p>
+                  {(JSON.parse(historyDetail.data||'{}')).notes && <p className="text-xs text-muted mt-2 pt-2" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}>{(JSON.parse(historyDetail.data||'{}')).notes}</p>}
+                </div>
+                
+                {/* File đính kèm */}
+                {(JSON.parse(historyDetail.data||'{}')).attachments?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">File đính kèm</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(JSON.parse(historyDetail.data||'{}')).attachments.map((url:string, i:number) => (
+                        <a key={i} href={url} target="_blank" rel="noreferrer"
+                          className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] border border-border rounded-xl text-xs text-primary hover:bg-blue-50 transition-all">
+                          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1={12} y1={15} x2={12} y2={3}/></svg>
+                          {url.split('/').pop() || ('File ' + (i+1))}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Link đính kèm */}
+                {(JSON.parse(historyDetail.data||'{}')).links?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Link đính kèm</p>
+                    <div className="space-y-1.5">
+                      {(JSON.parse(historyDetail.data||'{}')).links.map((link: string, i: number) => (
+                        <a key={i} href={link} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] border border-border rounded-xl text-xs text-primary hover:bg-blue-50 transition-all">
+                          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                          <span className="truncate">{link}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+{/* Difficulties & Suggestions */}
+                <div className="grid grid-cols-2 gap-3">
+                  {(JSON.parse(historyDetail.data||'{}')).difficulties && <div className="rounded-xl p-4 bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-1.5">Khó khăn</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).difficulties}</p></div>}
+                  {(JSON.parse(historyDetail.data||'{}')).suggestions && <div className="rounded-xl p-4 bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1.5">Đề xuất</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).suggestions}</p></div>}
+                </div>
+                {/* Extra Tasks */}
+                {(JSON.parse(historyDetail.data||'{}')).extraTasks?.length > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Công việc khác</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).extraTasks.map((t:any,i:number)=><span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#fafafa] border border-border" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>{t}</span>)}</div></div>}
+                {/* Metrics */}
+                {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Chỉ số kinh doanh</p><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div className="rounded-xl px-4 py-4 text-center bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}><p className="text-xl font-bold text-primary">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</p><p className="text-xs text-muted mt-0.5 font-medium">Đơn</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.todayCost > 0 && <div className="rounded-xl px-4 py-4 text-center bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}><p className="text-xl font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.todayCost).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">Chi phí</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.adsTotal > 0 && <div className="rounded-xl px-4 py-4 text-center bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}><p className="text-xl font-bold text-[#db2777]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">QC</p></div>}</div></div>}
+                
+                        {/* Recipients */}
+                {(JSON.parse(historyDetail.data||'{}')).recipients?.length > 0 && <div className="pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                        {/* Kết quả kinh doanh */}
+                        <div className="mt-4">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Kết quả kinh doanh</h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Đơn (B2)</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#0068d6]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.b3TotalCost || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">CP QC 3M</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#0068d6]">0đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">CP eSim</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.todayMessages ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Tổng Mess</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.avgMessCost || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">Giá Mess TB</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Quảng cáo */}
+                        <div className="mt-4">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Quảng cáo</h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#0068d6]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">CP có thuế</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#16a34a]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsRevenue || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.adsOrders ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Đơn</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#7c3aed]">{(JSON.parse(historyDetail.data||'{}')).metrics.roas ?? '—'}x</p>
+                              <p className="text-[10px] text-muted mt-0.5">ROAS</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Doanh thu SEO */}
+                        <div className="mt-4">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Doanh thu SEO</h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#16a34a]">{(JSON.parse(historyDetail.data||'{}')).metrics.seoOrders ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Đơn</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-[#16a34a]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.seoRevenue || 0).toLocaleString('vi-VN')}đ</p>
+                              <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Content Social */}
+                        <div className="mt-4">
+                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Content Social</h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.socialPosts ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Bài viết</p>
+                            </div>
+                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
+                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.publishedPosts ?? 0}</p>
+                              <p className="text-[10px] text-muted mt-0.5">Đã đăng</p>
+                            </div>
+                          </div>
+                        </div>
+Đã gửi đến</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string)=><span key={rid} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#fafafa] border border-border" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>{getUserName(rid)}</span>)}</div></div>}
+              </div>
+              {/* Right: Comments */}
+              <div className="w-80 shrink-0 flex flex-col" style={{borderLeft:'1px solid rgba(0,0,0,0.06)', paddingLeft:'1.25rem', maxHeight:'calc(80vh - 80px)'}}>
+                <p className="text-sm font-semibold text-ink mb-4">Góp ý <span className="text-muted font-medium">({reportComments.length})</span></p>
+                <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
+                  {reportComments.length === 0 && <div className="flex flex-col items-center justify-center py-10 text-center"><div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}><MessageSquare size={18} className="text-muted" /></div><p className="text-sm font-medium text-muted">Chưa có góp ý</p></div>}
+                  {reportComments.map((c: any) => (
+                    <div key={c.id} className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[8px] font-bold">{c.userName?.charAt(0) || '?'}</div>
+                        <div className="flex-1 min-w-0"><p className="text-xs font-semibold text-ink truncate">{c.userName} <span className="text-xs text-muted font-normal">{new Date(c.created_at).toLocaleString('vi-VN')}</span></p></div>
+                      </div>
+                      <p className="text-xs text-[#4d4d4d] leading-relaxed">{c.content}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2 pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}>
+                  <input value={commentInput} onChange={e=>setCommentInput(e.target.value)} placeholder="Viết góp ý..." className="flex-1 px-3 py-2.5 rounded-xl text-xs outline-none" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fff'}} onKeyDown={e=>{if(e.key==='Enter')addComment();}} />
+                  <button onClick={addComment} disabled={!commentInput.trim()} className="px-4 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white rounded-xl text-xs font-semibold hover:shadow-lg hover:shadow-indigo-200 disabled:opacity-50 transition-all">Gửi</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+</div>
+            {/* AI Analysis Modal */}
+      {showAnalysis && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAnalysis(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border" onClick={e => e.stopPropagation()} style={{width:'min(92vw,1100px)',maxHeight:'90vh'}}>
+            <div className="flex items-center justify-between px-7 bg-white border-b border-[#EAECF0]" style={{height:64}}>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-[#F4F3FF] flex items-center justify-center"><BarChart3 size={18} className="text-[#4F46E5]" /></div>
+                <h2 className="text-lg font-semibold text-[#101828]">Phân tích báo cáo AI</h2>
+              </div>
+              <button onClick={() => setShowAnalysis(false)} className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[#F2F4F7] transition-all text-[#98A2B3]"><X size={16} /></button>
+            </div>
+            <div className="overflow-y-auto px-7 py-6" style={{background:'#F8FAFC',maxHeight:'calc(90vh - 64px)'}}>
+              {analysisResult === null ? (
+                <div className="flex flex-col items-center gap-6 py-12">
+                  <div className="w-full max-w-md">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-[#101828]">{analysisStage || 'Đang xử lý...'}</span>
+                      <span className="text-sm font-bold text-[#4F46E5]">{analysisProgress}%</span>
+                    </div>
+                    <div className="w-full h-2.5 bg-[#EEF2FF] rounded-full overflow-hidden" style={{boxShadow:'inset 0 1px 2px rgba(0,0,0,0.06)'}}>
+                      <div className="h-full bg-gradient-to-r from-[#4F46E5] to-[#6366F1] rounded-full transition-all duration-500" style={{width: analysisProgress + '%'}}></div>
+                    </div>
+                    <div className="flex justify-between text-[10px] text-[#98A2B3] mt-1.5">
+                      <span>Thu thập</span><span>Gửi AI</span><span>Phân tích</span><span>Hoàn tất</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-[#98A2B3]">Đang phân tích <b className="text-[#4F46E5]">{analysisCount || receivedReports.length}</b> báo cáo</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* KPI Cards */}
+                  <div className="grid gap-3" style={{gridTemplateColumns:'160px 160px minmax(260px,1fr)'}}>
+                    <div className="bg-white rounded-xl p-4 border border-[#EAECF0]">
+                      <p className="text-xs font-semibold text-[#98A2B3] uppercase tracking-wide mb-1"><FileText size={14} className="inline mr-1 text-[#4F46E5]" />Báo cáo</p>
+                      <p className="text-xl font-bold text-[#101828]">{analysisCount !== null ? analysisCount : receivedReports.length}</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border border-[#EAECF0]">
+                      <p className="text-xs font-semibold text-[#98A2B3] uppercase tracking-wide mb-1"><Users size={14} className="inline mr-1 text-[#4F46E5]" />Nhân sự</p>
+                      <p className="text-xl font-bold text-[#101828]">{analysisStats ? (analysisStats.pending + analysisStats.approved + analysisStats.rejected) : receivedReports.length}</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border border-[#EAECF0]">
+                      <p className="text-xs font-semibold text-[#98A2B3] uppercase tracking-wide mb-1"><Calendar size={14} className="inline mr-1 text-[#4F46E5]" />Thời gian</p>
+                      <p className="text-sm font-bold text-[#101828] mt-1">{analysisPeriod || (receivedDateRangeKey==='today' ? 'Hôm nay' : '7 ngày')}</p>
+                    </div>
+                  </div>
+
+                  {(() => {
+                    // Parse AI summary into sections
+                    const sections: {title:string, content:string, type:string}[] = [];
+                    const lines = (analysisResult || '').split('\n');
+                    let currentSec: {title:string, content:string, type:string} | null = null;
+                    for (const line of lines) {
+                      const hMatch = line.match(/^#{1,3}\s+(.+)/);
+                      if (hMatch) {
+                        const title = hMatch[1].trim();
+                        const type = title.includes('Khó') ? 'challenge' : title.includes('Đề xuất') ? 'suggestion' : title.includes('Nhận xét') ? 'insight' : title.includes('Nội dung') ? 'content' : title.includes('Tổng') ? 'overview' : 'other';
+                        currentSec = { title, content: '', type };
+                        sections.push(currentSec);
+                      } else if (currentSec) {
+                        currentSec.content += (currentSec.content ? '\n' : '') + line;
+                      }
+                    }
+                    const contentSec = sections.find(s => s.type === 'content');
+                    const challengeSec = sections.find(s => s.type === 'challenge');
+                    const suggestionSec = sections.find(s => s.type === 'suggestion');
+                    const insightSec = sections.find(s => s.type === 'insight');
+                    const overviewSec = sections.find(s => s.type === 'overview');
+
+                    const formatBullets = (text: string) => {
+                      const items = text.split('\n').filter(l => l.trim().match(/^[-*]\s+/));
+                      if (items.length === 0) return null;
+                      return items.map((item: string) => {
+                        const clean = item.replace(/^[-*]\s+/, '');
+                        const pctMatch = clean.match(/(\d+)%/);
+                        return { text: clean, hasPct: !!pctMatch, pct: pctMatch ? parseInt(pctMatch[1]) : null };
+                      });
+                    };
+
+                    const renderBullets = (items: any[], color: string, icon: string) => (
+                      <div className="space-y-3">
+                        {items.map((item: any, idx: number) => (
+                          <div key={idx}>
+                            <div className="flex items-start gap-2.5">
+                              <span style={{color}} className="mt-0.5 shrink-0">{icon}</span>
+                              <span className="text-sm text-[#344054] leading-relaxed">{item.text}</span>
+                              {item.hasPct && <span className="text-sm font-semibold text-[#4F46E5] shrink-0 ml-auto">{item.pct}%</span>}
+                            </div>
+                            {item.hasPct && (
+                              <div className="ml-6 mt-1.5 w-32 h-1.5 bg-[#EEF2FF] rounded-full overflow-hidden">
+                                <div className="h-full bg-[#4F46E5] rounded-full" style={{width:item.pct+'%'}}></div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+
+                    return (
+                      <>
+                        {/* Content Section */}
+                        <CardSection
+                          title="Nội dung chính"
+                          type="content"
+                          borderColor="#4F46E5"
+                          bgColor="#FFFFFF"
+                          icon={<FileText size={16} />}
+                          iconBg="#EEF2FF"
+                          iconColor="#4F46E5"
+                        >
+                          {contentSec ? (
+                            (() => {
+                              const bullets = formatBullets(contentSec.content);
+                              return bullets ? renderBullets(bullets, '#4F46E5', '✓') : <p className="text-sm text-[#344054] leading-relaxed">{contentSec.content.replace(/^[-*]\s+/gm, '').trim()}</p>;
+                            })()
+                          ) : <p className="text-sm text-[#98A2B3]">—</p>}
+                        </CardSection>
+
+                        {/* Challenges + Suggestions 2-col */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <CardSection
+                            title="Khó khăn & Thách thức"
+                            type="challenge"
+                            borderColor="#F59E0B"
+                            bgColor="#FFFFFF"
+                            icon={<TrendingUp size={16} className="text-[#D97706]" />}
+                            iconBg="#FEF3C7"
+                            iconColor="#D97706"
+                          >
+                            {challengeSec ? (
+                              (() => {
+                                const text = challengeSec.content.replace(/^[-*]\s+/gm, '').trim();
+                                const hasContent = text && !text.includes('trống') && !text.includes('không có');
+                                return hasContent ? <p className="text-sm text-[#344054] leading-relaxed">{text}</p> : <p className="text-sm text-[#98A2B3]">✓ Chưa ghi nhận khó khăn</p>;
+                              })()
+                            ) : <p className="text-sm text-[#98A2B3]">✓ Chưa ghi nhận khó khăn</p>}
+                          </CardSection>
+
+                          <CardSection
+                            title="Đề xuất"
+                            type="suggestion"
+                            borderColor="#7C3AED"
+                            bgColor="#FFFFFF"
+                            icon={<FileText size={16} />}
+                            iconBg="#F5F3FF"
+                            iconColor="#7C3AED"
+                          >
+                            {suggestionSec ? (
+                              (() => {
+                                const text = suggestionSec.content.replace(/^[-*]\s+/gm, '').trim();
+                                const hasContent = text && !text.includes('trống') && !text.includes('không có');
+                                return hasContent ? <p className="text-sm text-[#344054] leading-relaxed">{text}</p> : <p className="text-sm text-[#98A2B3]">— Chưa có đề xuất</p>;
+                              })()
+                            ) : <p className="text-sm text-[#98A2B3]">— Chưa có đề xuất</p>}
+                          </CardSection>
+                        </div>
+
+                        {/* AI Insight */}
+                        <div className="rounded-xl p-5 border border-[#DDD6FE]" style={{background:'#F5F3FF'}}>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-[#EDE9FE] flex items-center justify-center"><TrendingUp size={16} className="text-[#7C3AED]" /></div>
+                              <h3 className="text-sm font-semibold text-[#101828]">Nhận xét AI</h3>
+                            </div>
+                            <span className="text-[10px] font-semibold text-[#7C3AED] bg-[#EDE9FE] px-2 py-1 rounded-full uppercase tracking-wider">AI phân tích</span>
+                          </div>
+                          {insightSec ? (
+                            (() => {
+                              const lines = insightSec.content.split('\n').filter(l => l.trim());
+                              const bullets = lines.filter(l => l.match(/^[-*]/));
+                              if (bullets.length > 0) {
+                                return <div className="space-y-2.5">
+                                  {bullets.map((line: string, idx: number) => {
+                                    const text = line.replace(/^[-*]\s+/, '');
+                                    const isPos = text.match(/tốt|hoàn|đạt|hiệu quả|[kK]há/i);
+                                    const isWarn = text.match(/cần|thiếu|chưa|hạn chế/i);
+                                    const icon = isPos ? '🟢' : isWarn ? '🟠' : '🔵';
+                                    return (
+                                      <div key={idx} className="flex items-start gap-2.5 py-1.5" style={idx < bullets.length - 1 ? {borderBottom:'1px solid #E4E7EC',paddingBottom:'10px',marginBottom:'6px'} : {}}>
+                                        <span className="text-xs shrink-0 mt-0.5">{icon}</span>
+                                        <span className="text-sm text-[#344054] leading-relaxed">{text}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>;
+                              }
+                              return <p className="text-sm text-[#344054] leading-relaxed">{insightSec.content}</p>;
+                            })()
+                          ) : <p className="text-sm text-[#98A2B3]">—</p>}
+                        </div>
+
+                        {/* Lightweight items section for remaining content */}
+                        {sections.filter(s => !['content','challenge','suggestion','insight','overview'].includes(s.type)).map((sec, idx) => (
+                          <CardSection key={idx} title={sec.title} type="other" borderColor="#667085" bgColor="#FFFFFF" icon={<FileText size={16} />} iconBg="#F8FAFC" iconColor="#667085">
+                            <p className="text-sm text-[#344054] leading-relaxed">{sec.content.replace(/^[-*]\s+/gm, '').trim() || '—'}</p>
+                          </CardSection>
+                        ))}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+{/* History List Modal */}
       {showHistory && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowHistory(false)}>
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border" onClick={e => e.stopPropagation()} style={{width:'min(90vw,1000px)',maxHeight:'75vh'}}>
@@ -1355,39 +1969,8 @@ export default function Reports() {
         </div>
       )}
 </div>
-      {/* AI Analysis Modal */}
-      {showAnalysis && (
-        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAnalysis(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-[#FAFBFC]">
-              <h2 className="font-bold text-sm text-[#1F2937] flex items-center gap-2"><BarChart3 size={18} className="text-[#4f46e5]" /> Phân tích báo cáo AI</h2>
-              <button onClick={() => setShowAnalysis(false)} className="px-4 py-2 rounded-lg text-sm text-muted hover:bg-gray-100 transition-all">Đóng</button>
-            </div>
-            <div className="flex-1 overflow-auto p-8">
-              {analyzing ? (
-                <div className="flex flex-col items-center justify-center gap-6 py-20">
-                  <div className="w-12 h-12 border-4 border-[#4f46e5] border-t-transparent rounded-full animate-spin mx-auto" style={{animation:'spin 0.8s linear infinite'}}></div>
-                  <p className="text-sm text-[#667085]">Đang phân tích {receivedReports.length} báo cáo...</p>
-                </div>
-              ) : analysisResult ? (
-                <div className="prose prose-sm max-w-none">
-                  {(() => {
-                    const html = analysisResult
-                      .replace(/### (.+)/g, '<h3>$1</h3>')
-                      .replace(/## (.+)/g, '<h2 class="text-lg font-semibold text-[#1F2937] mt-4 mb-2">$1</h2>')
-                      .replace(/# (.+)/g, '<h1 class="text-xl font-bold text-[#1F2937] mt-6 mb-3">$1</h1>')
-                      .replace(/- (.+)/g, '<li class="text-sm text-[#374151] ml-4 mb-1">$1</li>')
-                      .replace(/\n\n/g, '<div class="h-2"></div>')
-                      .replace(/_([^_]+)_/g, '<em>$1</em>')
-                      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-                    return <div className="text-sm leading-7 text-[#374151]" dangerouslySetInnerHTML={{__html: '<div>' + html.split('\n').filter(l=>l.trim()).map(l=>l.startsWith('<')?l:'<p>'+l+'</p>').join('') + '</div>'}} />;
-                  })()}
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      )}
+      
+
     </>
   );
 }
