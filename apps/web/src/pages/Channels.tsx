@@ -26,6 +26,9 @@ export default function Channels() {
   const [filterUser, setFilterUser] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [tab, setTab] = useState('channels');
+  const [members, setMembers] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [showAddMember, setShowAddMember] = useState(false);
   const [fanpages, setFanpages] = useState<any[]>([]);
   const [syncingPages, setSyncingPages] = useState(false);
 
@@ -40,6 +43,8 @@ export default function Channels() {
     api('/channels').then(setChannels);
     api('/teams').then(setTeams);
     api('/users').then(setUsers).catch(() => {});
+    api('/channels/members').then(setMembers).catch(() => {});
+    api('/users').then(setAllUsers).catch(() => {});
   };
   const loadFanpages = () => { api('/channels/pages').then(setFanpages).catch(() => {}); };
   useEffect(load, []);
@@ -110,8 +115,9 @@ export default function Channels() {
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold text-ink">Kênh Marketing</h1><p className="text-sm text-muted mt-1">Quản lý kênh truyền thông & theo dõi tăng trưởng Fanpage</p></div>
         <div className="flex gap-2">
-          <button onClick={() => setTab('channels')} className={"px-4 py-2 rounded-xl text-sm font-medium transition-all " + (tab === 'channels' ? 'bg-[#4f46e5] text-white shadow-md' : 'bg-white border border-border text-muted hover:bg-gray-50')}>Kênh</button>
+          <button onClick={() => { setTab('channels'); load(); }} className={"px-4 py-2 rounded-xl text-sm font-medium transition-all " + (tab === 'channels' ? 'bg-[#4f46e5] text-white shadow-md' : 'bg-white border border-border text-muted hover:bg-gray-50')}>Kênh</button>
           <button onClick={() => { setTab('fanpages'); loadFanpages(); }} className={"px-4 py-2 rounded-xl text-sm font-medium transition-all " + (tab === 'fanpages' ? 'bg-[#4f46e5] text-white shadow-md' : 'bg-white border border-border text-muted hover:bg-gray-50')}>Fanpage</button>
+          {currentUser?.role === 'admin' && <button onClick={() => setShowAddMember(true)} className="px-3 py-2 rounded-xl text-sm font-medium bg-[#4f46e5]/10 text-[#4f46e5] hover:bg-[#4f46e5]/20 transition-all whitespace-nowrap"><Users size={14} /> Thành viên</button>}
         </div>
       </div>
 
@@ -172,7 +178,7 @@ export default function Channels() {
             </div>
           </div>
           <div className="flex gap-3 pt-2">
-            <button onClick={save} className="px-5 py-2.5 bg-primary text-white font-semibold rounded-xl text-sm hover:shadow-md transition-all">{edit ? 'Lưu thay đổi' : 'Thêm kênh'}</button>
+            <button onClick={save} disabled={(currentUser?.role === 'admin' || members.some((m:any) => m.id === currentUser?.id)) ? false : true} className="px-5 py-2.5 bg-primary text-white font-semibold rounded-xl text-sm hover:shadow-md transition-all disabled:opacity-40">{(currentUser?.role === 'admin' || members.some((m:any) => m.id === currentUser?.id)) ? (edit ? 'Lưu thay đổi' : 'Thêm kênh') : 'Chỉ xem'}</button>
             <button onClick={() => { setShowAdd(false); setEdit(null); }} className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-muted rounded-xl text-sm font-medium transition-all">Huỷ</button>
           </div>
         </div>
@@ -240,6 +246,29 @@ export default function Channels() {
       </div>
       </>
       ) : null}
+      {/* Add member modal */}
+      {showAddMember && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAddMember(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 border border-border" onClick={e => e.stopPropagation()}>
+            <h3 className="text-sm font-bold text-[#1F2937] mb-3">Thành viên Kênh Marketing</h3>
+            <div className="space-y-2 mb-4">
+              {members.map((m:any) => (
+                <div key={m.id} className="flex items-center justify-between px-3 py-2 bg-[#F8FAFC] rounded-lg">
+                  <div><p className="text-sm font-medium text-[#1F2937]">{m.name}</p><p className="text-xs text-[#667085]">{m.email}</p></div>
+                  <button onClick={() => removeMember(m.id)} className="px-2 py-1 rounded-lg text-xs text-red-400 hover:bg-red-50 hover:text-red-600 transition-all"><X size={13} /></button>
+                </div>
+              ))}
+            </div>
+            {members.length === 0 && <p className="text-xs text-[#98A2B3] text-center py-3">Chưa có thành viên</p>}
+            <select onChange={e => addMember(e.target.value)} className="w-full h-10 border border-[#E5E7EB] rounded-lg px-3 text-sm text-[#1F2937] outline-none transition-all">
+              <option value="">Thêm nhân sự...</option>
+              {allUsers.filter((u:any) => u.role !== 'admin' && !members.find((m:any) => m.id === u.id)).map((u:any) => <option key={u.id} value={u.id}>{u.name} - {u.email}</option>)}
+            </select>
+            <button onClick={() => setShowAddMember(false)} className="mt-3 w-full py-2 text-sm text-muted rounded-lg hover:bg-gray-100 transition-all">Đóng</button>
+          </div>
+        </div>
+      )}
+
 
       {/* Fanpage tab */}
       {tab === 'fanpages' && (

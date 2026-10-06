@@ -4,6 +4,34 @@ import { pool } from '../db/index';
 import { io } from '../index';
 
 export default async function (app: FastifyInstance) {
+  // ─── Members ────────────────────────────────────
+  app.get('/channels/members', async (_req, reply) => {
+    try {
+      const [rows] = await pool.execute(
+        "SELECT u.id, u.name, u.email FROM user_modules um JOIN users u ON u.id = um.user_id WHERE um.module_key = 'channels' ORDER BY u.name ASC"
+      );
+      reply.send(rows);
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.post('/channels/members', async (req, reply) => {
+    if (!req.user || req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    try {
+      const { userId } = req.body as any;
+      if (!userId) return reply.status(400).send({ error: 'Missing userId' });
+      await pool.execute("INSERT IGNORE INTO user_modules (id, user_id, module_key) VALUES (?, ?, 'channels')", [uuid(), userId]);
+      reply.send({ success: true });
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
+
+  app.delete('/channels/members/:userId', async (req, reply) => {
+    if (!req.user || req.user?.role !== 'admin') return reply.status(403).send({ error: 'Only admin' });
+    try {
+      const { userId } = req.params as any;
+      await pool.execute("DELETE FROM user_modules WHERE user_id=? AND module_key='channels'", [userId]);
+      reply.send({ success: true });
+    } catch (e: any) { reply.status(500).send({ error: e.message }); }
+  });
   app.get('/channels', async (_req, reply) => {
     const [rows] = await pool.execute(
       "SELECT mc.*, t.name as teamName, u.name as assignedToName FROM media_channels mc LEFT JOIN teams t ON t.id = mc.team_id LEFT JOIN users u ON u.id = mc.assigned_to ORDER BY mc.platform, mc.name"
