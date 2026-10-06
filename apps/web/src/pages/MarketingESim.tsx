@@ -680,8 +680,8 @@ const addAdRow = async () => {
                 <tbody>
                   {(!seoRows||seoRows.length===0)?<tr><td colSpan={9} className="px-6 py-12 text-center text-sm text-muted">Chưa có dữ liệu</td></tr>
                   :seoRows.map((r,i)=>(
-                    <tr key={i} className={'border-b border-border/50 ' + ((!r.user_id||r.user_id===u.id) ? 'hover:bg-gray-50/60' : 'opacity-70') + ' transition-all'}>
-                      <td className="px-4 py-2.5 text-xs text-muted">{r.userName || (r.user_id === u.id ? 'Tôi' : '—')}</td>
+                    <tr key={i} className={'border-b border-border/50 ' + ((!r.user_id||r.user_id===(JSON.parse(localStorage.getItem("zeyfi_user")||"{}").id||null)) ? 'hover:bg-gray-50/60' : 'opacity-70') + ' transition-all'}>
+                      <td className="px-4 py-2.5 text-xs text-muted">{r.userName || (r.user_id === (JSON.parse(localStorage.getItem("zeyfi_user")||"{}").id||null) ? 'Tôi' : '—')}</td>
                       <td className="px-4 py-2.5 text-xs"><input type="date" value={r.dateStr||(r.date?new Date(r.date).toLocaleDateString('fr-CA',{timeZone:'Asia/Ho_Chi_Minh'}):'')} onChange={e=>{const v=e.target.value;setSeoRows((prev)=>prev.map(x=>x.id===r.id?{...x,date:v,dateStr:v}:x))}} className="w-full bg-transparent border-none outline-none text-xs cursor-pointer" /></td>
                       <td className="px-4 py-2.5">
                         <select value={r.channel||''} onChange={e=>{const x=[...seoRows];x[i]={...x[i],channel:e.target.value};setSeoRows(x);}} className="w-full px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none">
@@ -703,7 +703,7 @@ const addAdRow = async () => {
                   ))}
                   {/* Total row */}
                   {seoRows.length>0&&<tr className="bg-gray-50/70 border-t-2 border-border font-medium">
-                    <td className="px-4 py-3 text-xs font-bold" colSpan={2}>Tổng cộng</td>
+                    <td className="px-4 py-3 text-xs font-bold" colSpan={3}>Tổng cộng</td>
                     <td className="px-4 py-3 text-xs font-bold text-primary text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.orders||0),0).toLocaleString('vi-VN')}</td>
                     <td className="px-4 py-3 text-xs font-bold text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.revenue||0),0).toLocaleString('vi-VN')}đ</td>
                     <td className="px-4 py-3 text-xs font-bold text-right">{seoRows.reduce((s:number,r:any)=>s+Number(r.cost||0),0).toLocaleString('vi-VN')}đ</td>
