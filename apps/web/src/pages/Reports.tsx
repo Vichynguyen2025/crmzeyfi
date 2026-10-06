@@ -70,6 +70,9 @@ export default function Reports() {
   const [recvDateFrom, setRecvDateFrom] = useState(() => { const d = new Date(); d.setDate(d.getDate()-7); return d.toISOString().slice(0,10); });
   const [recvDateTo, setRecvDateTo] = useState(() => new Date().toISOString().slice(0,10));
   const [receivedDateRangeKey, setReceivedDateRangeKey] = useState('week');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string|null>(null);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const calcDate = (dr: string) => {
     const d = new Date();
@@ -1065,4 +1068,38 @@ export default function Reports() {
       )}
 </div>
   );
+
+      {/* AI Analysis Modal */}
+      {showAnalysis && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAnalysis(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-[#FAFBFC]">
+              <h2 className="font-bold text-sm text-[#1F2937] flex items-center gap-2"><BarChart3 size={18} className="text-[#4f46e5]" /> Phân tích báo cáo AI</h2>
+              <button onClick={() => setShowAnalysis(false)} className="px-4 py-2 rounded-lg text-sm text-muted hover:bg-gray-100 transition-all">Đóng</button>
+            </div>
+            <div className="flex-1 overflow-auto p-8">
+              {analyzing ? (
+                <div className="flex flex-col items-center justify-center gap-6 py-20">
+                  <div className="w-12 h-12 border-4 border-[#4f46e5] border-t-transparent rounded-full animate-spin mx-auto" style={{animation:'spin 0.8s linear infinite'}}></div>
+                  <p className="text-sm text-[#667085]">Đang phân tích {receivedReports.length} báo cáo...</p>
+                </div>
+              ) : analysisResult ? (
+                <div className="prose prose-sm max-w-none">
+                  {(() => {
+                    const html = analysisResult
+                      .replace(/### (.+)/g, '<h3>$1</h3>')
+                      .replace(/## (.+)/g, '<h2 class="text-lg font-semibold text-[#1F2937] mt-4 mb-2">$1</h2>')
+                      .replace(/# (.+)/g, '<h1 class="text-xl font-bold text-[#1F2937] mt-6 mb-3">$1</h1>')
+                      .replace(/- (.+)/g, '<li class="text-sm text-[#374151] ml-4 mb-1">$1</li>')
+                      .replace(/\n\n/g, '<div class="h-2"></div>')
+                      .replace(/_([^_]+)_/g, '<em>$1</em>')
+                      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    return <div className="text-sm leading-7 text-[#374151]" dangerouslySetInnerHTML={{__html: '<div>' + html.split('\n').filter(l=>l.trim()).map(l=>l.startsWith('<')?l:'<p>'+l+'</p>').join('') + '</div>'}} />;
+                  })()}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
 }

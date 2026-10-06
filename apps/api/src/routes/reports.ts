@@ -132,4 +132,53 @@ export default async function (app: FastifyInstance) {
     reply.send(filtered);
 
   });
+  // ─── AI Summary ──────────────────────────────────
+  app.post('/reports/analyze', async (req, reply) => {
+    try {
+      const { reports } = req.body as any;
+      if (!reports || !Array.isArray(reports) || reports.length === 0) {
+        return reply.status(400).send({ error: 'No reports to analyze' });
+      }
+
+      // Build prompt
+      const reportText = reports.map((r: any, i: number) =>
+        `${i+1}. **${r.userName||'Ai đó'}** (${r.dateStr||r.date||'?'}) - ${r.status||'pending'}\n` +
+        `   Nội dung: ${(r.content||'').slice(0,500)}\n` +
+        `   Khó khăn: ${(r.difficulties||'').slice(0,300)}\n` +
+        `   Đề xuất: ${(r.suggestions||'').slice(0,300)}`
+      ).join('\n');
+
+      const prompt = `Bạn là trợ lý phân tích báo cáo công việc. Hãy phân tích ${reports.length} báo cáo sau đây và trả về bằng TIẾNG VIỆT, định dạng MARKDOWN với các phần:
+
+## Tổng quan\n- Số lượng báo cáo: X\n- Số nhân sự: X\n- Khoảng thời gian: ...\n\n## Nội dung chính\nTóm tắt các điểm chính từ báo cáo...\n\n## Khó khăn & Thách thức\nCác khó khăn nổi bật...\n\n## Đề xuất\nCác đề xuất từ nhân sự...\n\n## Nhận xét\nNhận xét tổng quan về hiệu suất...
+
+Dữ liệu báo cáo:\n${reportText}`;
+
+      const apiKey = process.env.API_KEY_MANGAMENT_OPENROUTER;
+      if (!apiKey) return reply.status(500).send({ error: 'API key not configured' });
+
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + apiKey,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://zeyfi.cloud',
+        },
+        body: JSON.stringify({
+          model: 'deepseek/deepseek-v4-flash',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 3000,
+        })
+      });
+
+      const data = await res.json() as any;
+      if (data.error) return reply.status(500).send({ error: data.error.message || 'AI API error' });
+
+      const summary = data?.choices?.[0]?.message?.content || '';
+      reply.send({ summary, reportCount: reports.length });
+    } catch (e: any) {
+      reply.status(500).send({ error: e.message });
+    }
+  });
+
 }
