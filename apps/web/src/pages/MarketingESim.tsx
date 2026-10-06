@@ -766,31 +766,33 @@ const addAdRow = async () => {
             </select>
             <button onClick={addRow} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-[#4338ca] transition-all"><Plus size={16} />Thêm</button>
           </div>
-          <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+<div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full" style={{borderCollapse:'separate',borderSpacing:0,minWidth:1294}}>
+              <table className="w-full" style={{borderCollapse:'separate',borderSpacing:0,minWidth:1304}}>
                 <colgroup>
-                  <col style={{width:120}} /><col style={{width:190}} />
-                  <col style={{width:120}} />
-                  <col style={{flex:'1',minWidth:400}} />
-                  <col style={{width:120}} /><col style={{width:120}} />
-                  <col style={{width:80}} /><col style={{width:44}} />
+                  <col style={{width:110}} /><col style={{width:160}} />
+                  <col style={{width:110}} />
+                  <col style={{flex:'1.2',minWidth:240}} />
+                  <col style={{flex:'1.8',minWidth:320}} />
+                  <col style={{width:110}} /><col style={{width:110}} />
+                  <col style={{width:60}} /><col style={{width:44}} />
                 </colgroup>
                 <thead>
-                  <tr style={{height:44,background:'#F8FAFC',borderBottom:'1px solid #EEF0F3',position:'sticky',top:0,zIndex:2}}>
-                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Ngày</th>
-                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Nhân sự</th>
-                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Nền tảng</th>
-                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Nội dung</th>
-                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Trạng thái</th>
-                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Ngày đăng</th>
-                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Link</th>
+                  <tr style={{height:42,background:'#F8FAFC',borderBottom:'1px solid #EEF0F3',position:'sticky',top:0,zIndex:2}}>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:11,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Ngày</th>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:11,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Nhân sự</th>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:11,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Nền tảng</th>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:11,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Tiêu đề</th>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:11,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Tóm tắt</th>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:11,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Trạng thái</th>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:11,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Ngày đăng</th>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:11,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Link</th>
                     <th className="px-3 text-center" style={{width:44}}></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#F0F2F5]/50">
+                <tbody className="divide-y divide-[#EEF0F3]">
                   {filteredRows.length===0 && (
-                    <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-muted">
+                    <tr><td colSpan={9} className="px-6 py-12 text-center text-sm text-muted">
                       <div className="flex flex-col items-center gap-2"><List size={32} className="opacity-20" /><p>Chưa có nội dung</p></div>
                     </td></tr>
                   )}
@@ -798,46 +800,48 @@ const addAdRow = async () => {
                     const isSaving = saving.has(r.id);
                     const edited = (id:string) => editCell?.id===r.id && editCell?.field===id;
                     const statusColor = (STATUSES.find((s:any)=>s.key===(r.status||'idea'))?.color||'#6b7280');
-                    const dateVal = r.date ? r.date.split('T')[0].split(' ')[0] : '';
-                    const pubVal = r.publish_date ? r.publish_date.split('T')[0].split(' ')[0] : '';
+                    const fmtDate = (d:any) => d ? (d.split('T')[0]||d).split(' ')[0].split('-').reverse().join('/') : '';
+                    const dateVal = fmtDate(r.date);
+                    const pubVal = fmtDate(r.publish_date);
                     const assigneeName = (members.find((m:any)=>m.id===r.assignee)?.userName || members.find((m:any)=>m.id===r.assignee)?.name) || (r.assignee || '—');
                     return (
-                    <tr key={r.id} style={{minHeight:60,transition:'background .15s',opacity:isSaving?0.55:1}} className="hover:bg-[#FAFBFC]">
-                      <td className="px-3 cursor-pointer" style={{color:'#475467',fontVariantNumeric:'tabular-nums',lineHeight:'32px',fontSize:13}} onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'date'});}}>
-                        {edited('date') ? <input type="date" value={dateVal} onBlur={e=>{saveField(r.id,'date',e.target.value);setEditCell(null);}} onChange={e=>setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,date:e.target.value}:x))} className="w-full h-8 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none" /> : <span>{dateVal || '—'}</span>}
+                    <tr key={r.id} style={{height:46,transition:'background .15s',opacity:isSaving?0.55:1}} className="hover:bg-[#F8FAFC]">
+                      <td className="px-3 cursor-pointer text-[13px]" style={{color:'#475467',fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px'}} onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'date'});}}>
+                        {edited('date') ? <input type="date" value={r.date?(r.date.split('T')[0].split(' ')[0]):''} onBlur={e=>{saveField(r.id,'date',e.target.value);setEditCell(null);}} onChange={e=>setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,date:e.target.value}:x))} className="w-full h-9 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none" /> : <span>{dateVal||'—'}</span>}
                       </td>
-                      <td className="px-3 cursor-pointer" style={{color:'#1F2937',lineHeight:'32px',fontSize:13}} onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'assignee'});}}>
-                        {edited('assignee') ? <select value={r.assignee||''} onBlur={()=>setEditCell(null)} onChange={e=>{saveField(r.id,'assignee',e.target.value);setEditCell(null);}} className="w-full h-8 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none"><option value="">—</option>{members.map((m:any)=><option key={m.id} value={m.id}>{m.userName||m.name}</option>)}</select> : <span>{assigneeName}</span>}
+                      <td className="px-3 cursor-pointer text-[13px]" style={{color:'#1F2937',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px'}} onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'assignee'});}}>
+                        {edited('assignee') ? <select value={r.assignee||''} onBlur={()=>setEditCell(null)} onChange={e=>{saveField(r.id,'assignee',e.target.value);setEditCell(null);}} className="w-full h-9 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none"><option value="">—</option>{members.map((m:any)=><option key={m.id} value={m.id}>{m.userName||m.name}</option>)}</select> : <span>{assigneeName}</span>}
                       </td>
-                      <td className="px-3 cursor-pointer" style={{color:'#1F2937',lineHeight:'32px',fontSize:13}} onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'platform'});}}>
-                        {edited('platform') ? <select value={r.platform||''} onBlur={()=>setEditCell(null)} onChange={e=>{saveField(r.id,'platform',e.target.value);setEditCell(null);}} className="w-full h-8 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none"><option value="">—</option>{PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}</select> : <span>{r.platform||'—'}</span>}
+                      <td className="px-3 cursor-pointer text-[13px]" style={{color:'#1F2937',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px'}} onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'platform'});}}>
+                        {edited('platform') ? <select value={r.platform||''} onBlur={()=>setEditCell(null)} onChange={e=>{saveField(r.id,'platform',e.target.value);setEditCell(null);}} className="w-full h-9 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none"><option value="">—</option>{PLATFORMS.map(p => <option key={p} value={p}>{p}</option>)}</select> : <span>{r.platform||'—'}</span>}
                       </td>
-                      <td className="px-3 cursor-pointer" onClick={e=>{e.stopPropagation();setWordEditor({id:r.id,title:r.title||'',summary:r.summary||''});}}>
-                        <p className="text-[14px] font-medium text-[#1F2937]" style={{lineHeight:'20px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={r.title}>{r.title || <span className="text-[#98A2B3]">Chưa có tiêu đề</span>}</p>
-                        {r.summary ? <p className="text-[12px] text-[#667085]" style={{lineHeight:'18px',marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={r.summary}>{r.summary}</p> : <p className="text-[12px] text-[#98A2B3]" style={{lineHeight:'18px',marginTop:2}}>Soạn nội dung</p>}
+                      <td className="px-3 cursor-pointer text-[13px] font-medium" style={{color:'#1F2937',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px'}} onClick={e=>{e.stopPropagation();setWordEditor({id:r.id,title:r.title||'',summary:r.summary||''});}}>
+                        {r.title||<span className="text-[#98A2B3]">—</span>}
                       </td>
-                      <td className="px-3">
-                        <span onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'status'});}} className="inline-flex items-center justify-center rounded-full cursor-pointer" style={{height:24,padding:'0 8px',fontSize:12,fontWeight:500,whiteSpace:'nowrap',backgroundColor:statusColor+'20',color:statusColor}}>
-                          {edited('status') ? <select value={r.status||'idea'} onBlur={()=>setEditCell(null)} onChange={e=>{saveField(r.id,'status',e.target.value);setEditCell(null);}} style={{background:'transparent',border:'none',outline:'none',fontSize:12}}>{STATUSES.map((s:any) => <option key={s.key} value={s.key}>{s.label}</option>)}</select> : (STATUSES.find((s:any)=>s.key===(r.status||'idea'))?.label || '—')}
+                      <td className="px-3 cursor-pointer text-[13px]" style={{color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px'}} onClick={e=>{e.stopPropagation();setWordEditor({id:r.id,title:r.title||'',summary:r.summary||''});}}>
+                        {r.summary||<span className="text-[#98A2B3]">Soạn nội dung</span>}
+                      </td>
+                      <td className="px-3" style={{lineHeight:'46px'}}>
+                        <span onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'status'});}} className="inline-flex items-center justify-center rounded-full cursor-pointer" style={{height:24,padding:'0 8px',fontSize:11,fontWeight:500,whiteSpace:'nowrap',backgroundColor:statusColor+'20',color:statusColor}}>
+                          {edited('status') ? <select value={r.status||'idea'} onBlur={()=>setEditCell(null)} onChange={e=>{saveField(r.id,'status',e.target.value);setEditCell(null);}} style={{background:'transparent',border:'none',outline:'none',fontSize:11}}>{STATUSES.map((s:any) => <option key={s.key} value={s.key}>{s.label}</option>)}</select> : (STATUSES.find((s:any)=>s.key===(r.status||'idea'))?.label || '—')}
                         </span>
                       </td>
-                      <td className="px-3 cursor-pointer" style={{color:'#475467',fontVariantNumeric:'tabular-nums',lineHeight:'32px',fontSize:13}} onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'publish_date'});}}>
-                        {edited('publish_date') ? <input type="date" value={pubVal} onBlur={e=>{saveField(r.id,'publishDate',e.target.value);setEditCell(null);}} onChange={e=>setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,publish_date:e.target.value}:x))} className="w-full h-8 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none" /> : <span>{pubVal || '—'}</span>}
+                      <td className="px-3 cursor-pointer text-[13px]" style={{color:'#475467',fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',lineHeight:'46px'}} onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'publish_date'});}}>
+                        {edited('publish_date') ? <input type="date" value={r.publish_date?r.publish_date.split('T')[0].split(' ')[0]:''} onBlur={e=>{saveField(r.id,'publishDate',e.target.value);setEditCell(null);}} onChange={e=>setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,publish_date:e.target.value}:x))} className="w-full h-9 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none" /> : <span>{pubVal||'—'}</span>}
                       </td>
-                      <td className="px-3" style={{lineHeight:'32px',fontSize:13}}>
-                        {r.post_link ? <a href={r.post_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-md transition-all text-[#4f46e5] hover:bg-[#EEF2FF]" style={{width:32,height:32,fontSize:16}} title="Mở liên kết">🔗</a> : <span className="text-[#B0B7C3]" title="Nhấp để thêm liên kết" onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'post_link'});}} style={{cursor:'pointer',fontSize:13}}>—</span>}
-                        {edited('post_link') && <div style={{position:'relative'}}><input type="text" value={r.post_link||''} onBlur={e=>{saveField(r.id,'postLink',e.target.value);setEditCell(null);}} onChange={e=>setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,post_link:e.target.value}:x))} placeholder="Nhập URL..." className="w-48 h-8 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none" /></div>}
+                      <td className="px-3 text-center" style={{lineHeight:'46px'}}>
+                        {r.post_link ? <a href={r.post_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-md transition-all text-[#4f46e5] hover:bg-[#EEF2FF]" style={{width:28,height:28,fontSize:14}} title="Mở liên kết">↗</a> : <span className="text-[#B0B7C3]" onClick={e=>{e.stopPropagation();setEditCell({id:r.id,field:'post_link'});}} style={{cursor:'pointer',fontSize:13}}>—</span>}
+                        {edited('post_link') && <div style={{position:'relative',zIndex:10}}><input type="text" value={r.post_link||''} onBlur={e=>{saveField(r.id,'postLink',e.target.value);setEditCell(null);}} onChange={e=>setRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,post_link:e.target.value}:x))} placeholder="URL..." className="w-44 h-9 border border-[#E5E7EB] rounded-lg px-2 text-xs outline-none" style={{position:'absolute',right:0,top:0}} /></div>}
                       </td>
                       <td className="px-3 text-center" style={{width:44}}>
-                        <button onClick={() => deleteRow(r.id)} className="inline-flex items-center justify-center rounded-md hover:bg-red-50 text-[#98A2B3] hover:text-red-500 transition-all" style={{width:32,height:32,fontSize:20}} title="Xoá">⋯</button>
+                        <button onClick={() => deleteRow(r.id)} className="inline-flex items-center justify-center rounded-md hover:bg-red-50 text-[#98A2B3] hover:text-red-500 transition-all" style={{width:28,height:28,fontSize:18}} title="Xoá">⋯</button>
                       </td>
                     </tr>
                   );})}
                 </tbody>
               </table>
             </div>
-          </div>
-          {wordEditor && (
+          </div>{wordEditor && (
             <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setWordEditor(null)}>
               <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col border border-border overflow-hidden" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-gray-50/80">
