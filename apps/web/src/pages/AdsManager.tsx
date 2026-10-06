@@ -193,7 +193,7 @@ export default function AdsManager() {
               if (r?.error) { showMsg('error', r.error); return; }
               if (r?.accounts?.length > 0) {
                 let ok = 0, dup = 0, fail = 0;
-                const existingIds = new Set(accounts.map((a: any) => 'act_' + a.ad_account_id));
+                const existingIds = new Set(accounts.map((a: any) => a.ad_account_id));
                 for (const acc of r.accounts) {
                   if (existingIds.has(acc.account_id)) { dup++; continue; }
                   try {
