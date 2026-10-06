@@ -525,33 +525,38 @@ const addAdRow = async () => {
             ))}
           </div>
 
-          <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+<div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed" style={{borderCollapse:'separate',borderSpacing:0}}>
+              <table className="w-full" style={{borderCollapse:'separate',borderSpacing:0, minWidth:1600}}>
                 <colgroup>
-                  <col style={{width:80}} /><col style={{width:80}} /><col style={{width:120}} /><col style={{width:120}} /><col style={{width:120}} /><col style={{width:50}} /><col style={{width:50}} /><col style={{width:50}} /><col style={{width:50}} /><col style={{width:40}} /><col style={{width:60}} /><col style={{width:50}} /><col style={{width:50}} /><col style={{width:50}} /><col style={{width:50}} /><col style={{width:25}} />
+                  <col style={{width:125}} /><col style={{width:150}} />
+                  <col style={{width:115}} /><col style={{width:115}} /><col style={{width:115}} />
+                  <col style={{width:65}} /><col style={{width:65}} />
+                  <col style={{width:105}} /><col style={{width:75}} />
+                  <col style={{width:85}} /><col style={{width:70}} /><col style={{width:70}} /><col style={{width:90}} />
+                  <col style={{width:95}} /><col style={{width:100}} /><col style={{width:40}} />
                 </colgroup>
                 <thead>
-                  <tr className="bg-gray-50/80 border-b border-border">
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-left">Ngày</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-left">Nền tảng</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CP(có)</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CP(chưa)</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">D.thu</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">Đơn</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">SIM</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">Impr</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">Click</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CTR</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CP/Đ</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">ROAS</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CP/DT</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">CPC</th>
-                    <th className="px-1 py-1.5 text-xs font-semibold text-muted uppercase text-right">Thuế</th>
-                    <th></th>
+                  <tr style={{height:42, background:'#F8FAFC', borderBottom:'1px solid #EEF0F3'}}>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap',position:'sticky',left:0,zIndex:2,background:'#F8FAFC'}}>Ngày</th>
+                    <th className="px-3 text-left font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap',position:'sticky',left:125,zIndex:2,background:'#F8FAFC'}}>Nền tảng</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>CP(có)</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>CP(chưa)</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>D.thu</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Đơn</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>SIM</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap',borderLeft:'1px solid #EEF0F3'}}>CP/Đ</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>ROAS</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap',borderLeft:'1px solid #EEF0F3'}}>Impr</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Click</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>CTR</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>CPC</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap',borderLeft:'1px solid #EEF0F3'}}>CP/DT</th>
+                    <th className="px-3 text-right font-semibold uppercase tracking-wide" style={{fontSize:12,lineHeight:'16px',color:'#667085',whiteSpace:'nowrap'}}>Thuế</th>
+                    <th style={{width:40}}></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/50">
+                <tbody className="divide-y divide-[#EEF0F3]/50">
                   {adRows.length===0 && (
                     <tr><td colSpan={16} className="px-6 py-12 text-center text-sm text-muted">
                       <div className="flex flex-col items-center gap-2"><List size={32} className="opacity-20" /><p>Chưa có dữ liệu</p></div>
@@ -566,65 +571,69 @@ const addAdRow = async () => {
                     const cpDt = costEx>0 ? costEx/Math.max(1,Number(r.revenue||0))*100 : 0;
                     const cpc = Number(r.clicks||0)>0 ? costEx/Number(r.clicks||0) : 0;
                     const isGrouped = adGroupBy !== 'day';
+                    const hasCost = Number(r.cost_with_tax||0) > 0;
+                    const roasColor = roas >= 1 ? '#059669' : roas > 0 ? '#D97706' : '#98A2B3';
+                    const f = (n:number) => Math.round(n).toLocaleString('vi-VN');
                     return (
-                      <tr key={r.id||idx} className={'hover:bg-gray-50/60 transition-all ' + (adSaving.has(r.id) ? 'opacity-50' : '')}>
-                        <td className="px-1 py-1 text-sm text-muted">{(() => { const d = r.dateStr || (r.date?new Date(r.date).toLocaleDateString('fr-CA',{timeZone:'Asia/Ho_Chi_Minh'}):'') || r.periodLabel || ''; return adGroupBy === 'day' ? <input type="date" value={d} onChange={e=>{const v=e.target.value;setAdRows((prev:any[])=>prev.map(x=>x.id===r.id?{...x,date:v,dateStr:v}:x))}} onBlur={e=>saveAdField(r.id,'date',e.target.value)} className="w-full bg-transparent border-none outline-none text-xs cursor-pointer" /> : <span className="text-xs text-muted">{r.periodLabel||''}</span>; })()}</td>
-                        <td className="px-1 py-0.5 text-sm">
-                        {isGrouped ? <span className="text-muted">{r.platform==='google_ads'?'Google':r.platform==='facebook_ads'?'Facebook':r.platform==='tiktok_ads'?'Tiktok':r.platform||'-'}</span> :
-                          <select value={r.platform||'facebook_ads'} onChange={e => saveAdField(r.id,'platform',e.target.value)}
-                            className="w-full bg-transparent text-sm outline-none border-0 cursor-pointer">
-                            <option value="google_ads">Google Ads</option>
-                            <option value="facebook_ads">Facebook Ads</option>
-                            <option value="tiktok_ads">Tiktok Ads</option>
-                          </select>}
-                      </td>
-                        <td className="px-1 py-0.5 text-sm text-right">
-                          {isGrouped ? <span className="text-muted">{Math.round(Number(r.cost_with_tax||0)).toLocaleString('vi-VN')}</span> :
-                            <input type="number" value={r.cost_with_tax||0}
-                              onBlur={e => saveAdField(r.id,'cost_with_tax',Number(e.target.value))}
-                              onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,cost_with_tax:Number(e.target.value)}:x))}
-                              className="w-full bg-transparent text-sm text-right outline-none border-0" />}
+                      <tr key={r.id||idx} style={{height:46, transition:'background .15s', opacity: hasCost ? 1 : 0.55}} className="hover:bg-[#F8FAFC]">
+                        <td className="px-3 text-[13px]" style={{fontVariantNumeric:'tabular-nums',color:'#475467',position:'sticky',left:0,zIndex:1,background:'white'}}>
+                          {(() => { const d = r.dateStr || (r.date?new Date(r.date).toLocaleDateString('fr-CA',{timeZone:'Asia/Ho_Chi_Minh'}):'') || r.periodLabel || ''; return adGroupBy === 'day' ? <input type="date" value={d} onChange={e=>{const v=e.target.value;setAdRows((prev:any[])=>prev.map(x=>x.id===r.id?{...x,date:v,dateStr:v}:x))}} onBlur={e=>saveAdField(r.id,'date',e.target.value)} className="w-full bg-transparent border-none outline-none text-xs cursor-pointer" style={{fontVariantNumeric:'tabular-nums',width:90}} /> : <span className="text-xs text-[#475467]">{r.periodLabel||''}</span>; })()}
                         </td>
-                        <td className="px-1 py-0.5 text-sm text-right text-muted">{Math.round(costEx).toLocaleString('vi-VN')}</td>
-                        <td className="px-1 py-0.5 text-sm text-right">
-                          {isGrouped ? <span className="text-muted">{Math.round(Number(r.revenue||0)).toLocaleString('vi-VN')}</span> :
-                            <input type="number" value={r.revenue||0}
-                              onBlur={e => saveAdField(r.id,'revenue',Number(e.target.value))}
-                              onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,revenue:Number(e.target.value)}:x))}
-                              className="w-full bg-transparent text-sm text-right outline-none border-0" />}
+                        <td className="px-3" style={{position:'sticky',left:125,zIndex:1,background:'white'}}>
+                          {isGrouped ? <span className="text-[13px] text-[#475467]">{r.platform==='google_ads'?'Google Ads':r.platform==='facebook_ads'?'Facebook':r.platform==='tiktok_ads'?'Tiktok':r.platform||'-'}</span> :
+                            <select value={r.platform||'facebook_ads'} onChange={e => saveAdField(r.id,'platform',e.target.value)}
+                              className="w-full bg-transparent text-[13px] outline-none border-0 cursor-pointer" style={{color:'#1F2937'}}>
+                              <option value="google_ads">Google Ads</option>
+                              <option value="facebook_ads">Facebook Ads</option>
+                              <option value="tiktok_ads">Tiktok Ads</option>
+                            </select>}
                         </td>
-                        <td className="px-1 py-0.5 text-sm text-right">{isGrouped ? <span className="text-muted">{Number(r.orders||0)}</span> :
-                          <input type="number" value={r.orders||0}
-                            onBlur={e => saveAdField(r.id,'orders',Number(e.target.value))}
-                            onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,orders:Number(e.target.value)}:x))}
-                            className="w-full bg-transparent text-sm text-right outline-none border-0" />}
+                        <td className="px-3 text-right text-[13px] whitespace-nowrap" style={{color: hasCost ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums'}}>
+                          {isGrouped ? <span>{f(Number(r.cost_with_tax||0))}</span> : <input type="number" value={r.cost_with_tax||0} onBlur={e => saveAdField(r.id,'cost_with_tax',Number(e.target.value))} onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,cost_with_tax:Number(e.target.value)}:x))} className="w-full bg-transparent text-[13px] text-right outline-none border-0 tabular-nums" />}
                         </td>
-                        <td className="px-1 py-0.5 text-sm text-right">{isGrouped ? <span className="text-muted">{Number(r.sims||0)}</span> :
-                          <input type="number" value={r.sims||0}
-                            onBlur={e => saveAdField(r.id,'sims',Number(e.target.value))}
-                            onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,sims:Number(e.target.value)}:x))}
-                            className="w-full bg-transparent text-sm text-right outline-none border-0" />}
+                        <td className="px-3 text-right text-[13px] whitespace-nowrap" style={{color: hasCost ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums'}}>
+                          {hasCost ? f(costEx) : '—'}
                         </td>
-                        <td className="px-1 py-0.5 text-sm text-right">{isGrouped ? <span className="text-muted">{Math.round(Number(r.impressions||0)).toLocaleString('vi-VN')}</span> :
-                          <input type="number" value={r.impressions||0}
-                            onBlur={e => saveAdField(r.id,'impressions',Number(e.target.value))}
-                            onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,impressions:Number(e.target.value)}:x))}
-                            className="w-full bg-transparent text-sm text-right outline-none border-0" />}
+                        <td className="px-3 text-right text-[13px] font-medium whitespace-nowrap" style={{color: Number(r.revenue||0) > 0 ? '#059669' : '#B0B7C3', fontVariantNumeric:'tabular-nums'}}>
+                          {isGrouped ? <span className="font-medium">{f(Number(r.revenue||0))}</span> :
+                            <input type="number" value={r.revenue||0} onBlur={e => saveAdField(r.id,'revenue',Number(e.target.value))} onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,revenue:Number(e.target.value)}:x))} className="w-full bg-transparent text-[13px] text-right outline-none border-0 tabular-nums" />}
                         </td>
-                        <td className="px-1 py-0.5 text-sm text-right">{isGrouped ? <span className="text-muted">{Math.round(Number(r.clicks||0)).toLocaleString('vi-VN')}</span> :
-                          <input type="number" value={r.clicks||0}
-                            onBlur={e => saveAdField(r.id,'clicks',Number(e.target.value))}
-                            onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,clicks:Number(e.target.value)}:x))}
-                            className="w-full bg-transparent text-sm text-right outline-none border-0" />}
+                        <td className="px-3 text-right text-[13px]" style={{color: Number(r.orders||0) > 0 ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums'}}>
+                          {isGrouped ? <span>{Number(r.orders||0)}</span> :
+                            <input type="number" value={r.orders||0} onBlur={e => saveAdField(r.id,'orders',Number(e.target.value))} onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,orders:Number(e.target.value)}:x))} className="w-full bg-transparent text-[13px] text-right outline-none border-0 tabular-nums" />}
                         </td>
-                        <td className="px-1 py-0.5 text-sm text-right text-muted">{ctr.toFixed(1)}</td>
-                        <td className="px-1 py-0.5 text-sm text-right text-muted">{cpOrder>0 ? Math.round(cpOrder).toLocaleString('vi-VN') : '—'}</td>
-                        <td className="px-1 py-0.5 text-sm text-right font-medium text-primary">{roas.toFixed(1)}x</td>
-                        <td className="px-1 py-0.5 text-sm text-right text-muted">{cpDt.toFixed(1)}</td>
-                        <td className="px-1 py-0.5 text-sm text-right text-muted">{cpc>0 ? Math.round(cpc).toLocaleString('vi-VN') : '—'}</td>
-                        <td className="px-1 py-0.5 text-sm text-right text-red-500 font-medium">{Math.round(tax).toLocaleString('vi-VN')}</td>
-                        <td className="px-1 py-1 text-sm text-center">
-                          {!isGrouped && <button onClick={() => { if(confirm('Xoá?')){api('/ads/'+r.id,{method:'DELETE'}).then(()=>loadAds()).catch(()=>{});}}} className="p-0.5 rounded hover:bg-red-50 text-muted hover:text-red-500"><X size={10} /></button>}
+                        <td className="px-3 text-right text-[13px]" style={{color: Number(r.sims||0) > 0 ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums'}}>
+                          {isGrouped ? <span>{Number(r.sims||0)}</span> :
+                            <input type="number" value={r.sims||0} onBlur={e => saveAdField(r.id,'sims',Number(e.target.value))} onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,sims:Number(e.target.value)}:x))} className="w-full bg-transparent text-[13px] text-right outline-none border-0 tabular-nums" />}
+                        </td>
+                        <td className="px-3 text-right text-[13px] whitespace-nowrap" style={{color: cpOrder > 0 ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums', borderLeft:'1px solid #EEF0F3'}}>
+                          {cpOrder > 0 ? f(cpOrder) : '—'}
+                        </td>
+                        <td className="px-3 text-right text-[13px] font-semibold" style={{color: roasColor, fontVariantNumeric:'tabular-nums'}}>
+                          {roas.toFixed(1)}x
+                        </td>
+                        <td className="px-3 text-right text-[13px]" style={{color: Number(r.impressions||0) > 0 ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums', borderLeft:'1px solid #EEF0F3'}}>
+                          {isGrouped ? <span>{f(Number(r.impressions||0))}</span> :
+                            <input type="number" value={r.impressions||0} onBlur={e => saveAdField(r.id,'impressions',Number(e.target.value))} onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,impressions:Number(e.target.value)}:x))} className="w-full bg-transparent text-[13px] text-right outline-none border-0 tabular-nums" />}
+                        </td>
+                        <td className="px-3 text-right text-[13px]" style={{color: Number(r.clicks||0) > 0 ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums'}}>
+                          {isGrouped ? <span>{f(Number(r.clicks||0))}</span> :
+                            <input type="number" value={r.clicks||0} onBlur={e => saveAdField(r.id,'clicks',Number(e.target.value))} onChange={e => setAdRows((prev:any[])=>prev.map((x:any)=>x.id===r.id?{...x,clicks:Number(e.target.value)}:x))} className="w-full bg-transparent text-[13px] text-right outline-none border-0 tabular-nums" />}
+                        </td>
+                        <td className="px-3 text-right text-[13px]" style={{color: ctr > 0 ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums'}}>
+                          {ctr.toFixed(1)}%
+                        </td>
+                        <td className="px-3 text-right text-[13px] whitespace-nowrap" style={{color: cpc > 0 ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums'}}>
+                          {cpc > 0 ? f(cpc) : '—'}
+                        </td>
+                        <td className="px-3 text-right text-[13px]" style={{color: cpDt > 0 ? '#1F2937' : '#B0B7C3', fontVariantNumeric:'tabular-nums', borderLeft:'1px solid #EEF0F3'}}>
+                          {cpDt.toFixed(1)}%
+                        </td>
+                        <td className="px-3 text-right text-[13px] whitespace-nowrap" style={{color: tax > 0 ? '#6B7280' : '#B0B7C3', fontVariantNumeric:'tabular-nums'}}>
+                          {tax > 0 ? f(tax) : '—'}
+                        </td>
+                        <td className="px-3 text-center" style={{width:40}}>
+                          {!isGrouped && <button onClick={() => { if(confirm('Xoá?')){api('/ads/'+r.id,{method:'DELETE'}).then(()=>loadAds()).catch(()=>{});}}} className="inline-flex items-center justify-center rounded-md hover:bg-red-50 text-[#98A2B3] hover:text-red-500 transition-all" style={{width:28,height:28}}><X size={12} /></button>}
                         </td>
                       </tr>
                     );
