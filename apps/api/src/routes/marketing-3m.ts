@@ -97,7 +97,7 @@ export default async function (app: FastifyInstance) {
   app.get('/marketing-3m/fanpage', async (req, reply) => {
     try {
       const q = req.query as any;
-      let sql = 'SELECT fp.id, DATE_FORMAT(fp.day, '%Y-%m-%d') as day, fp.time, fp.format, fp.channel_id, fp.pillar, fp.key_message, fp.content_text, fp.media_url, fp.media_name, fp.status, fp.completion_link, fp.created_at, fp.updated_at, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE 1=1';
+      let sql = "SELECT fp.id, DATE_FORMAT(fp.day, '%Y-%m-%d') as day, fp.time, fp.format, fp.channel_id, fp.pillar, fp.key_message, fp.content_text, fp.media_url, fp.media_name, fp.status, fp.completion_link, fp.created_at, fp.updated_at, mc.name as channelName FROM marketing_3m_fanpage fp LEFT JOIN media_channels mc ON mc.id = fp.channel_id WHERE 1=1";
       const params: any[] = [];
       if (q.status) { sql += ' AND fp.status = ?'; params.push(q.status); }
       if (q.dateFrom) { sql += ' AND fp.day >= ?'; params.push(q.dateFrom); }
