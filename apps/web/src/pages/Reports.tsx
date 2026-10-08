@@ -283,6 +283,7 @@ export default function Reports() {
   };
 
   const submitReport = async () => {
+    if (employeeRole === 'digital-marketing' && !commitChecked) { showToast('error', 'Vui lòng tích vào Cam kết đã điền đầy đủ lý do trước khi gửi'); return; }
     if (!content.trim()) return;
     setSending(true);
     try {
