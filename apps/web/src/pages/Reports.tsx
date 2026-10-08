@@ -434,66 +434,19 @@ export default function Reports() {
                 
                 {/* DM: Customer hierarchy */}
                 {employeeRole === 'digital-marketing' && (
-                  <div className="mt-5 bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden">
-                    <div className="px-5 py-4 bg-[#F8FAFC] border-b border-[#E5E7EB]">
-                      <h3 className="text-sm font-semibold text-[#101828]">Thống kê khách hàng theo cấp</h3>
-                    </div>
-                    <div className="px-5 py-4 space-y-3">
-                      {/* Tầng 1 — 3 cột: Manshon / Family / Đăng ký lại */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        <div className="bg-white border border-[#E5E7EB] rounded-xl p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-[#667085] font-medium">Khách Manshon</span>
-                            <div className="w-7 h-7 rounded-lg bg-[#EEF2FF] flex items-center justify-center"><span className="text-[11px] text-[#6366F1] font-bold">M</span></div>
-                          </div>
-                          <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))}
-                            className="w-full text-center border-0 border-b-2 border-[#E5E7EB] bg-transparent text-2xl font-bold text-[#101828] outline-none" style={{fontVariantNumeric:'tabular-nums'}} />
-                        </div>
-                        <div className="bg-white border border-[#E5E7EB] rounded-xl p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-[#667085] font-medium">Khách Family</span>
-                            <div className="w-7 h-7 rounded-lg bg-[#E0F2FE] flex items-center justify-center"><span className="text-[11px] text-[#0891B2] font-bold">F</span></div>
-                          </div>
-                          <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))}
-                            className="w-full text-center border-0 border-b-2 border-[#E5E7EB] bg-transparent text-2xl font-bold text-[#101828] outline-none" style={{fontVariantNumeric:'tabular-nums'}} />
-                        </div>
-                        <div className="bg-white border border-[#E5E7EB] rounded-xl p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-[#667085] font-medium">Khách đăng ký lại</span>
-                            <div className="w-7 h-7 rounded-lg bg-[#F0FDF4] flex items-center justify-center"><span className="text-[11px] text-[#16A34A] font-bold">R</span></div>
-                          </div>
-                          <input type="number" min={0} value={khachDangKyLai} onChange={e => setKhachDangKyLai(Number(e.target.value))}
-                            className="w-full text-center border-0 border-b-2 border-[#E5E7EB] bg-transparent text-2xl font-bold text-[#101828] outline-none" style={{fontVariantNumeric:'tabular-nums'}} />
-                        </div>
-                      </div>
-
-                      {/* Tầng 2 — 2 cột: Tổng cố định / Cầm tay */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-[#667085] font-medium">Tổng khách cố định</span>
-                            <div className="w-7 h-7 rounded-lg bg-[#EEF2FF] flex items-center justify-center"><span className="text-[11px] text-[#6366F1] font-bold">Σ</span></div>
-                          </div>
-                          <div className="text-center text-2xl font-bold text-[#6366F1]" style={{fontVariantNumeric:'tabular-nums'}}>{khachManhSon + khachFamily + khachDangKyLai}</div>
-                        </div>
-                        <div className="bg-white border border-[#E5E7EB] rounded-xl p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-[#667085] font-medium">Khách Cầm tay</span>
-                            <div className="w-7 h-7 rounded-lg bg-[#E0F2FE] flex items-center justify-center"><span className="text-[11px] text-[#0891B2] font-bold">C</span></div>
-                          </div>
-                          <input type="number" min={0} value={khachCamTay} onChange={e => setKhachCamTay(Number(e.target.value))}
-                            className="w-full text-center border-0 border-b-2 border-[#E5E7EB] bg-transparent text-2xl font-bold text-[#101828] outline-none" style={{fontVariantNumeric:'tabular-nums'}} />
-                        </div>
-                      </div>
-
-                      {/* Tầng 3 — Tổng kết */}
-                      <div className="bg-[#F5F3FF] border border-[#C7D2FE] rounded-xl p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-9 h-9 rounded-lg bg-[#EDE9FE] flex items-center justify-center"><span className="text-sm text-[#4F46E5] font-bold">Σ</span></div>
-                          <span className="text-sm font-semibold text-[#101828]">Tổng khách chốt</span>
-                        </div>
-                        <div className="text-3xl font-bold text-[#4F46E5]" style={{fontVariantNumeric:'tabular-nums'}}>{khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</div>
-                      </div>
+                  <div className="mt-4 bg-white border border-[#E5E7EB] rounded-xl px-4 py-3">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-semibold text-[#475467] whitespace-nowrap">Khách hàng:</span>
+                      <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))} placeholder="Manshon"
+                        className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none" />
+                      <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))} placeholder="Family"
+                        className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none" />
+                      <input type="number" min={0} value={khachDangKyLai} onChange={e => setKhachDangKyLai(Number(e.target.value))} placeholder="Đ.ký lại"
+                        className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none" />
+                      <span className="text-xs font-medium text-[#6366F1] whitespace-nowrap">Cố định: {khachManhSon + khachFamily + khachDangKyLai}</span>
+                      <input type="number" min={0} value={khachCamTay} onChange={e => setKhachCamTay(Number(e.target.value))} placeholder="Cầm tay"
+                        className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none" />
+                      <span className="text-xs font-bold text-[#4F46E5] whitespace-nowrap">Tổng: {khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span>
                     </div>
                   </div>
                 )}
