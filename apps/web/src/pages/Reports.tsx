@@ -114,7 +114,8 @@ export default function Reports() {
   const [analysisCount, setAnalysisCount] = useState<number|null>(null);
   const [analysisStats, setAnalysisStats] = useState<any>(null);
   const [analysisPeriod, setAnalysisPeriod] = useState('');
-  const [analysisHtml, setAnalysisHtml] = useState('');
+  const [analysisReportSummary, setAnalysisReportSummary] = useState<any>(null);
+const [analysisHtml, setAnalysisHtml] = useState('');
   const [analysisHistory, setAnalysisHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [viewingHistory, setViewingHistory] = useState<any>(null);
@@ -712,6 +713,15 @@ export default function Reports() {
                 setAnalysisStage('AI đang phân tích & tổng hợp...');
                 const summary = result?.summary || '_Không nhận được phân tích._';
                 setAnalysisResult(summary);
+                setAnalysisCount(data.length);
+                const s: Record<string,number> = {};
+                data.forEach((rpt:any) => {
+                  const m = (() => { try { return JSON.parse(rpt.data||'{}'); } catch { return {}; } })().metrics||{};
+                  ['todayOrders','todayCost','b3TotalCost','todayMessages','adsTotal','adsRevenue','adsOrders','seoOrders','seoRevenue','socialPosts','publishedPosts'].forEach(k => { s[k] = (s[k]||0) + (m[k]||0); });
+                });
+                if (s.todayMessages) s.avgMessCost = Math.round(s.todayCost / s.todayMessages);
+                if (s.adsTotal) s.roas = Math.round(s.adsRevenue / s.adsTotal * 100) / 100;
+                setAnalysisReportSummary(s);
                 const pc = data.filter((x:any)=>x.status==='pending').length;
                 const ac = data.filter((x:any)=>x.status==='approved').length;
                 const rc = data.filter((x:any)=>x.status==='rejected').length;
@@ -879,6 +889,15 @@ export default function Reports() {
                 setAnalysisStage('AI đang phân tích & tổng hợp...');
                 const summary = result?.summary || '_Không nhận được phân tích._';
                 setAnalysisResult(summary);
+                setAnalysisCount(data.length);
+                const s: Record<string,number> = {};
+                data.forEach((rpt:any) => {
+                  const m = (() => { try { return JSON.parse(rpt.data||'{}'); } catch { return {}; } })().metrics||{};
+                  ['todayOrders','todayCost','b3TotalCost','todayMessages','adsTotal','adsRevenue','adsOrders','seoOrders','seoRevenue','socialPosts','publishedPosts'].forEach(k => { s[k] = (s[k]||0) + (m[k]||0); });
+                });
+                if (s.todayMessages) s.avgMessCost = Math.round(s.todayCost / s.todayMessages);
+                if (s.adsTotal) s.roas = Math.round(s.adsRevenue / s.adsTotal * 100) / 100;
+                setAnalysisReportSummary(s);
                 const pc = data.filter((x:any)=>x.status==='pending').length;
                 const ac = data.filter((x:any)=>x.status==='approved').length;
                 const rc = data.filter((x:any)=>x.status==='rejected').length;
@@ -1605,6 +1624,20 @@ export default function Reports() {
                       <p className="text-sm font-bold text-[#101828] mt-1">{analysisPeriod || (receivedDateRangeKey==='today' ? 'Hôm nay' : '7 ngày')}</p>
                     </div>
                   </div>
+                  {analysisReportSummary && (<div>
+                    <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider mb-3">Tổng hợp dữ liệu</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center"><p className="text-lg font-bold text-[#101828]">{analysisReportSummary.todayOrders||0}</p><p className="text-xs text-[#667085] mt-0.5">Đơn</p></div>
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center"><p className="text-lg font-bold text-[#2563EB]">{Number(analysisReportSummary.todayCost||0).toLocaleString('vi-VN')}đ</p><p className="text-xs text-[#667085] mt-0.5">Chi phí</p></div>
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center"><p className="text-lg font-bold text-[#D97706]">{Number(analysisReportSummary.adsTotal||0).toLocaleString('vi-VN')}đ</p><p className="text-xs text-[#667085] mt-0.5">CP QC</p></div>
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center"><p className="text-lg font-bold text-[#16A34A]">{Number(analysisReportSummary.adsRevenue||0).toLocaleString('vi-VN')}đ</p><p className="text-xs text-[#667085] mt-0.5">Doanh thu QC</p></div>
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center"><p className="text-lg font-bold text-[#7C3AED]">{analysisReportSummary.roas??'\u2014'}x</p><p className="text-xs text-[#667085] mt-0.5">ROAS</p></div>
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center"><p className="text-lg font-bold text-[#101828]">{analysisReportSummary.todayMessages||0}</p><p className="text-xs text-[#667085] mt-0.5">Tin nhắn</p></div>
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center"><p className="text-lg font-bold text-[#16A34A]">{analysisReportSummary.seoOrders||0}</p><p className="text-xs text-[#667085] mt-0.5">Đơn SEO</p></div>
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center"><p className="text-lg font-bold text-[#16A34A]">{Number(analysisReportSummary.seoRevenue||0).toLocaleString('vi-VN')}đ</p><p className="text-xs text-[#667085] mt-0.5">Doanh SEO</p></div>
+                      <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center"><p className="text-lg font-bold text-[#101828]">{analysisReportSummary.socialPosts||0 + ' / ' + analysisReportSummary.publishedPosts||0}</p><p className="text-xs text-[#667085] mt-0.5">Bài viết / Đã đăng</p></div>
+                    </div>
+                  </div>)}
 
                   {analysisHtml ? <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{__html: analysisHtml}} /> : <p className="text-sm text-[#98A2B3]">—</p>}
                 </div>
