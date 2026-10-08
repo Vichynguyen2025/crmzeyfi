@@ -703,7 +703,12 @@ const [analysisSummary, setAnalysisSummary] = useState<any>(null);
                 });
                 setAnalysisProgress(45);
                 setAnalysisStage('Đang gửi tới DeepSeek AI...');
+                const pi = setInterval(() => {
+                  setAnalysisProgress(p => Math.min(p + 5, 70));
+                  if (analysisProgress >= 65) setTimeout(() => clearInterval(pi), 100);
+                }, 3000);
                 const result = await api('/reports/analyze', { method:'POST', body:JSON.stringify({ reports: payload }) });
+                clearInterval(pi);
                 setAnalysisProgress(75);
                 setAnalysisStage('AI đang phân tích & tổng hợp...');
                 const summary = result?.summary || '_Không nhận được phân tích._';
@@ -886,8 +891,13 @@ const [analysisSummary, setAnalysisSummary] = useState<any>(null);
                   return { id:r.id, userName:getUserName(r.user_id) || r.userName || 'Ai đó', date:r.date, content:parsed.content || r.content || '', difficulties:parsed.difficulties || '', suggestions:parsed.suggestions || '', status:r.status };
                 });
                 setAnalysisProgress(45);
-                setAnalysisStage('Đang gửi tới DeepSeek AI...');;
+                setAnalysisStage('Đang gửi tới DeepSeek AI...');
+                const pi2 = setInterval(() => {
+                  setAnalysisProgress(p => Math.min(p + 5, 70));
+                  if (analysisProgress >= 65) setTimeout(() => clearInterval(pi2), 100);
+                }, 3000);
                 const result = await api('/reports/analyze', { method:'POST', body:JSON.stringify({ reports: payload }) });
+                clearInterval(pi2);
                 setAnalysisProgress(75);
                 setAnalysisStage('AI đang phân tích & tổng hợp...');
                 const summary = result?.summary || '_Không nhận được phân tích._';
