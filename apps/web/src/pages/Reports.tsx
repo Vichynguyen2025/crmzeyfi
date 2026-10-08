@@ -29,6 +29,10 @@ export default function Reports() {
   const [incompleteReason, setIncompleteReason] = useState('');
   const [commitChecked, setCommitChecked] = useState(false);
   const [receivedDevices, setReceivedDevices] = useState(0);
+  const [khachManhSon, setKhachManhSon] = useState(0);
+  const [khachFamily, setKhachFamily] = useState(0);
+  const [khachDangKyLai, setKhachDangKyLai] = useState(0);
+  const [khachCamTay, setKhachCamTay] = useState(0);
   const [attachments, setAttachments] = useState<string[]>([]);
   const [reportLinks, setReportLinks] = useState<string[]>([]);
   const [newLink, setNewLink] = useState('');
@@ -297,7 +301,7 @@ export default function Reports() {
           difficulties: difficulties.trim(),
           suggestions: suggestions.trim(),
           extraTasks: extraTasks.filter(t => t.trim()),
-          completedCount, uncompletedCount, incompleteReason: incompleteReason.trim(), commitChecked, receivedDevices,
+          completedCount, uncompletedCount, incompleteReason: incompleteReason.trim(), commitChecked, receivedDevices, khachManhSon, khachFamily, khachDangKyLai, khachCamTay,
           metrics: metrics,
           attachments: attachments,
           links: reportLinks,
@@ -428,6 +432,51 @@ export default function Reports() {
                   </div>
                 )}
                 
+                {/* DM: Customer hierarchy */}
+                {employeeRole === 'digital-marketing' && (
+                  <div className="mt-5 bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden">
+                    <div className="px-4 py-3 bg-[#4F46E5]/5 border-b border-[#E5E7EB]">
+                      <h3 className="text-sm font-semibold text-[#101828]">Thống kê khách hàng theo cấp</h3>
+                    </div>
+                    <div className="p-4 space-y-4">
+                      {/* Cấp 3: chi tiết */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-[#475467] mb-1">Khách Manshon</label>
+                          <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4F46E5]/20" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#475467] mb-1">Khách Family</label>
+                          <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4F46E5]/20" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#475467] mb-1">Khách đăng ký lại</label>
+                          <input type="number" min={0} value={khachDangKyLai} onChange={e => setKhachDangKyLai(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4F46E5]/20" />
+                        </div>
+                      </div>
+                      {/* Cấp 2: Tổng cố định + Cầm tay */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-[#EEF2FF] border border-[#C7D2FE] rounded-lg p-3 flex items-center justify-between">
+                          <span className="text-xs font-medium text-[#475467]">Tổng cố định (Manshon + Family + Đ.ký lại)</span>
+                          <span className="text-sm font-bold text-[#4F46E5]">{khachManhSon + khachFamily + khachDangKyLai}</span>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#475467] mb-1">Khách Cầm tay</label>
+                          <input type="number" min={0} value={khachCamTay} onChange={e => setKhachCamTay(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4F46E5]/20" />
+                        </div>
+                      </div>
+                      {/* Cấp 1: Tổng khách */}
+                      <div className="bg-gradient-to-r from-[#4F46E5]/10 to-[#7C3AED]/5 border border-[#C7D2FE] rounded-lg p-4 flex items-center justify-between">
+                        <span className="text-sm font-semibold text-[#101828]">Tổng khách chốt</span>
+                        <span className="text-lg font-bold text-[#4F46E5]">{khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {/* Additional fields */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
                   <div>
