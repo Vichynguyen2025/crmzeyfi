@@ -24,6 +24,10 @@ export default function Reports() {
   const [difficulties, setDifficulties] = useState('');
   const [suggestions, setSuggestions] = useState('');
   const [extraTasks, setExtraTasks] = useState<string[]>(['']);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [uncompletedCount, setUncompletedCount] = useState(0);
+  const [incompleteReason, setIncompleteReason] = useState('');
+  const [commitChecked, setCommitChecked] = useState(false);
   const [attachments, setAttachments] = useState<string[]>([]);
   const [reportLinks, setReportLinks] = useState<string[]>([]);
   const [newLink, setNewLink] = useState('');
@@ -291,6 +295,7 @@ export default function Reports() {
           difficulties: difficulties.trim(),
           suggestions: suggestions.trim(),
           extraTasks: extraTasks.filter(t => t.trim()),
+          completedCount, uncompletedCount, incompleteReason: incompleteReason.trim(), commitChecked,
           metrics: metrics,
           attachments: attachments,
           links: reportLinks,
@@ -385,6 +390,40 @@ export default function Reports() {
                 <textarea value={content} onChange={e => setContent(e.target.value)}
                   placeholder="Mô tả chi tiết công việc hôm nay của bạn..."
                   className="w-full h-32 px-4 py-3 bg-[#f8fafc] border border-border rounded-xl text-sm outline-none resize-none focus:ring-2 focus:ring-[#4f46e5]/20 transition-all" />
+                
+                {/* Digital Marketing: Installation Completion Table */}
+                {employeeRole === 'digital-marketing' && (
+                  <div className="mt-5 bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden">
+                    <div className="px-4 py-3 bg-[#4F46E5]/5 border-b border-[#E5E7EB]">
+                      <h3 className="text-sm font-semibold text-[#101828]">Bảng xác nhận hoàn thành lắp đặt</h3>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-[#475467] mb-1">Số lượng khách hoàn thành</label>
+                          <input type="number" min={0} value={completedCount} onChange={e => setCompletedCount(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4F46E5]/20" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#475467] mb-1">Số lượng khách chưa hoàn thành</label>
+                          <input type="number" min={0} value={uncompletedCount} onChange={e => setUncompletedCount(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4F46E5]/20" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#475467] mb-1">Lý do khách chưa hoàn thành</label>
+                        <textarea value={incompleteReason} onChange={e => setIncompleteReason(e.target.value)}
+                          placeholder="Nhập lý do khách hàng chưa hoàn thành lắp đặt..."
+                          className="w-full h-20 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs outline-none resize-none focus:ring-2 focus:ring-[#4F46E5]/20" />
+                      </div>
+                      <label className="flex items-start gap-2.5 cursor-pointer">
+                        <input type="checkbox" checked={commitChecked} onChange={e => setCommitChecked(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#4F46E5] focus:ring-[#4F46E5]" />
+                        <span className="text-xs text-[#475467] leading-relaxed">Cam kết đã điền đầy đủ lý do theo form Trưởng phòng quy định</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Additional fields */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
