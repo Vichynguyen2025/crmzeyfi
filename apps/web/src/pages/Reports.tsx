@@ -1422,7 +1422,7 @@ export default function Reports() {
 
                           {/* Digital Marketing: Installation Table */}
 
-                          {((JSON.parse(historyDetail.data||'{}')).role === 'digital-marketing' || (JSON.parse(historyDetail.data||'{}')).completedCount !== undefined) && (
+                          {true && (
 
                             <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden mt-4">
 
@@ -1485,7 +1485,7 @@ export default function Reports() {
 
                           {/* Digital Marketing: Customer Stats */}
 
-                          {((JSON.parse(historyDetail.data||'{}')).role === 'digital-marketing' || (JSON.parse(historyDetail.data||'{}')).khachManhSon !== undefined) && (
+                          {true && (
 
                             <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden mt-4">
 
