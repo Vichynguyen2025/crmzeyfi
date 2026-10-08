@@ -1157,7 +1157,6 @@ export default function Reports() {
                       )}
 </div>
                     )}
-                  </>
                     {/* Digital Marketing: Installation Table */}
                     {(dd.role === 'digital-marketing' || dd.completedCount !== undefined) && (
                       <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden">
@@ -1228,6 +1227,7 @@ export default function Reports() {
                         </div>
                       </div>
                     )}
+                  </>
                 );
               })()}
             </div>
