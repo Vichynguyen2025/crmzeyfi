@@ -434,39 +434,33 @@ export default function Reports() {
                 
                 {/* DM: Customer hierarchy */}
                 {employeeRole === 'digital-marketing' && (
-                  <div className="bg-white border border-[#E5E7EB] rounded-xl px-6 py-5">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-base font-semibold text-[#475467] whitespace-nowrap" style={{lineHeight:22}}>Khách hàng:</span>
-                      <div className="flex flex-col items-center gap-1.5" style={{gap:6}}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col items-center" style={{gap:6}}>
-                            <span className="text-sm font-semibold text-[#6366F1]" style={{lineHeight:22}}>Manshon</span>
-                            <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))}
-                              className="w-28 h-11 text-center rounded-xl border border-[#E5E7EB] text-lg font-semibold p-0 outline-none" />
-                          </div>
-                          <div className="flex flex-col items-center" style={{gap:6}}>
-                            <span className="text-sm font-semibold text-[#0891B2]" style={{lineHeight:22}}>Family</span>
-                            <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))}
-                              className="w-28 h-11 text-center rounded-xl border border-[#E5E7EB] text-lg font-semibold p-0 outline-none" />
-                          </div>
-                          <div className="flex flex-col items-center" style={{gap:6}}>
-                            <span className="text-sm font-semibold text-[#16A34A]" style={{lineHeight:22}}>Đ.ký lại</span>
-                            <input type="number" min={0} value={khachDangKyLai} onChange={e => setKhachDangKyLai(Number(e.target.value))}
-                              className="w-28 h-11 text-center rounded-xl border border-[#E5E7EB] text-lg font-semibold p-0 outline-none" />
-                          </div>
+                  <div className="mt-4 bg-white border border-[#E5E7EB] rounded-xl px-4 py-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[11px] font-semibold text-[#475467] whitespace-nowrap">Khách hàng:</span>
+                      <div className="flex items-center gap-1">
+                        <div className="flex flex-col items-center">
+                          <span className="text-[9px] text-[#6366F1] font-medium mb-0.5">Manshon</span>
+                          <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))}
+                            className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-[9px] text-[#0891B2] font-medium mb-0.5">Family</span>
+                          <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))}
+                            className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-[9px] text-[#16A34A] font-medium mb-0.5">Đ.ký lại</span>
+                          <input type="number" min={0} value={khachDangKyLai} onChange={e => setKhachDangKyLai(Number(e.target.value))}
+                            className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
                         </div>
                       </div>
-                      <div className="h-11 flex items-center justify-center px-4 bg-[#EEF2FF] border border-[#C7D2FE] rounded-xl whitespace-nowrap">
-                        <span className="text-base font-semibold text-[#6366F1]" style={{lineHeight:22}}>Cố định: <b className="text-lg font-bold text-[#4F46E5]" style={{lineHeight:22}}>{khachManhSon + khachFamily + khachDangKyLai}</b></span>
-                      </div>
-                      <div className="flex flex-col items-center" style={{gap:6}}>
-                        <span className="text-sm font-semibold text-[#0891B2]" style={{lineHeight:22}}>Cầm tay</span>
+                      <span className="text-xs font-medium text-[#6366F1] whitespace-nowrap bg-[#EEF2FF] px-2 py-1 rounded-md">Cố định: {khachManhSon + khachFamily + khachDangKyLai}</span>
+                      <div className="flex flex-col items-center">
+                        <span className="text-[9px] text-[#0891B2] font-medium mb-0.5">Cầm tay</span>
                         <input type="number" min={0} value={khachCamTay} onChange={e => setKhachCamTay(Number(e.target.value))}
-                          className="w-28 h-11 text-center rounded-xl border border-[#E5E7EB] text-lg font-semibold p-0 outline-none" />
+                          className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
                       </div>
-                      <div className="h-11 flex items-center justify-center px-4 bg-[#F5F3FF] border border-[#C7D2FE] rounded-xl whitespace-nowrap">
-                        <span className="text-base font-semibold text-[#101828]" style={{lineHeight:22}}>Tổng: <b className="text-lg font-bold text-[#4F46E5]" style={{lineHeight:22}}>{khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</b></span>
-                      </div>
+                      <span className="text-xs font-bold text-[#4F46E5] whitespace-nowrap bg-[#F5F3FF] px-3 py-1 rounded-md">Tổng: {khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span>
                     </div>
                   </div>
                 )}
