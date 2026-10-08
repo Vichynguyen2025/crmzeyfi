@@ -435,18 +435,32 @@ export default function Reports() {
                 {/* DM: Customer hierarchy */}
                 {employeeRole === 'digital-marketing' && (
                   <div className="mt-4 bg-white border border-[#E5E7EB] rounded-xl px-4 py-3">
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[11px] font-semibold text-[#475467] whitespace-nowrap">Khách hàng:</span>
-                      <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))} placeholder="Manshon"
-                        className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none" />
-                      <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))} placeholder="Family"
-                        className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none" />
-                      <input type="number" min={0} value={khachDangKyLai} onChange={e => setKhachDangKyLai(Number(e.target.value))} placeholder="Đ.ký lại"
-                        className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none" />
-                      <span className="text-xs font-medium text-[#6366F1] whitespace-nowrap">Cố định: {khachManhSon + khachFamily + khachDangKyLai}</span>
-                      <input type="number" min={0} value={khachCamTay} onChange={e => setKhachCamTay(Number(e.target.value))} placeholder="Cầm tay"
-                        className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none" />
-                      <span className="text-xs font-bold text-[#4F46E5] whitespace-nowrap">Tổng: {khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span>
+                      <div className="flex items-center gap-1">
+                        <div className="flex flex-col items-center">
+                          <span className="text-[9px] text-[#6366F1] font-medium mb-0.5">Manshon</span>
+                          <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))}
+                            className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-[9px] text-[#0891B2] font-medium mb-0.5">Family</span>
+                          <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))}
+                            className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-[9px] text-[#16A34A] font-medium mb-0.5">Đ.ký lại</span>
+                          <input type="number" min={0} value={khachDangKyLai} onChange={e => setKhachDangKyLai(Number(e.target.value))}
+                            className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                        </div>
+                      </div>
+                      <span className="text-xs font-medium text-[#6366F1] whitespace-nowrap bg-[#EEF2FF] px-2 py-1 rounded-md">Cố định: {khachManhSon + khachFamily + khachDangKyLai}</span>
+                      <div className="flex flex-col items-center">
+                        <span className="text-[9px] text-[#0891B2] font-medium mb-0.5">Cầm tay</span>
+                        <input type="number" min={0} value={khachCamTay} onChange={e => setKhachCamTay(Number(e.target.value))}
+                          className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                      </div>
+                      <span className="text-xs font-bold text-[#4F46E5] whitespace-nowrap bg-[#F5F3FF] px-3 py-1 rounded-md">Tổng: {khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span>
                     </div>
                   </div>
                 )}
