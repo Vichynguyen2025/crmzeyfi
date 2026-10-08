@@ -437,7 +437,7 @@ export default function Reports() {
                   <div className="mt-4 bg-white border border-[#E5E7EB] rounded-xl px-5 py-4">
                     <div className="flex flex-col items-stretch">
                                           <div className="flex items-center justify-center gap-2 flex-wrap">
-                                            <span className="text-sm font-semibold text-[#475467] whitespace-nowrap">Khách hàng:</span>
+                                            <span className="invisible text-sm font-semibold select-none">Khách hàng:</span>
                                             <span className="text-xs font-semibold text-[#6366F1] text-center w-24">Manshon</span>
                                             <span className="text-xs font-semibold text-[#0891B2] text-center w-24">Family</span>
                                             <span className="text-xs font-semibold text-[#16A34A] text-center w-24">Đ.ký lại</span>
@@ -446,7 +446,7 @@ export default function Reports() {
                                             <span className="text-sm font-semibold text-[#101828] invisible px-4">_</span>
                                           </div>
                                           <div className="flex items-center justify-center gap-2 flex-wrap">
-                                            <span className="invisible text-sm font-semibold whitespace-nowrap select-none">Khách hàng:</span>
+                                            <span className="text-sm font-semibold text-[#475467] whitespace-nowrap self-center">Khách hàng:</span>
                                             <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))}
                                               className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
                                             <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))}
