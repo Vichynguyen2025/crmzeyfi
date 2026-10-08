@@ -435,30 +435,26 @@ export default function Reports() {
                 {/* DM: Customer hierarchy */}
                 {employeeRole === 'digital-marketing' && (
                   <div className="mt-4 bg-white border border-[#E5E7EB] rounded-xl px-5 py-4">
-                    <div className="flex flex-col items-stretch">
-                                          <div className="flex items-center justify-center gap-2 flex-wrap">
+                    <div style={{display:'grid', gridTemplateColumns:'auto 96px 96px 96px auto 96px auto', gap:'8px 8px', alignItems:'center', justifyContent:'center'}}>
                                             <span className="invisible text-sm font-semibold select-none">Khách hàng:</span>
-                                            <span className="text-xs font-semibold text-[#6366F1] text-center w-24">Manshon</span>
-                                            <span className="text-xs font-semibold text-[#0891B2] text-center w-24">Family</span>
-                                            <span className="text-xs font-semibold text-[#16A34A] text-center w-24">Đ.ký lại</span>
+                                            <div className="text-xs font-semibold text-[#6366F1] text-center">Manshon</div>
+                                            <div className="text-xs font-semibold text-[#0891B2] text-center">Family</div>
+                                            <div className="text-xs font-semibold text-[#16A34A] text-center">Đ.ký lại</div>
                                             <span className="text-sm font-semibold text-[#6366F1] invisible px-4">_</span>
-                                            <span className="text-xs font-semibold text-[#0891B2] text-center w-24">Cầm tay</span>
+                                            <div className="text-xs font-semibold text-[#0891B2] text-center">Cầm tay</div>
                                             <span className="text-sm font-semibold text-[#101828] invisible px-4">_</span>
-                                          </div>
-                                          <div className="flex items-center justify-center gap-2 flex-wrap">
-                                            <span className="text-sm font-semibold text-[#475467] whitespace-nowrap self-center">Khách hàng:</span>
+                                            <span className="text-sm font-semibold text-[#475467] whitespace-nowrap" style={{alignSelf:'center'}}>Khách hàng:</span>
                                             <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))}
-                                              className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
+                                              className="w-full h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
                                             <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))}
-                                              className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
+                                              className="w-full h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
                                             <input type="number" min={0} value={khachDangKyLai} onChange={e => setKhachDangKyLai(Number(e.target.value))}
-                                              className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
-                                            <span className="text-sm font-semibold text-[#6366F1] bg-[#EEF2FF] border border-[#C7D2FE] rounded-md px-3 whitespace-nowrap inline-flex items-center justify-center h-11 gap-2"><span>Cố định:</span><span className="text-lg font-bold text-[#4F46E5]">{khachManhSon + khachFamily + khachDangKyLai}</span></span>
+                                              className="w-full h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
+                                            <span className="text-sm font-semibold text-[#6366F1] bg-[#EEF2FF] border border-[#C7D2FE] rounded-md px-3 whitespace-nowrap inline-flex items-center justify-center h-11 gap-2" style={{width:'100%'}}><span>Cố định:</span><span className="text-lg font-bold text-[#4F46E5]">{khachManhSon + khachFamily + khachDangKyLai}</span></span>
                                             <input type="number" min={0} value={khachCamTay} onChange={e => setKhachCamTay(Number(e.target.value))}
-                                              className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
-                                            <span className="text-sm font-semibold text-[#101828] bg-[#F5F3FF] border border-[#C7D2FE] rounded-md px-3 whitespace-nowrap inline-flex items-center justify-center h-11 gap-2"><span>Tổng:</span><span className="text-lg font-bold text-[#4F46E5]">{khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span></span>
-                                          </div>
-                                        </div>
+                                              className="w-full h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
+                                            <span className="text-sm font-semibold text-[#101828] bg-[#F5F3FF] border border-[#C7D2FE] rounded-md px-3 whitespace-nowrap inline-flex items-center justify-center h-11 gap-2" style={{width:'100%'}}><span>Tổng:</span><span className="text-lg font-bold text-[#4F46E5]">{khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span></span>
+                    </div>
                   </div>
                 )}
                 {/* Additional fields */}
