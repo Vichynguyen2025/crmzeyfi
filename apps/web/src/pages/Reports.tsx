@@ -410,12 +410,7 @@ export default function Reports() {
                             className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4F46E5]/20" />
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-[#475467] mb-1">Lý do khách chưa hoàn thành</label>
-                        <textarea value={incompleteReason} onChange={e => setIncompleteReason(e.target.value)}
-                          placeholder="Nhập lý do khách hàng chưa hoàn thành lắp đặt..."
-                          className="w-full h-20 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs outline-none resize-none focus:ring-2 focus:ring-[#4F46E5]/20" />
-                      </div>
+
                       <label className="flex items-start gap-2.5 cursor-pointer">
                         <input type="checkbox" checked={commitChecked} onChange={e => setCommitChecked(e.target.checked)}
                           className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#4F46E5] focus:ring-[#4F46E5]" />
