@@ -434,33 +434,33 @@ export default function Reports() {
                 
                 {/* DM: Customer hierarchy */}
                 {employeeRole === 'digital-marketing' && (
-                  <div className="mt-4 bg-white border border-[#E5E7EB] rounded-xl px-4 py-3">
+                  <div className="mt-4 bg-white border border-[#E5E7EB] rounded-xl px-5 py-4">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[11px] font-semibold text-[#475467] whitespace-nowrap">Khách hàng:</span>
-                      <div className="flex items-center gap-1">
+                      <span className="text-sm font-semibold text-[#475467] whitespace-nowrap">Khách hàng:</span>
+                      <div className="flex items-center gap-3">
                         <div className="flex flex-col items-center">
-                          <span className="text-[9px] text-[#6366F1] font-medium mb-0.5">Manshon</span>
+                          <span className="text-xs font-semibold text-[#6366F1] ">Manshon</span>
                           <input type="number" min={0} value={khachManhSon} onChange={e => setKhachManhSon(Number(e.target.value))}
-                            className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                            className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
                         </div>
                         <div className="flex flex-col items-center">
-                          <span className="text-[9px] text-[#0891B2] font-medium mb-0.5">Family</span>
+                          <span className="text-xs font-semibold text-[#0891B2] ">Family</span>
                           <input type="number" min={0} value={khachFamily} onChange={e => setKhachFamily(Number(e.target.value))}
-                            className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                            className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
                         </div>
                         <div className="flex flex-col items-center">
-                          <span className="text-[9px] text-[#16A34A] font-medium mb-0.5">Đ.ký lại</span>
+                          <span className="text-xs font-semibold text-[#16A34A] ">Đ.ký lại</span>
                           <input type="number" min={0} value={khachDangKyLai} onChange={e => setKhachDangKyLai(Number(e.target.value))}
-                            className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                            className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
                         </div>
                       </div>
-                      <span className="text-xs font-medium text-[#6366F1] whitespace-nowrap bg-[#EEF2FF] px-2 py-1 rounded-md">Cố định: {khachManhSon + khachFamily + khachDangKyLai}</span>
+                      <span className="text-sm font-semibold text-[#6366F1] bg-[#EEF2FF] border border-[#C7D2FE] rounded-md px-3 py-1.5 whitespace-nowrap inline-flex items-center gap-2"><span>Cố định:</span><span className="text-lg font-bold text-[#4F46E5]"> {khachManhSon + khachFamily + khachDangKyLai}</span></span>
                       <div className="flex flex-col items-center">
-                        <span className="text-[9px] text-[#0891B2] font-medium mb-0.5">Cầm tay</span>
+                        <span className="text-xs font-semibold text-[#0891B2] ">Cầm tay</span>
                         <input type="number" min={0} value={khachCamTay} onChange={e => setKhachCamTay(Number(e.target.value))}
-                          className="w-14 text-center border border-[#E5E7EB] rounded-md text-xs outline-none p-1" />
+                          className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
                       </div>
-                      <span className="text-xs font-bold text-[#4F46E5] whitespace-nowrap bg-[#F5F3FF] px-3 py-1 rounded-md">Tổng: {khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span>
+                      <span className="text-sm font-semibold text-[#101828] bg-[#F5F3FF] border border-[#C7D2FE] rounded-md px-3 py-1.5 whitespace-nowrap inline-flex items-center gap-2"><span>Tổng:</span><span className="text-lg font-bold text-[#4F46E5]"> {khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span></span>
                     </div>
                   </div>
                 )}
@@ -1524,12 +1524,12 @@ export default function Reports() {
                 .replace(/### (.+)/g, '<h3 class="text-sm font-bold text-[#101828] mt-4 mb-1.5">$1</h3>')
                 .replace(/## (.+)/g, '<h2 class="text-base font-bold text-[#101828] mt-4 mb-1.5">$1</h2>')
                 .replace(/# (.+)/g, '<h1 class="text-lg font-bold text-[#101828] mt-5 mb-2">$1</h1>')
-                .replace(/^\s*- (.+)$/gm, '<li class="text-sm text-[#344054] leading-relaxed ml-3 mb-0.5">$1</li>')
-                .replace(/^\s*1\. (.+)$/gm, '<li class="text-sm text-[#344054] leading-relaxed ml-3 mb-0.5">$1</li>')
+                .replace(/^\s*- (.+)$/gm, '<li class="text-sm text-[#344054] leading-relaxed ml-3 ">$1</li>')
+                .replace(/^\s*1\. (.+)$/gm, '<li class="text-sm text-[#344054] leading-relaxed ml-3 ">$1</li>')
                 .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-[#101828]">$1</strong>')
                 .replace(/_([^_]+)_/g, '<em>$1</em>')
                 .replace(/\n\n/g, '<div class="h-1.5"></div>')
-                .split('\n').filter((l:string)=>l.trim()).map((l:string)=>l.startsWith('<') ? l : '<p class="text-sm text-[#344054] leading-relaxed mb-0.5">'+l+'</p>').join('')
+                .split('\n').filter((l:string)=>l.trim()).map((l:string)=>l.startsWith('<') ? l : '<p class="text-sm text-[#344054] leading-relaxed ">'+l+'</p>').join('')
               }} />
             </div>
           </div>
