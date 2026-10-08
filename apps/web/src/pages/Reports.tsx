@@ -1273,295 +1273,288 @@ export default function Reports() {
     
       {/* History detail modal */}
       {historyDetail && (
-        <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setHistoryDetail(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl border border-border overflow-hidden max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="px-5 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between sticky top-0 z-10">
-              <h3 className="font-bold text-sm text-ink">Chi tiết báo cáo</h3>
-              <button onClick={() => setHistoryDetail(null)} className="p-1 rounded hover:bg-gray-200 text-muted"><X size={16} /></button>
+        <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setHistoryDetail(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-[#E5E7EB]" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB] bg-white sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] grid place-items-center text-white text-sm font-bold shadow-sm">{getUserName(historyDetail.user_id)?.charAt(0) || '?'}</div>
+                <div>
+                  <h3 className="text-sm font-semibold text-[#101828]">{getUserName(historyDetail.user_id)}</h3>
+                  <p className="text-xs text-[#667085]">{formatDate(historyDetail.date)} · {formatTime(historyDetail.created_at)}</p>
+                </div>
+              </div>
+              <button onClick={() => setHistoryDetail(null)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[#F3F4F6] transition-all text-[#98A2B3]"><X size={16} /></button>
             </div>
-            <div className="px-6 py-5 space-y-5">
-                {/* Sender header */}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shadow-lg shadow-indigo-200">{getUserName(historyDetail.user_id)?.charAt(0) || '?'}</div>
-                  <div>
-                    <p className="text-sm font-semibold text-ink">{getUserName(historyDetail.user_id)}</p>
-                    <p className="text-xs text-muted">{formatDate(historyDetail.date)} · {formatTime(historyDetail.created_at)}</p>
+            
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+              
+              {/* 1. Nội dung báo cáo */}
+              <div className="bg-white border border-[#E5E7EB] rounded-xl p-5">
+                <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider mb-2">Nội dung báo cáo</p>
+                <p className="text-sm text-[#344054] leading-relaxed whitespace-pre-wrap">{(JSON.parse(historyDetail.data||'{}')).content||'\u2014'}</p>
+                {(JSON.parse(historyDetail.data||'{}')).notes && <p className="text-xs text-[#667085] mt-3 pt-3 border-t border-[#E5E7EB]">{(JSON.parse(historyDetail.data||'{}')).notes}</p>}
+              </div>
+              
+              {/* 2. File & Link đính kèm */}
+              {(JSON.parse(historyDetail.data||'{}')).attachments?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider mb-2">File đính kèm</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(JSON.parse(historyDetail.data||'{}')).attachments.map((url:string, i:number) => (
+                      <a key={i} href={url} target="_blank" rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#4F46E5] hover:bg-[#F5F3FF] transition-all">
+                        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1={12} y1={15} x2={12} y2={3}/></svg>
+                        {url.split('/').pop() || ('File ' + (i+1))}
+                      </a>
+                    ))}
                   </div>
                 </div>
-                {/* Content */}
-                <div className="rounded-xl p-5 bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}>
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Nội dung báo cáo</p>
-                  <p className="text-sm text-ink leading-relaxed whitespace-pre-wrap">{(JSON.parse(historyDetail.data||'{}')).content||'—'}</p>
-                  {(JSON.parse(historyDetail.data||'{}')).notes && <p className="text-xs text-muted mt-2 pt-2" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}>{(JSON.parse(historyDetail.data||'{}')).notes}</p>}
+              )}
+              {(JSON.parse(historyDetail.data||'{}')).links?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider mb-2">Link đính kèm</p>
+                  <div className="space-y-1.5">
+                    {(JSON.parse(historyDetail.data||'{}')).links.map((link: string, i: number) => (
+                      <a key={i} href={link} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-xs text-[#4F46E5] hover:bg-[#F5F3FF] transition-all">
+                        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        <span className="truncate max-w-[500px]">{link}</span>
+                      </a>
+                    ))}
+                  </div>
                 </div>
-                
-                {/* File đính kèm */}
-                {(JSON.parse(historyDetail.data||'{}')).attachments?.length > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">File đính kèm</p>
-                    <div className="flex flex-wrap gap-2">
-                      {(JSON.parse(historyDetail.data||'{}')).attachments.map((url:string, i:number) => (
-                        <a key={i} href={url} target="_blank" rel="noreferrer"
-                          className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] border border-border rounded-xl text-xs text-primary hover:bg-blue-50 transition-all">
-                          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1={12} y1={15} x2={12} y2={3}/></svg>
-                          {url.split('/').pop() || ('File ' + (i+1))}
-                        </a>
-                      ))}
+              )}
+              
+              {/* 3. Khó khăn & Đề xuất */}
+              <div className="grid grid-cols-2 gap-4">
+                {(JSON.parse(historyDetail.data||'{}')).difficulties && (
+                  <div className="bg-white border border-[#FECACA] rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-lg bg-[#FEF2F2] flex items-center justify-center"><span className="text-[10px] text-[#DC2626] font-bold">!</span></div>
+                      <span className="text-xs font-semibold text-[#DC2626]">Khó khăn</span>
                     </div>
+                    <p className="text-xs text-[#475467] leading-relaxed">{(JSON.parse(historyDetail.data||'{}')).difficulties}</p>
                   </div>
                 )}
-                {/* Link đính kèm */}
-                {(JSON.parse(historyDetail.data||'{}')).links?.length > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Link đính kèm</p>
-                    <div className="space-y-1.5">
-                      {(JSON.parse(historyDetail.data||'{}')).links.map((link: string, i: number) => (
-                        <a key={i} href={link} target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-4 py-2.5 bg-[#fafafa] border border-border rounded-xl text-xs text-primary hover:bg-blue-50 transition-all">
-                          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                          <span className="truncate">{link}</span>
-                        </a>
-                      ))}
+                {(JSON.parse(historyDetail.data||'{}')).suggestions && (
+                  <div className="bg-white border border-[#BBF7D0] rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-lg bg-[#F0FDF4] flex items-center justify-center"><span className="text-[10px] text-[#16A34A] font-bold">+</span></div>
+                      <span className="text-xs font-semibold text-[#16A34A]">Đề xuất</span>
                     </div>
+                    <p className="text-xs text-[#475467] leading-relaxed">{(JSON.parse(historyDetail.data||'{}')).suggestions}</p>
                   </div>
                 )}
-{/* Difficulties & Suggestions */}
+              </div>
+              
+              {/* 4. Công việc khác */}
+              {(JSON.parse(historyDetail.data||'{}')).extraTasks?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider mb-2.5">Công việc khác</p>
+                  <div className="space-y-1.5">
+                    {(JSON.parse(historyDetail.data||'{}')).extraTasks.map((t:any,i:number)=>
+                      <div key={i} className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-lg">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#4F46E5] shrink-0"></div>
+                        <span className="text-sm text-[#344054]">{t}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 5. Metrics Sections */}
+              {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && (
+                <div className="space-y-4">
+                  <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider">Chỉ số kinh doanh</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && (
+                      <div className="bg-white border border-[#E5E7EB] rounded-xl px-4 py-4 text-center">
+                        <p className="text-xl font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</p>
+                        <p className="text-xs text-[#667085] mt-0.5">Đơn</p>
+                      </div>
+                    )}
+                    {(JSON.parse(historyDetail.data||'{}')).metrics?.todayCost > 0 && (
+                      <div className="bg-white border border-[#E5E7EB] rounded-xl px-4 py-4 text-center">
+                        <p className="text-xl font-bold text-[#D97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.todayCost).toLocaleString('vi-VN')}</p>
+                        <p className="text-xs text-[#667085] mt-0.5">Chi phí</p>
+                      </div>
+                    )}
+                    {(JSON.parse(historyDetail.data||'{}')).metrics?.adsTotal > 0 && (
+                      <div className="bg-white border border-[#E5E7EB] rounded-xl px-4 py-4 text-center">
+                        <p className="text-xl font-bold text-[#DB2777]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal).toLocaleString('vi-VN')}</p>
+                        <p className="text-xs text-[#667085] mt-0.5">QC</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Kết quả kinh doanh */}
+              <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 space-y-4">
+                <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider">Kết quả kinh doanh</p>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders ?? 0}</p>
+                    <p className="text-xs text-[#667085] mt-0.5">Đơn (B2)</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#2563EB]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.b3TotalCost || 0).toLocaleString('vi-VN')}đ</p>
+                    <p className="text-xs text-[#667085] mt-0.5">CP QC 3M</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#2563EB]">0đ</p>
+                    <p className="text-xs text-[#667085] mt-0.5">CP eSim</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).metrics.todayMessages ?? 0}</p>
+                    <p className="text-xs text-[#667085] mt-0.5">Tổng Mess</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#D97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.avgMessCost || 0).toLocaleString('vi-VN')}đ</p>
+                    <p className="text-xs text-[#667085] mt-0.5">Giá Mess TB</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quảng cáo */}
+              <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 space-y-4">
+                <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider">Quảng cáo</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#2563EB]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal || 0).toLocaleString('vi-VN')}đ</p>
+                    <p className="text-xs text-[#667085] mt-0.5">CP có thuế</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#16A34A]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsRevenue || 0).toLocaleString('vi-VN')}đ</p>
+                    <p className="text-xs text-[#667085] mt-0.5">Doanh thu</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).metrics.adsOrders ?? 0}</p>
+                    <p className="text-xs text-[#667085] mt-0.5">Đơn</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#7C3AED]">{(JSON.parse(historyDetail.data||'{}')).metrics.roas ?? "—"}x</p>
+                    <p className="text-xs text-[#667085] mt-0.5">ROAS</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* SEO */}
+              <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 space-y-4">
+                <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider">Doanh thu SEO</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {(JSON.parse(historyDetail.data||'{}')).difficulties && <div className="rounded-xl p-4 bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-1.5">Khó khăn</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).difficulties}</p></div>}
-                  {(JSON.parse(historyDetail.data||'{}')).suggestions && <div className="rounded-xl p-4 bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px'}}><p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1.5">Đề xuất</p><p className="text-xs text-[#4d4d4d]">{(JSON.parse(historyDetail.data||'{}')).suggestions}</p></div>}
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#16A34A]">{(JSON.parse(historyDetail.data||'{}')).metrics.seoOrders ?? 0}</p>
+                    <p className="text-xs text-[#667085] mt-0.5">Đơn</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#16A34A]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.seoRevenue || 0).toLocaleString('vi-VN')}đ</p>
+                    <p className="text-xs text-[#667085] mt-0.5">Doanh thu</p>
+                  </div>
                 </div>
-                {/* Extra Tasks */}
-                {(JSON.parse(historyDetail.data||'{}')).extraTasks?.length > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Công việc khác</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).extraTasks.map((t:any,i:number)=><span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#fafafa] border border-border" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>{t}</span>)}</div></div>}
-                {/* Metrics */}
-                {(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Chỉ số kinh doanh</p><div className="grid grid-cols-2 sm:grid-cols-4 gap-3">{(JSON.parse(historyDetail.data||'{}')).metrics?.todayOrders > 0 && <div className="rounded-xl px-4 py-4 text-center bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}><p className="text-xl font-bold text-primary">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders}</p><p className="text-xs text-muted mt-0.5 font-medium">Đơn</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.todayCost > 0 && <div className="rounded-xl px-4 py-4 text-center bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}><p className="text-xl font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.todayCost).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">Chi phí</p></div>}{(JSON.parse(historyDetail.data||'{}')).metrics?.adsTotal > 0 && <div className="rounded-xl px-4 py-4 text-center bg-white" style={{boxShadow:'rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.03) 0px 1px 3px'}}><p className="text-xl font-bold text-[#db2777]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal).toLocaleString('vi-VN')}</p><p className="text-xs text-muted mt-0.5 font-medium">QC</p></div>}</div></div>}
-                
-                        {/* Recipients */}
-                {(JSON.parse(historyDetail.data||'{}')).recipients?.length > 0 && <div className="pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}><p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">
-                        {/* Kết quả kinh doanh */}
-                        <div className="mt-4">
-                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Kết quả kinh doanh</h4>
-                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.todayOrders ?? 0}</p>
-                              <p className="text-[10px] text-muted mt-0.5">Đơn (B2)</p>
-                            </div>
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#0068d6]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.b3TotalCost || 0).toLocaleString('vi-VN')}đ</p>
-                              <p className="text-[10px] text-muted mt-0.5">CP QC 3M</p>
-                            </div>
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#0068d6]">0đ</p>
-                              <p className="text-[10px] text-muted mt-0.5">CP eSim</p>
-                            </div>
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.todayMessages ?? 0}</p>
-                              <p className="text-[10px] text-muted mt-0.5">Tổng Mess</p>
-                            </div>
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#d97706]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.avgMessCost || 0).toLocaleString('vi-VN')}đ</p>
-                              <p className="text-[10px] text-muted mt-0.5">Giá Mess TB</p>
-                            </div>
-                          </div>
-                        </div>
+              </div>
+
+              {/* Content Social */}
+              <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 space-y-4">
+                <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider">Content Social</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).metrics.socialPosts ?? 0}</p>
+                    <p className="text-xs text-[#667085] mt-0.5">Bài viết</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).metrics.publishedPosts ?? 0}</p>
+                    <p className="text-xs text-[#667085] mt-0.5">Đã đăng</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recipients */}
+              {(JSON.parse(historyDetail.data||'{}')).recipients?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider mb-2.5">Đã gửi đến</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string) => (
+                      <span key={rid} className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#F5F3FF] border border-[#C7D2FE] rounded-lg text-xs font-medium text-[#4F46E5]">{getUserName(rid)}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* DM: Installation Table */}
+              <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
+                <div className="px-5 py-3 bg-[#F5F3FF] border-b border-[#E5E7EB]">
+                  <h4 className="text-sm font-semibold text-[#101828]">Bảng xác nhận hoàn thành lắp đặt</h4>
+                </div>
+                <div className="p-5 space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
+                      <p className="text-xs font-medium text-[#667085]">Hoàn thành</p>
+                      <p className="text-xl font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).completedCount || 0}</p>
+                    </div>
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
+                      <p className="text-xs font-medium text-[#667085]">Chưa hoàn thành</p>
+                      <p className="text-xl font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).uncompletedCount || 0}</p>
+                    </div>
+                  </div>
+                  {(JSON.parse(historyDetail.data||'{}')).receivedDevices > 0 && (
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-center">
+                      <p className="text-xs font-medium text-[#667085]">Đã nhận thiết bị</p>
+                      <p className="text-xl font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).receivedDevices}</p>
+                    </div>
+                  )}
+                  {(JSON.parse(historyDetail.data||'{}')).commitChecked && (
+                    <div className="flex items-center gap-2 px-4 py-2.5 bg-[#EEF2FF] rounded-lg text-xs text-[#4F46E5]">
+                      <span className="text-[#16A34A]">✓</span><span>Cam kết đã điền đầy đủ lý do</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* DM: Customer Stats */}
+              <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
+                <div className="px-5 py-3 bg-[#F5F3FF] border-b border-[#E5E7EB]">
+                  <h4 className="text-sm font-semibold text-[#101828]">Thống kê khách hàng</h4>
+                </div>
+                <div className="p-5 space-y-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="text-center">
+                      <p className="text-xs font-medium text-[#6366F1]">Manshon</p>
+                      <p className="text-lg font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).khachManhSon || 0}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-medium text-[#0891B2]">Family</p>
+                      <p className="text-lg font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).khachFamily || 0}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-medium text-[#16A34A]">Đ.ký lại</p>
+                      <p className="text-lg font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).khachDangKyLai || 0}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 bg-[#EEF2FF] border border-[#C7D2FE] rounded-lg px-4 py-3 flex items-center justify-between">
+                      <span className="text-xs font-medium text-[#475467]">Cố định</span>
+                      <span className="text-sm font-bold text-[#4F46E5]">{((JSON.parse(historyDetail.data||'{}')).khachManhSon || 0) + ((JSON.parse(historyDetail.data||'{}')).khachFamily || 0) + ((JSON.parse(historyDetail.data||'{}')).khachDangKyLai || 0)}</span>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-medium text-[#0891B2]">Cầm tay</p>
+                      <p className="text-lg font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).khachCamTay || 0}</p>
+                    </div>
+                  </div>
+                  <div className="bg-[#F5F3FF] border border-[#C7D2FE] rounded-lg px-5 py-4 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-[#101828]">Tổng khách chốt</span>
+                    <span className="text-xl font-bold text-[#4F46E5]">{((JSON.parse(historyDetail.data||'{}')).khachManhSon || 0) + ((JSON.parse(historyDetail.data||'{}')).khachFamily || 0) + ((JSON.parse(historyDetail.data||'{}')).khachDangKyLai || 0) + ((JSON.parse(historyDetail.data||'{}')).khachCamTay || 0)}</span>
+                  </div>
+                </div>
+              </div>
 
-                        {/* Quảng cáo */}
-                        <div className="mt-4">
-                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Quảng cáo</h4>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#0068d6]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsTotal || 0).toLocaleString('vi-VN')}đ</p>
-                              <p className="text-[10px] text-muted mt-0.5">CP có thuế</p>
-                            </div>
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#16a34a]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.adsRevenue || 0).toLocaleString('vi-VN')}đ</p>
-                              <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
-                            </div>
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.adsOrders ?? 0}</p>
-                              <p className="text-[10px] text-muted mt-0.5">Đơn</p>
-                            </div>
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#7c3aed]">{(JSON.parse(historyDetail.data||'{}')).metrics.roas ?? '—'}x</p>
-                              <p className="text-[10px] text-muted mt-0.5">ROAS</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Doanh thu SEO */}
-                        <div className="mt-4">
-                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Doanh thu SEO</h4>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#16a34a]">{(JSON.parse(historyDetail.data||'{}')).metrics.seoOrders ?? 0}</p>
-                              <p className="text-[10px] text-muted mt-0.5">Đơn</p>
-                            </div>
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-[#16a34a]">{Number((JSON.parse(historyDetail.data||'{}')).metrics.seoRevenue || 0).toLocaleString('vi-VN')}đ</p>
-                              <p className="text-[10px] text-muted mt-0.5">Doanh thu</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Content Social */}
-                        <div className="mt-4">
-                          <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Content Social</h4>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.socialPosts ?? 0}</p>
-                              <p className="text-[10px] text-muted mt-0.5">Bài viết</p>
-                            </div>
-                            <div className="bg-[#fafafa] rounded-lg p-3 text-center" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>
-                              <p className="text-sm font-bold text-ink">{(JSON.parse(historyDetail.data||'{}')).metrics.publishedPosts ?? 0}</p>
-                              <p className="text-[10px] text-muted mt-0.5">Đã đăng</p>
-                            </div>
-                          </div>
-                        </div>
-Đã gửi đến</p><div className="flex flex-wrap gap-1.5">{(JSON.parse(historyDetail.data||'{}')).recipients.map((rid:string)=><span key={rid} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#fafafa] border border-border" style={{boxShadow:'rgba(0,0,0,0.04) 0px 0px 0px 1px'}}>{getUserName(rid)}</span>)}</div></div>}
-
-                          {/* Digital Marketing: Installation Table */}
-
-                          {true && (
-
-                            <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden mt-4">
-
-                              <div className="px-4 py-3 bg-[#4F46E5]/5 border-b border-[#E5E7EB]">
-
-                                <h4 className="text-sm font-semibold text-[#101828]">Bảng xác nhận hoàn thành lắp đặt</h4>
-
-                              </div>
-
-                              <div className="p-4 space-y-3">
-
-                                <div className="grid grid-cols-2 gap-3">
-
-                                  <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 text-center">
-
-                                    <p className="text-xs font-medium text-[#667085]">Hoàn thành</p>
-
-                                    <p className="text-xl font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).completedCount || 0}</p>
-
-                                  </div>
-
-                                  <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 text-center">
-
-                                    <p className="text-xs font-medium text-[#667085]">Chưa hoàn thành</p>
-
-                                    <p className="text-xl font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).uncompletedCount || 0}</p>
-
-                                  </div>
-
-                                </div>
-
-                                {(JSON.parse(historyDetail.data||'{}')).receivedDevices > 0 && (
-
-                                  <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 text-center">
-
-                                    <p className="text-xs font-medium text-[#667085]">Đã nhận thiết bị</p>
-
-                                    <p className="text-xl font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).receivedDevices}</p>
-
-                                  </div>
-
-                                )}
-
-                                {(JSON.parse(historyDetail.data||'{}')).commitChecked && (
-
-                                  <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF2FF] rounded-lg text-xs text-[#4F46E5]">
-
-                                    <span>✓</span><span>Cam kết đã điền đầy đủ lý do</span>
-
-                                  </div>
-
-                                )}
-
-                              </div>
-
-                            </div>
-
-                          )}
-
-
-                          {/* Digital Marketing: Customer Stats */}
-
-                          {true && (
-
-                            <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden mt-4">
-
-                              <div className="px-4 py-3 bg-[#4F46E5]/5 border-b border-[#E5E7EB]">
-
-                                <h4 className="text-sm font-semibold text-[#101828]">Thống kê khách hàng</h4>
-
-                              </div>
-
-                              <div className="p-4 space-y-3">
-
-                                <div className="grid grid-cols-3 gap-3">
-
-                                  <div className="text-center">
-
-                                    <p className="text-xs font-medium text-[#6366F1]">Manshon</p>
-
-                                    <p className="text-lg font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).khachManhSon || 0}</p>
-
-                                  </div>
-
-                                  <div className="text-center">
-
-                                    <p className="text-xs font-medium text-[#0891B2]">Family</p>
-
-                                    <p className="text-lg font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).khachFamily || 0}</p>
-
-                                  </div>
-
-                                  <div className="text-center">
-
-                                    <p className="text-xs font-medium text-[#16A34A]">Đ.ký lại</p>
-
-                                    <p className="text-lg font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).khachDangKyLai || 0}</p>
-
-                                  </div>
-
-                                </div>
-
-                                <div className="flex items-center justify-between gap-3">
-
-                                  <div className="flex-1 bg-[#EEF2FF] rounded-lg px-4 py-3 flex items-center justify-between">
-
-                                    <span className="text-xs font-medium text-[#475467]">Cố định</span>
-
-                                    <span className="text-base font-bold text-[#4F46E5]">{((JSON.parse(historyDetail.data||'{}')).khachManhSon || 0) + ((JSON.parse(historyDetail.data||'{}')).khachFamily || 0) + ((JSON.parse(historyDetail.data||'{}')).khachDangKyLai || 0)}</span>
-
-                                  </div>
-
-                                  <div className="text-center">
-
-                                    <p className="text-xs font-medium text-[#0891B2]">Cầm tay</p>
-
-                                    <p className="text-lg font-bold text-[#101828]">{(JSON.parse(historyDetail.data||'{}')).khachCamTay || 0}</p>
-
-                                  </div>
-
-                                </div>
-
-                                <div className="bg-[#F5F3FF] border border-[#C7D2FE] rounded-lg px-4 py-3 flex items-center justify-between">
-
-                                  <span className="text-sm font-semibold text-[#101828]">Tổng khách chốt</span>
-
-                                  <span className="text-xl font-bold text-[#4F46E5]">{((JSON.parse(historyDetail.data||'{}')).khachManhSon || 0) + ((JSON.parse(historyDetail.data||'{}')).khachFamily || 0) + ((JSON.parse(historyDetail.data||'{}')).khachDangKyLai || 0) + ((JSON.parse(historyDetail.data||'{}')).khachCamTay || 0)}</span>
-
-                                </div>
-
-                              </div>
-
-                            </div>
-
-                          )}  
             </div>
           </div>
         </div>
-      )}
-      </div>
-            {/* AI Analysis Modal */}
+      )}</div>
+{/* AI Analysis Modal */}
       {showAnalysis && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAnalysis(false)}>
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-border" onClick={e => e.stopPropagation()} style={{width:'min(92vw,1100px)',maxHeight:'90vh'}}>
