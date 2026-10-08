@@ -114,6 +114,7 @@ export default function Reports() {
   const [analysisCount, setAnalysisCount] = useState<number|null>(null);
   const [analysisStats, setAnalysisStats] = useState<any>(null);
   const [analysisPeriod, setAnalysisPeriod] = useState('');
+const [analysisSummary, setAnalysisSummary] = useState<any>(null);
   const [analysisHtml, setAnalysisHtml] = useState('');
   const [analysisHistory, setAnalysisHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -708,6 +709,27 @@ export default function Reports() {
                 const summary = result?.summary || '_Không nhận được phân tích._';
                 setAnalysisResult(summary);
                 setAnalysisCount(data.length);
+                // Aggregate metrics from all selected reports
+                let reportSum: any = { orders:0, cost:0, b3Cost:0, messages:0, msgCost:0, adsTotal:0, adsRevenue:0, adsOrders:0, seoOrders:0, seoRevenue:0, socialPosts:0, publishedPosts:0 };
+                data.forEach((rpt:any) => {
+                  const d = (() => { try { return JSON.parse(rpt.data || '{}'); } catch { return {}; } })();
+                  const m = d.metrics || {};
+                  reportSum.orders += m.todayOrders || 0;
+                  reportSum.cost += m.todayCost || 0;
+                  reportSum.b3Cost += m.b3TotalCost || 0;
+                  reportSum.messages += m.todayMessages || 0;
+                  reportSum.msgCost += (m.avgMessCost || 0) * (m.todayMessages || 0);
+                  reportSum.adsTotal += m.adsTotal || 0;
+                  reportSum.adsRevenue += m.adsRevenue || 0;
+                  reportSum.adsOrders += m.adsOrders || 0;
+                  reportSum.seoOrders += m.seoOrders || 0;
+                  reportSum.seoRevenue += m.seoRevenue || 0;
+                  reportSum.socialPosts += m.socialPosts || 0;
+                  reportSum.publishedPosts += m.publishedPosts || 0;
+                });
+                if (reportSum.messages > 0) reportSum.avgMsgCost = reportSum.msgCost / reportSum.messages;
+                reportSum.roas = reportSum.adsTotal > 0 ? Math.round((reportSum.adsRevenue / reportSum.adsTotal) * 100) / 100 : 0;
+                setAnalysisSummary(reportSum);
                 const pc = data.filter((x:any)=>x.status==='pending').length;
                 const ac = data.filter((x:any)=>x.status==='approved').length;
                 const rc = data.filter((x:any)=>x.status==='rejected').length;
@@ -873,6 +895,27 @@ export default function Reports() {
                 const summary = result?.summary || '_Không nhận được phân tích._';
                 setAnalysisResult(summary);
                 setAnalysisCount(data.length);
+                // Aggregate metrics from all selected reports
+                let reportSum2: any = { orders:0, cost:0, b3Cost:0, messages:0, msgCost:0, adsTotal:0, adsRevenue:0, adsOrders:0, seoOrders:0, seoRevenue:0, socialPosts:0, publishedPosts:0 };
+                data.forEach((rpt:any) => {
+                  const d = (() => { try { return JSON.parse(rpt.data || '{}'); } catch { return {}; } })();
+                  const m = d.metrics || {};
+                  reportSum.orders += m.todayOrders || 0;
+                  reportSum.cost += m.todayCost || 0;
+                  reportSum.b3Cost += m.b3TotalCost || 0;
+                  reportSum.messages += m.todayMessages || 0;
+                  reportSum.msgCost += (m.avgMessCost || 0) * (m.todayMessages || 0);
+                  reportSum.adsTotal += m.adsTotal || 0;
+                  reportSum.adsRevenue += m.adsRevenue || 0;
+                  reportSum.adsOrders += m.adsOrders || 0;
+                  reportSum.seoOrders += m.seoOrders || 0;
+                  reportSum.seoRevenue += m.seoRevenue || 0;
+                  reportSum.socialPosts += m.socialPosts || 0;
+                  reportSum.publishedPosts += m.publishedPosts || 0;
+                });
+                if (reportSum.messages > 0) reportSum.avgMsgCost = reportSum.msgCost / reportSum.messages;
+                reportSum.roas = reportSum.adsTotal > 0 ? Math.round((reportSum.adsRevenue / reportSum.adsTotal) * 100) / 100 : 0;
+                setAnalysisSummary(reportSum2);
                 const pc = data.filter((x:any)=>x.status==='pending').length;
                 const ac = data.filter((x:any)=>x.status==='approved').length;
                 const rc = data.filter((x:any)=>x.status==='rejected').length;
@@ -1600,6 +1643,47 @@ export default function Reports() {
                     </div>
                   </div>
 
+                  {analysisSummary && (<div>
+                  <p className="text-xs font-semibold text-[#667085] uppercase tracking-wider mb-3">Tổng hợp dữ liệu</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center">
+                      <p className="text-lg font-bold text-[#101828]">{analysisSummary.orders}</p>
+                      <p className="text-xs text-[#667085] mt-0.5">Tổng đơn</p>
+                    </div>
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center">
+                      <p className="text-lg font-bold text-[#2563EB]">{Number(analysisSummary.cost).toLocaleString('vi-VN')}đ</p>
+                      <p className="text-xs text-[#667085] mt-0.5">Tổng chi phí</p>
+                    </div>
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center">
+                      <p className="text-lg font-bold text-[#D97706]">{Number(analysisSummary.adsTotal).toLocaleString('vi-VN')}đ</p>
+                      <p className="text-xs text-[#667085] mt-0.5">Chi phí QC</p>
+                    </div>
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center">
+                      <p className="text-lg font-bold text-[#16A34A]">{Number(analysisSummary.adsRevenue).toLocaleString('vi-VN')}đ</p>
+                      <p className="text-xs text-[#667085] mt-0.5">Doanh thu QC</p>
+                    </div>
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center">
+                      <p className="text-lg font-bold text-[#7C3AED]">{analysisSummary.roas}x</p>
+                      <p className="text-xs text-[#667085] mt-0.5">ROAS</p>
+                    </div>
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center">
+                      <p className="text-lg font-bold text-[#101828]">{analysisSummary.messages}</p>
+                      <p className="text-xs text-[#667085] mt-0.5">Tin nhắn</p>
+                    </div>
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center">
+                      <p className="text-lg font-bold text-[#16A34A]">{analysisSummary.seoOrders}</p>
+                      <p className="text-xs text-[#667085] mt-0.5">Đơn SEO</p>
+                    </div>
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center">
+                      <p className="text-lg font-bold text-[#16A34A]">{Number(analysisSummary.seoRevenue).toLocaleString('vi-VN')}đ</p>
+                      <p className="text-xs text-[#667085] mt-0.5">Doanh SEO</p>
+                    </div>
+                    <div className="bg-white border border-[#E5E7EB] rounded-lg px-4 py-3 text-center">
+                      <p className="text-lg font-bold text-[#101828]">{analysisSummary.socialPosts} / {analysisSummary.publishedPosts}</p>
+                      <p className="text-xs text-[#667085] mt-0.5">Bài viết / Đã đăng</p>
+                    </div>
+                  </div>
+                </div>)}
                   {analysisHtml ? <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{__html: analysisHtml}} /> : <p className="text-sm text-[#98A2B3]">—</p>}
                 </div>
               )}
