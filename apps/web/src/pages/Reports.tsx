@@ -1158,6 +1158,76 @@ export default function Reports() {
 </div>
                     )}
                   </>
+                    {/* Digital Marketing: Installation Table */}
+                    {(dd.role === 'digital-marketing' || dd.completedCount !== undefined) && (
+                      <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden">
+                        <div className="px-4 py-3 bg-[#4F46E5]/5 border-b border-[#E5E7EB]">
+                          <h4 className="text-sm font-semibold text-[#101828]">Bảng xác nhận hoàn thành lắp đặt</h4>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 text-center">
+                              <p className="text-xs font-medium text-[#667085]">Hoàn thành</p>
+                              <p className="text-xl font-bold text-[#101828]">{dd.completedCount || 0}</p>
+                            </div>
+                            <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 text-center">
+                              <p className="text-xs font-medium text-[#667085]">Chưa hoàn thành</p>
+                              <p className="text-xl font-bold text-[#101828]">{dd.uncompletedCount || 0}</p>
+                            </div>
+                          </div>
+                          {dd.receivedDevices > 0 && (
+                            <div className="bg-white border border-[#E5E7EB] rounded-lg p-3 text-center">
+                              <p className="text-xs font-medium text-[#667085]">Đã nhận thiết bị</p>
+                              <p className="text-xl font-bold text-[#101828]">{dd.receivedDevices}</p>
+                            </div>
+                          )}
+                          {dd.commitChecked && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-[#EEF2FF] rounded-lg text-xs text-[#4F46E5]">
+                              <span>✓</span><span>Cam kết đã điền đầy đủ lý do</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Digital Marketing: Customer Stats */}
+                    {(dd.role === 'digital-marketing' || dd.khachManhSon !== undefined) && (
+                      <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl overflow-hidden">
+                        <div className="px-4 py-3 bg-[#4F46E5]/5 border-b border-[#E5E7EB]">
+                          <h4 className="text-sm font-semibold text-[#101828]">Thống kê khách hàng</h4>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <div className="grid grid-cols-3 gap-3">
+                            <div className="text-center">
+                              <p className="text-xs font-medium text-[#6366F1]">Manshon</p>
+                              <p className="text-lg font-bold text-[#101828]">{dd.khachManhSon || 0}</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-xs font-medium text-[#0891B2]">Family</p>
+                              <p className="text-lg font-bold text-[#101828]">{dd.khachFamily || 0}</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-xs font-medium text-[#16A34A]">Đ.ký lại</p>
+                              <p className="text-lg font-bold text-[#101828]">{dd.khachDangKyLai || 0}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex-1 bg-[#EEF2FF] rounded-lg px-4 py-3 flex items-center justify-between">
+                              <span className="text-xs font-medium text-[#475467]">Cố định</span>
+                              <span className="text-base font-bold text-[#4F46E5]">{(dd.khachManhSon || 0) + (dd.khachFamily || 0) + (dd.khachDangKyLai || 0)}</span>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-xs font-medium text-[#0891B2]">Cầm tay</p>
+                              <p className="text-lg font-bold text-[#101828]">{dd.khachCamTay || 0}</p>
+                            </div>
+                          </div>
+                          <div className="bg-[#F5F3FF] border border-[#C7D2FE] rounded-lg px-4 py-3 flex items-center justify-between">
+                            <span className="text-sm font-semibold text-[#101828]">Tổng khách chốt</span>
+                            <span className="text-xl font-bold text-[#4F46E5]">{(dd.khachManhSon || 0) + (dd.khachFamily || 0) + (dd.khachDangKyLai || 0) + (dd.khachCamTay || 0)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                 );
               })()}
             </div>
