@@ -1274,14 +1274,12 @@ export default function Reports() {
       {/* History detail modal */}
       {historyDetail && (
         <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setHistoryDetail(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl border border-border overflow-hidden max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl border border-border overflow-hidden max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="px-5 py-3 border-b border-border bg-gray-50/60 flex items-center justify-between sticky top-0 z-10">
               <h3 className="font-bold text-sm text-ink">Chi tiết báo cáo</h3>
               <button onClick={() => setHistoryDetail(null)} className="p-1 rounded hover:bg-gray-200 text-muted"><X size={16} /></button>
             </div>
-            <div className="p-6 flex gap-6">
-              {/* Left: Report Details */}
-              <div className="flex-1 min-w-0 space-y-5">
+            <div className="px-6 py-5 space-y-5">
                 {/* Sender header */}
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-xs font-bold shadow-lg shadow-indigo-200">{getUserName(historyDetail.user_id)?.charAt(0) || '?'}</div>
@@ -1558,31 +1556,11 @@ export default function Reports() {
                             </div>
 
                           )}              </div>
-              {/* Right: Comments */}
-              <div className="w-80 shrink-0 flex flex-col" style={{borderLeft:'1px solid rgba(0,0,0,0.06)', paddingLeft:'1.25rem', maxHeight:'calc(80vh - 80px)'}}>
-                <p className="text-sm font-semibold text-ink mb-4">Góp ý <span className="text-muted font-medium">({reportComments.length})</span></p>
-                <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
-                  {reportComments.length === 0 && <div className="flex flex-col items-center justify-center py-10 text-center"><div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fafafa'}}><MessageSquare size={18} className="text-muted" /></div><p className="text-sm font-medium text-muted">Chưa có góp ý</p></div>}
-                  {reportComments.map((c: any) => (
-                    <div key={c.id} className="rounded-xl p-3" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px'}}>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] grid place-items-center text-white text-[8px] font-bold">{c.userName?.charAt(0) || '?'}</div>
-                        <div className="flex-1 min-w-0"><p className="text-xs font-semibold text-ink truncate">{c.userName} <span className="text-xs text-muted font-normal">{new Date(c.created_at).toLocaleString('vi-VN')}</span></p></div>
-                      </div>
-                      <p className="text-xs text-[#4d4d4d] leading-relaxed">{c.content}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2 pt-3" style={{borderTop:'1px solid rgba(0,0,0,0.06)'}}>
-                  <input value={commentInput} onChange={e=>setCommentInput(e.target.value)} placeholder="Viết góp ý..." className="flex-1 px-3 py-2.5 rounded-xl text-xs outline-none" style={{boxShadow:'rgba(0,0,0,0.08) 0px 0px 0px 1px',backgroundColor:'#fff'}} onKeyDown={e=>{if(e.key==='Enter')addComment();}} />
-                  <button onClick={addComment} disabled={!commentInput.trim()} className="px-4 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white rounded-xl text-xs font-semibold hover:shadow-lg hover:shadow-indigo-200 disabled:opacity-50 transition-all">Gửi</button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       )}
-</div>
+      </div>
             {/* AI Analysis Modal */}
       {showAnalysis && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowAnalysis(false)}>
