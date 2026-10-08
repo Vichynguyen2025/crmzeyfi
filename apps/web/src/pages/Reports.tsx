@@ -28,6 +28,7 @@ export default function Reports() {
   const [uncompletedCount, setUncompletedCount] = useState(0);
   const [incompleteReason, setIncompleteReason] = useState('');
   const [commitChecked, setCommitChecked] = useState(false);
+  const [receivedDevices, setReceivedDevices] = useState(0);
   const [attachments, setAttachments] = useState<string[]>([]);
   const [reportLinks, setReportLinks] = useState<string[]>([]);
   const [newLink, setNewLink] = useState('');
@@ -296,7 +297,7 @@ export default function Reports() {
           difficulties: difficulties.trim(),
           suggestions: suggestions.trim(),
           extraTasks: extraTasks.filter(t => t.trim()),
-          completedCount, uncompletedCount, incompleteReason: incompleteReason.trim(), commitChecked,
+          completedCount, uncompletedCount, incompleteReason: incompleteReason.trim(), commitChecked, receivedDevices,
           metrics: metrics,
           attachments: attachments,
           links: reportLinks,
@@ -410,6 +411,12 @@ export default function Reports() {
                           <input type="number" min={0} value={uncompletedCount} onChange={e => setUncompletedCount(Number(e.target.value))}
                             className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4F46E5]/20" />
                         </div>
+                      </div>
+
+                      <div className="mt-2">
+                        <label className="block text-xs font-medium text-[#475467] mb-1">Số khách đã nhận thiết bị trong tháng</label>
+                        <input type="number" min={0} value={receivedDevices} onChange={e => setReceivedDevices(Number(e.target.value))}
+                          className="w-full px-3 py-2 bg-white border border-[#E5E7EB] rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#4F46E5]/20" />
                       </div>
 
                       <label className="flex items-start gap-2.5 cursor-pointer">
