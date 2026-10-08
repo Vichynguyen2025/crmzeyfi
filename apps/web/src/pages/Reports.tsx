@@ -66,6 +66,20 @@ export default function Reports() {
   const nav = useNavigate();
   const { tab: urlTab } = useParams();
   const [tab, setTab] = useState<string>(urlTab || 'create');
+  const [employeeRole, setEmployeeRole] = useState('officer');
+  const ROLES = [
+    { key: 'officer', label: 'Văn phòng', icon: FileText },
+    { key: 'digital-marketing', label: 'Digital Marketing', icon: TrendingUp },
+    { key: 'content', label: 'Content', icon: FileText },
+    { key: 'editor', label: 'Editor', icon: FileText },
+    { key: 'seo', label: 'SEO', icon: FileText },
+  ];
+  // Read role from query param on load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const r = params.get('role');
+    if (r && ['officer','digital-marketing','content','editor','seo'].includes(r)) setEmployeeRole(r);
+  }, []);
   // Sync URL with tab state
   useEffect(() => { if (urlTab && urlTab !== tab) setTab(urlTab); }, [urlTab]);
 
@@ -270,7 +284,7 @@ export default function Reports() {
     try {
       await api('/reports', { method:'POST', body:JSON.stringify({
         date: reportDate,
-        data: JSON.stringify({
+        data: JSON.stringify({role: employeeRole,
           content: content.trim(),
           recipients: recipients,
           reason: reason.trim(),
@@ -325,6 +339,24 @@ export default function Reports() {
       </div>
 
       {tab === 'create' && (
+        <div className="mb-4">
+          <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden p-4">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-xs font-medium text-muted">Bạn là</span>
+              <div className="flex items-center gap-1.5">
+                {ROLES.map(r => (
+                  <button key={r.key} onClick={async () => {
+                    setEmployeeRole(r.key);
+                    nav('/crm/reports/create?role=' + r.key);
+                  }}
+                    className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (employeeRole === r.key ? 'bg-[#171717] text-white' : 'bg-white text-muted hover:text-ink border border-border')}>
+                    <r.icon size={13} /> {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Main form */}
           <div className="lg:col-span-2 space-y-4">
