@@ -435,7 +435,7 @@ export default function Reports() {
                 {/* DM: Customer hierarchy */}
                 {employeeRole === 'digital-marketing' && (
                   <div className="mt-4 bg-white border border-[#E5E7EB] rounded-xl px-5 py-4">
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center justify-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-[#475467] whitespace-nowrap">Khách hàng:</span>
                       <div className="flex items-center gap-3">
                         <div className="flex flex-col items-center">
@@ -454,13 +454,13 @@ export default function Reports() {
                             className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
                         </div>
                       </div>
-                      <span className="text-sm font-semibold text-[#6366F1] bg-[#EEF2FF] border border-[#C7D2FE] rounded-md px-3 py-1.5 whitespace-nowrap inline-flex items-center gap-2"><span>Cố định:</span><span className="text-lg font-bold text-[#4F46E5]"> {khachManhSon + khachFamily + khachDangKyLai}</span></span>
+                      <span className="text-sm font-semibold text-[#6366F1] bg-[#EEF2FF] border border-[#C7D2FE] rounded-md px-3 whitespace-nowrap inline-flex items-center justify-center h-11 gap-2"><span>Cố định:</span><span className="text-lg font-bold text-[#4F46E5]"> {khachManhSon + khachFamily + khachDangKyLai}</span></span>
                       <div className="flex flex-col items-center">
                         <span className="text-xs font-semibold text-[#0891B2] ">Cầm tay</span>
                         <input type="number" min={0} value={khachCamTay} onChange={e => setKhachCamTay(Number(e.target.value))}
                           className="w-24 h-11 text-center rounded-xl border border-[#E5E7EB] text-sm font-semibold p-0 outline-none" />
                       </div>
-                      <span className="text-sm font-semibold text-[#101828] bg-[#F5F3FF] border border-[#C7D2FE] rounded-md px-3 py-1.5 whitespace-nowrap inline-flex items-center gap-2"><span>Tổng:</span><span className="text-lg font-bold text-[#4F46E5]"> {khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span></span>
+                      <span className="text-sm font-semibold text-[#101828] bg-[#F5F3FF] border border-[#C7D2FE] rounded-md px-3 whitespace-nowrap inline-flex items-center justify-center h-11 gap-2"><span>Tổng:</span><span className="text-lg font-bold text-[#4F46E5]"> {khachManhSon + khachFamily + khachDangKyLai + khachCamTay}</span></span>
                     </div>
                   </div>
                 )}
