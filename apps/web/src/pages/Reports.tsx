@@ -1781,3 +1781,7 @@ export default function Reports() {
 
     
       {/* History detail modal */}
+
+    </>
+  );
+}
