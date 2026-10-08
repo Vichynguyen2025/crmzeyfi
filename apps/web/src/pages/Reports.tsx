@@ -339,6 +339,7 @@ export default function Reports() {
       </div>
 
       {tab === 'create' && (
+        <>
         <div className="mb-4">
           <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden p-4">
             <div className="flex items-center gap-2 mb-0.5">
@@ -578,6 +579,7 @@ export default function Reports() {
             </div>
           </div>
         </div>
+        </>
       )}
 
       {tab === 'history' && (
