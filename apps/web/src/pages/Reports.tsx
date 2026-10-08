@@ -71,8 +71,8 @@ export default function Reports() {
     { key: 'officer', label: 'Văn phòng', icon: FileText },
     { key: 'digital-marketing', label: 'Digital Marketing', icon: TrendingUp },
     { key: 'content', label: 'Content', icon: FileText },
-    { key: 'editor', label: 'Editor', icon: FileText },
-    { key: 'seo', label: 'SEO', icon: FileText },
+    { key: 'editor', label: 'Editor', icon: CheckCircle2 },
+    { key: 'seo', label: 'SEO', icon: Eye },
   ];
   // Read role from query param on load
   useEffect(() => {
@@ -340,18 +340,19 @@ export default function Reports() {
 
       {tab === 'create' && (
         <>
-        <div className="mb-4">
-          <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden p-4">
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-xs font-medium text-muted">Bạn là</span>
-              <div className="flex items-center gap-1.5">
+        <div className="mb-3">
+          <div className="bg-white border border-[#E5E7EB] rounded-xl px-5 py-4">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-[#475467] whitespace-nowrap">Bạn là:</span>
+              <div className="flex flex-wrap items-center gap-2">
                 {ROLES.map(r => (
                   <button key={r.key} onClick={async () => {
                     setEmployeeRole(r.key);
                     nav('/crm/reports/create?role=' + r.key);
                   }}
-                    className={'px-3 py-1.5 text-xs font-medium rounded-md transition-all ' + (employeeRole === r.key ? 'bg-[#171717] text-white' : 'bg-white text-muted hover:text-ink border border-border')}>
-                    <r.icon size={13} /> {r.label}
+                    className={'inline-flex items-center gap-2 px-4 text-sm font-medium rounded-lg border transition-all duration-150 whitespace-nowrap ' + (employeeRole === r.key ? 'bg-[#EEF2FF] border-[#C7D2FE] text-[#4F46E5] font-semibold' : 'bg-white border-[#E5E7EB] text-[#667085] hover:bg-[#F5F3FF] hover:border-[#C7D2FE]')}
+                    style={{height:40}}>
+                    <r.icon size={16} className={employeeRole === r.key ? 'text-[#4F46E5]' : 'text-[#98A2B3]'} /> {r.label}
                   </button>
                 ))}
               </div>
